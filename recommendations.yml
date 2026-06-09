@@ -1,0 +1,40 @@
+# Genera recomendaciones semanales con Claude cada lunes a las 8:30am hora Bogotá
+# Bogotá = UTC-5, así que 8:30am BOG = 13:30 UTC
+
+name: Weekly Recommendations
+
+on:
+  schedule:
+    - cron: '30 13 * * 1'   # Lunes 8:30am Bogotá
+  workflow_dispatch:          # También permite correrlo manualmente desde GitHub
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write         # Necesario para hacer commit al repo
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic requests
+
+      - name: Generate recommendations
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python generate_recommendations.py
+
+      - name: Commit recommendations.json
+        run: |
+          git config user.name  "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add recommendations.json
+          git diff --staged --quiet || git commit -m "Weekly recommendations $(date +'%Y-%m-%d')"
+          git push

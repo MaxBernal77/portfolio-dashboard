@@ -1,389 +1,634 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>📊 Portfolio Dashboard</title>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dashboard Estratégico</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--green:#3fb950;--red:#f85149;--yellow:#d29922;--blue:#58a6ff;--purple:#bc8cff;--gray:#8b949e;--text:#e6edf3;--sub:#8b949e}
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:13px;padding:16px;min-height:100vh}
-.topbar{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap;gap:8px}
-.topbar h1{font-size:16px;font-weight:700;color:var(--blue)}
-.topbar-right{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--sub)}
-.btn{background:#21262d;border:1px solid var(--border);color:var(--text);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;transition:.2s}
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--green:#3fb950;--red:#f85149;--yellow:#d29922;--blue:#58a6ff;--purple:#bc8cff;--text:#e6edf3;--sub:#8b949e;--card2:#1c2128}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:13px}
+.layout{display:grid;grid-template-columns:245px 1fr;min-height:100vh}
+.sidebar{background:#0d1117;border-right:1px solid var(--border);padding:14px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.main{padding:16px;overflow-x:hidden}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.sidebar{position:relative;height:auto}}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.topbar h1{font-size:15px;font-weight:700;color:var(--blue)}
+.btn{background:#21262d;border:1px solid var(--border);color:var(--text);padding:5px 11px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600}
 .btn:hover{background:#30363d}
-.btn-blue{background:rgba(88,166,255,0.15);border-color:rgba(88,166,255,0.4);color:var(--blue)}
-.pulse{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-@media(max-width:700px){.grid4{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
-.stat-label{font-size:10px;color:var(--sub);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em}
-.stat-value{font-size:18px;font-weight:700}
-.stat-change{font-size:11px;margin-top:2px}
+.sec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:10px;margin-top:16px}
+.sec:first-child{margin-top:0}
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap}
+.bg{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3)}
+.br{background:rgba(248,81,73,.15);color:var(--red);border:1px solid rgba(248,81,73,.3)}
+.by{background:rgba(210,153,34,.15);color:var(--yellow);border:1px solid rgba(210,153,34,.3)}
+.bb{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3)}
 .pos{color:var(--green)}.neg{color:var(--red)}.neu{color:var(--yellow)}
-.sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{color:var(--sub);font-weight:600;font-size:10px;text-transform:uppercase;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
-td{padding:8px 8px;border-bottom:1px solid rgba(48,54,61,0.5);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(255,255,255,0.02)}
-.ticker{font-weight:700;font-family:monospace;font-size:13px;color:var(--blue)}
-.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
-.badge-green{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3)}
-.badge-red{background:rgba(248,81,73,.15);color:var(--red);border:1px solid rgba(248,81,73,.3)}
-.badge-yellow{background:rgba(210,153,34,.15);color:var(--yellow);border:1px solid rgba(210,153,34,.3)}
-.badge-blue{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3)}
-.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px}
-.alert{border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:12px;line-height:1.55;border-left:3px solid}
-.alert-red{background:rgba(248,81,73,.08);border-color:var(--red)}
-.alert-yellow{background:rgba(210,153,34,.08);border-color:var(--yellow)}
-.alert-green{background:rgba(63,185,80,.08);border-color:var(--green)}
-.loading{color:var(--sub);font-style:italic}
-.pnl-bar-wrap{height:3px;background:var(--border);border-radius:2px;width:60px;display:inline-block;vertical-align:middle;margin-left:4px}
-.pnl-bar{height:100%;border-radius:2px}
-.section{margin-bottom:20px}
-.sparkline{display:inline-block;vertical-align:middle;opacity:.6}
+.ev{padding:8px 0;border-bottom:1px solid var(--border)}.ev:last-child{border-bottom:none}
+.ev-date{font-size:10px;font-weight:700;color:var(--sub);margin-bottom:2px}
+.ev-title{font-size:12px;font-weight:600;margin-bottom:2px}
+.ev-note{font-size:11px;color:var(--sub);line-height:1.4}
+.ev-chips{margin-top:4px;display:flex;flex-wrap:wrap;gap:3px}
+.chip{font-size:10px;font-weight:700;font-family:monospace;background:#21262d;border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.idx{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:8px 10px}
+.idx-l{font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:.05em}
+.idx-v{font-size:15px;font-weight:700;margin-top:2px}
+.idx-c{font-size:10px;margin-top:1px}
+.charts-row{display:grid;grid-template-columns:.8fr 1.4fr .8fr;gap:10px;margin-bottom:14px}
+@media(max-width:900px){.charts-row{grid-template-columns:1fr}}
+.cc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px}
+.ct{font-size:11px;font-weight:700;color:var(--sub);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.pg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+@media(max-width:600px){.pg{grid-template-columns:1fr}}
+.pc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:11px 13px}
+.pc.urgent{border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.03)}
+.pc.watch{border-color:rgba(210,153,34,.4)}
+.pc.good{border-color:rgba(63,185,80,.3)}
+.pc-top{display:flex;justify-content:space-between;margin-bottom:5px}
+.pc-t{font-size:14px;font-weight:700;font-family:monospace;color:var(--blue)}
+.pc-n{font-size:10px;color:var(--sub);margin-top:1px}
+.pc-stats{display:flex;gap:10px;margin-bottom:7px}
+.pc-s{flex:1}
+.pc-sl{font-size:9px;color:var(--sub);text-transform:uppercase}
+.pc-sv{font-size:12px;font-weight:600;margin-top:1px}
+.pc-bar{height:3px;background:var(--border);border-radius:2px;margin-top:3px;overflow:hidden}
+.pc-note{font-size:11px;color:#adbac7;line-height:1.45;border-top:1px solid var(--border);padding-top:7px}
+.oc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 13px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+.rg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:700px){.rg{grid-template-columns:1fr}}
+.rc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px}
+.rc.action{border-left:3px solid var(--red)}
+.rc.rotate{border-left:3px solid var(--yellow)}
+.rc.add{border-left:3px solid var(--blue)}
+.rc.hold{border-left:3px solid var(--green)}
+.rc-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
+.rc-title{font-size:13px;font-weight:700}
+.rc-body{font-size:12px;color:#adbac7;line-height:1.55;margin-bottom:7px}
+.rc-tags{display:flex;gap:4px;flex-wrap:wrap}
+.hyp-card{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.hyp-card.semi{border-color:rgba(88,166,255,.35)}
+.hyp-card.agri{border-color:rgba(63,185,80,.35)}
+.hyp-card.hedge{border-color:rgba(210,153,34,.35)}
+.hyp-card.stream{border-color:rgba(188,140,255,.35)}
+.hyp-card.btc{border-color:rgba(248,81,73,.35)}
+.hyp-card.ec{border-color:rgba(63,185,80,.35)}
+.hyp-header{padding:12px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+.hyp-header:hover{background:rgba(255,255,255,.02)}
+.hyp-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hyp-meta{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.hyp-body{padding:0 14px 14px;border-top:1px solid var(--border)}
+.hyp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+@media(max-width:600px){.hyp-grid{grid-template-columns:1fr}}
+.hs{background:var(--card2);border-radius:7px;padding:10px}
+.hs-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--sub);margin-bottom:6px}
+.meter{height:4px;background:var(--border);border-radius:2px;margin-top:3px;overflow:hidden}
+.meter-f{height:100%;border-radius:2px}
+.alfa-sb{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.alfa-i{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px;text-align:center}
+.alfa-l{font-size:9px;color:var(--sub);text-transform:uppercase;margin-bottom:3px}
+.alfa-v{font-size:16px;font-weight:800}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:p 2s infinite;display:inline-block;vertical-align:middle}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
+.loading{color:var(--sub);font-style:italic;font-size:11px}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 </style>
 </head>
 <body>
+<div class="layout">
 
-<div class="topbar">
-  <div>
-    <h1>📊 Portfolio Dashboard — MaxBernal77</h1>
-    <div style="font-size:11px;color:var(--sub);margin-top:2px">Actualizado: <span id="lastUpdate">cargando...</span></div>
+<div class="sidebar">
+  <div style="font-size:14px;font-weight:700;color:var(--blue);margin-bottom:2px">📅 Eventos Semana</div>
+  <div style="font-size:10px;color:var(--sub);margin-bottom:10px">9–13 jun 2026</div>
+  <div id="eventsContainer"></div>
+  <div class="sec">🎯 Alfa vs S&P 500</div>
+  <div style="background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px;text-align:center;margin-bottom:6px">
+    <div style="font-size:9px;color:var(--sub);text-transform:uppercase;margin-bottom:3px">S&P 500 YTD</div>
+    <div style="font-size:18px;font-weight:800" class="neu">+8.2%</div>
   </div>
-  <div class="topbar-right">
-    <div class="pulse"></div><span id="mktStatus">Verificando mercado...</span>
-    <button class="btn btn-blue" onclick="loadAll()">⟳ Actualizar</button>
+  <div class="alfa-sb">
+    <div class="alfa-i"><div class="alfa-l">Portafolio</div><div class="alfa-v" id="sb-port">—</div></div>
+    <div class="alfa-i"><div class="alfa-l">Alfa</div><div class="alfa-v" id="sb-alpha">—</div></div>
+  </div>
+  <div style="font-size:10px;color:var(--sub);margin-top:5px;line-height:1.5">Objetivo: superar S&P por <strong style="color:var(--text)">+1pt mínimo</strong></div>
+  <div class="sec">⚙️ Opciones — Urgencia</div>
+  <div id="sidebarOpts"></div>
+  <div style="margin-top:14px;font-size:10px;color:var(--sub);line-height:1.7">
+    Actualizado: <span id="lastUpdate">—</span><br/>
+    Datos: Yahoo Finance · CoinGecko<br/>
+    Posiciones: IBKR sync 9 jun
   </div>
 </div>
 
-<!-- RESUMEN CUENTA -->
-<div class="section">
-  <div class="sec-title">💼 Resumen de Cuenta (IBKR)</div>
-  <div class="grid4">
-    <div class="stat">
-      <div class="stat-label">Net Liquidation</div>
-      <div class="stat-value" id="netLiq">$3,894</div>
-      <div class="stat-change" id="netLiqChange" style="color:var(--sub)">Desde IBKR</div>
+<div class="main">
+  <div class="topbar">
+    <div>
+      <h1>📊 Dashboard Estratégico — MaxBernal77</h1>
+      <div style="font-size:10px;color:var(--sub);margin-top:2px"><span class="pulse"></span> <span id="mktStatus">Verificando...</span></div>
     </div>
-    <div class="stat">
-      <div class="stat-label">P&L del Día</div>
-      <div class="stat-value" id="dailyPnl">cargando...</div>
-      <div class="stat-change" id="dailyPnlPct"></div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">P&L No Realizado Total</div>
-      <div class="stat-value neg" id="totalUnreal">cargando...</div>
-      <div class="stat-change" id="totalUnrealPct"></div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Buying Power</div>
-      <div class="stat-value pos">$10,692</div>
-      <div class="stat-change" style="color:var(--sub)">Leverage: 1.19x</div>
-    </div>
+    <button class="btn" onclick="loadAll()">⟳ Actualizar</button>
   </div>
-</div>
 
-<!-- MERCADO -->
-<div class="section">
-  <div class="sec-title">🌐 Mercado en Vivo</div>
-  <div class="grid4">
-    <div class="stat"><div class="stat-label">S&P 500</div><div class="stat-value" id="spx">—</div><div class="stat-change" id="spxChg">cargando</div></div>
-    <div class="stat"><div class="stat-label">Nasdaq</div><div class="stat-value" id="ndx">—</div><div class="stat-change" id="ndxChg">cargando</div></div>
-    <div class="stat"><div class="stat-label">Bitcoin (BTC)</div><div class="stat-value" id="btc">—</div><div class="stat-change" id="btcChg">cargando</div></div>
-    <div class="stat"><div class="stat-label">Ethereum (ETH)</div><div class="stat-value" id="eth">—</div><div class="stat-change" id="ethChg">cargando</div></div>
+  <div class="sec" style="margin-top:0">🌐 Mercado en Vivo</div>
+  <div class="g4">
+    <div class="idx"><div class="idx-l">S&amp;P 500</div><div class="idx-v" id="spx">—</div><div class="idx-c" id="spxC">—</div></div>
+    <div class="idx"><div class="idx-l">Nasdaq</div><div class="idx-v" id="ndx">—</div><div class="idx-c" id="ndxC">—</div></div>
+    <div class="idx"><div class="idx-l">Bitcoin</div><div class="idx-v" id="btc">—</div><div class="idx-c" id="btcC">—</div></div>
+    <div class="idx"><div class="idx-l">Ethereum</div><div class="idx-v" id="eth">—</div><div class="idx-c" id="ethC">—</div></div>
   </div>
-  <div class="grid3">
-    <div class="stat"><div class="stat-label">VIX</div><div class="stat-value" id="vix">—</div><div class="stat-change" id="vixChg"></div></div>
-    <div class="stat"><div class="stat-label">Oro (GLD)</div><div class="stat-value" id="gold">—</div><div class="stat-change" id="goldChg"></div></div>
-    <div class="stat"><div class="stat-label">Petróleo (BNO)</div><div class="stat-value" id="oil">—</div><div class="stat-change" id="oilChg"></div></div>
+  <div class="g3">
+    <div class="idx"><div class="idx-l">VIX</div><div class="idx-v" id="vix">—</div><div class="idx-c" id="vixC"></div></div>
+    <div class="idx"><div class="idx-l">Oro (GLD)</div><div class="idx-v" id="gold">—</div><div class="idx-c" id="goldC"></div></div>
+    <div class="idx"><div class="idx-l">Petróleo (BNO)</div><div class="idx-v" id="oil">—</div><div class="idx-c" id="oilC"></div></div>
   </div>
-</div>
 
-<!-- PORTAFOLIO -->
-<div class="section">
-  <div class="sec-title">📈 Posiciones — Acciones & ETFs</div>
-  <div class="card" style="padding:0;overflow:hidden">
-    <table>
-      <thead>
-        <tr>
-          <th>Ticker</th><th>Nombre</th><th>Pos.</th><th>Costo Avg</th>
-          <th>Precio Live</th><th>Valor Mkt</th><th>P&L $</th><th>P&L %</th><th>Estado</th>
-        </tr>
-      </thead>
-      <tbody id="stocksTable"><tr><td colspan="9" class="loading" style="padding:16px">Cargando precios en vivo...</td></tr></tbody>
-    </table>
+  <div class="sec">📊 Análisis Gráfico</div>
+  <div class="charts-row">
+    <div class="cc"><div class="ct">Distribución del Portafolio</div><div style="position:relative;height:190px"><canvas id="donutChart"></canvas></div></div>
+    <div class="cc"><div class="ct">Exposición Sectorial vs S&P 500</div><div style="position:relative;height:190px"><canvas id="sectorChart"></canvas></div></div>
+    <div class="cc"><div class="ct">Tipo de Activo</div><div style="position:relative;height:190px"><canvas id="typeChart"></canvas></div></div>
   </div>
-</div>
 
-<!-- OPCIONES -->
-<div class="section">
-  <div class="sec-title">⚙️ Opciones</div>
-  <div class="card" style="padding:0;overflow:hidden">
-    <table>
-      <thead>
-        <tr><th>Contrato</th><th>Pos.</th><th>Precio Avg</th><th>Precio Mkt</th><th>Valor</th><th>P&L</th><th>Vence</th><th>Estado</th></tr>
-      </thead>
-      <tbody id="optionsTable"></tbody>
-    </table>
-  </div>
-</div>
+  <div class="sec">💼 Posiciones</div>
+  <div class="pg" id="posCards"></div>
 
-<!-- CRIPTO -->
-<div class="section">
-  <div class="sec-title">₿ Exposición Cripto (vía ETFs)</div>
-  <div class="grid2">
-    <div class="stat" id="btcCard">
-      <div class="stat-label">GBTC — Bitcoin Trust (9 acc.)</div>
-      <div class="stat-value" id="gbtcVal">cargando...</div>
-      <div class="stat-change" id="gbtcPnl"></div>
-    </div>
-    <div class="stat" id="ethCard">
-      <div class="stat-label">ETHE — Ethereum Trust (5 acc.)</div>
-      <div class="stat-value" id="etheVal">cargando...</div>
-      <div class="stat-change" id="ethePnl"></div>
-    </div>
-  </div>
-</div>
+  <div class="sec">⚙️ Opciones Activas</div>
+  <div id="optCards"></div>
 
-<!-- ALERTAS -->
-<div class="section">
-  <div class="sec-title">⚠️ Alertas Activas</div>
-  <div id="alertsContainer">
-    <div class="alert alert-red"><strong>🚨 GBTC Call Jul2 $51:</strong> Vence en <strong id="daysToGbtcExp">calculando...</strong> días. GBTC necesita subir a >$51 para estar ITM. Monitorear posición.</div>
-    <div class="alert alert-yellow"><strong>📅 NTR Dividendo:</strong> Ex-date 30 jun 2026. Mantener las 10 acciones para recibir $5.50 total. Pago: 17 jul.</div>
-    <div id="dynamicAlerts"></div>
-  </div>
-</div>
+  <div class="sec">🎯 Acciones Sobre Posiciones Actuales</div>
+  <div style="font-size:10px;color:var(--sub);margin-bottom:8px" id="recsLabel">Cargando recomendaciones...</div>
+  <div class="rg" id="recCards"></div>
 
-<!-- OBJETIVO ALFA -->
-<div class="section">
-  <div class="sec-title">🎯 Seguimiento vs S&P 500</div>
-  <div class="card">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;text-align:center">
-      <div><div style="color:var(--sub);font-size:10px;margin-bottom:4px">RENDIMIENTO S&P (2026)</div><div style="font-size:20px;font-weight:700" id="spxYTD">—</div></div>
-      <div><div style="color:var(--sub);font-size:10px;margin-bottom:4px">TU PORTAFOLIO (YTD)</div><div style="font-size:20px;font-weight:700" id="portYTD">—</div></div>
-      <div><div style="color:var(--sub);font-size:10px;margin-bottom:4px">ALFA vs S&P</div><div style="font-size:20px;font-weight:700" id="alphaVal">—</div></div>
-    </div>
-    <div style="margin-top:12px;background:#21262d;border-radius:6px;padding:8px 12px;font-size:11px;color:var(--sub)">
-      ℹ️ El portafolio YTD se calcula sobre el costo promedio total de las posiciones actuales. El alfa objetivo es S&P+1pt.
-    </div>
-  </div>
-</div>
+  <div class="sec">🔭 Ideas de Inversión — Tickers &amp; Estrategias Concretas</div>
+  <div style="font-size:11px;color:var(--sub);margin-bottom:12px;line-height:1.5">Hipótesis con instrumentos específicos, niveles de entrada y estrategias de opciones. Clic para expandir.</div>
+  <div id="hypCards"></div>
 
-<div style="color:var(--sub);font-size:10px;text-align:center;margin-top:8px;line-height:1.6">
-  Datos de mercado: Yahoo Finance · CoinGecko · Posiciones: IBKR (última sync: <span id="ibkrSync">9 jun 2026</span>)<br/>
-  Este dashboard es solo informativo. No constituye asesoría financiera.
+  <div class="sec">📰 Noticias por Posición</div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px" id="newsContainer"></div>
+  <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:14px;padding-bottom:12px;line-height:1.6">Solo informativo. No constituye asesoría financiera certificada.</div>
+</div>
 </div>
 
 <script>
-// ── DATOS DEL PORTAFOLIO (sincronizados desde IBKR) ──────────────────────
-const positions = [
-  {ticker:'EC',  name:'Ecopetrol',    qty:110, avg:15.19, type:'stock'},
-  {ticker:'EIMI',name:'MSCI EM ETF',  qty:25,  avg:50.948,type:'etf'},
-  {ticker:'ETHE',name:'Ethereum Trust',qty:5,  avg:31.40, type:'crypto'},
-  {ticker:'GBTC',name:'Bitcoin Trust',qty:9,   avg:71.38, type:'crypto'},
-  {ticker:'NFLX',name:'Netflix',      qty:3,   avg:126.267,type:'stock'},
-  {ticker:'NTR', name:'Nutrien',      qty:10,  avg:74.609,type:'stock'},
+// ── PORTFOLIO DATA ────────────────────────────────────────────────────────
+var POS = [
+  {t:'EC',  n:'Ecopetrol',      qty:110, avg:15.19,  yf:'EC',    type:'Acciones', sector:'Energia',       urgency:'good',   fb:15.76, note:'Short call $17 jul cubierta. Brent bajo hoy presiona. Catalizador: produccion Q2 y COP/USD.'},
+  {t:'EIMI',n:'MSCI EM IMI',   qty:25,  avg:50.948, yf:'EIMI.L', type:'ETFs',    sector:'Emergentes',    urgency:'neutral', fb:53.24, note:'ETF emergentes LSE. Dolar fuerte es viento en contra. Posicion estructural largo plazo.'},
+  {t:'ETHE',n:'Ethereum Trust', qty:5,   avg:31.40,  yf:'ETHE',   type:'Crypto',  sector:'Crypto',        urgency:'urgent',  fb:13.32, note:'Perdida -57%. ETH minimo 1+ año. Evaluar rotacion hacia GBTC antes del FOMC.'},
+  {t:'GBTC',n:'Bitcoin Trust',  qty:9,   avg:71.38,  yf:'GBTC',   type:'Crypto',  sector:'Crypto',        urgency:'urgent',  fb:47.89, note:'BTC busca soporte $60K. Call Jul2 $51 OTM. Institucionales comprando el dip.'},
+  {t:'NFLX',n:'Netflix',        qty:3,   avg:126.267,yf:'NFLX',   type:'Acciones',sector:'Comunicaciones',urgency:'watch',   fb:81.40, note:'Down -39% desde maximo. Consensus analistass $114 (+40%). Esperar CPI para agregar.'},
+  {t:'NTR', n:'Nutrien',        qty:10,  avg:74.609, yf:'NTR',    type:'Acciones',sector:'Materiales',    urgency:'watch',   fb:66.28, note:'Ex-div $0.55 el 30 jun. NO vender antes. Geopoli­tica Iran activa. Wells Fargo Buy.'}
 ];
-const opts = [
-  {desc:'EC Jul17\'26 $17 CALL',  pos:-1, avg:0.699,  mkt:0.740, exp:'2026-07-17', strike:17,  underlying:'EC',  side:'CALL', type:'short'},
-  {desc:'GBTC Jul02\'26 $51 CALL',pos: 1, avg:1.682,  mkt:0.912, exp:'2026-07-02', strike:51, underlying:'GBTC', side:'CALL', type:'long'},
+
+var SECTORS = [
+  {name:'Tecnologia',    port:0, sp:29},
+  {name:'Financieras',   port:0, sp:13},
+  {name:'Salud',         port:0, sp:12},
+  {name:'Consumo Disc.', port:0, sp:10},
+  {name:'Comunicaciones',port:0, sp:9},
+  {name:'Industriales',  port:0, sp:8},
+  {name:'Cons. Basico',  port:0, sp:6},
+  {name:'Energia',       port:0, sp:4},
+  {name:'Materiales',    port:0, sp:3},
+  {name:'Emergentes',    port:0, sp:0},
+  {name:'Crypto',        port:0, sp:0}
 ];
-const livePrices = {};
 
-// ── HELPERS ──────────────────────────────────────────────────────────────
-const fmt  = (n,d=2)=>'$'+Number(n).toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g,',');
-const pct  = n=>(n>=0?'+':'')+n.toFixed(2)+'%';
-const days = d=>Math.ceil((new Date(d)-new Date())/(1000*60*60*24));
-const colorClass = n=>n>=0?'pos':'neg';
+var OPTS = [
+  {desc:'EC Jul17\'26 $17 CALL',    pos:-1, avg:0.699, mkt:0.740, exp:'2026-07-17', strike:17, und:'EC',   side:'short', note:'OTM. EC ~$15.76. Probablemente vence sin valor. Prima cobrada.'},
+  {desc:'GBTC Jul02\'26 $51 CALL',  pos:1,  avg:1.682, mkt:0.912, exp:'2026-07-02', strike:51, und:'GBTC', side:'long',  note:'URGENTE: OTM, 23 dias. BTC necesita +6%. Considerar cerrar hoy.'}
+];
 
-function setEl(id,html,cls=''){
-  const el=document.getElementById(id);
-  if(el){el.innerHTML=html;if(cls)el.className=cls;}
+var EVENTS = [
+  {date:'Hoy - 9 jun',     title:'Premercado bajista',   note:'S&P -0.42%, BTC -5%. Mercado espera CPI.',          tickers:['GBTC','ETHE'],        lvl:'r'},
+  {date:'Jue-Vie 11-12 jun',title:'CPI Mayo 2026',       note:'Dato caliente = presion. Dato frio = rally growth.', tickers:['NFLX','GBTC','ETHE'], lvl:'r'},
+  {date:'Mie-Jue 17-18 jun',title:'FOMC Junio',          note:'Sin recorte esperado. Dot plot mueve expectativas.', tickers:['GBTC','NFLX','EC'],   lvl:'r'},
+  {date:'Mar 30 jun',       title:'NTR Ex-Dividendo',    note:'$0.55/acc. Mantener antes del 30 jun.',             tickers:['NTR'],                lvl:'y'},
+  {date:'Mie 2 jul',        title:'GBTC Call Vence',     note:'Long call $51 OTM. Actuar esta semana.',            tickers:['GBTC'],               lvl:'r'}
+];
+
+var RECS = [
+  {type:'action',icon:'🚨',title:'Cerrar GBTC Call Jul2 $51', badge:'br', badgeText:'Hoy',       body:'Vale ~$91 ahora. BTC cae -5%, 23 dias restantes. Sin rally a $53+ perdera todo. Cierra hoy.',  tags:['GBTC','Opciones']},
+  {type:'rotate',icon:'🔄',title:'Rotar ETHE hacia GBTC',     badge:'by', badgeText:'Esta semana',body:'ETHE -57%. ETH pierde traccion institucional. Vender 5 ETHE libera ~$67 para agregar GBTC.',  tags:['ETHE','GBTC']},
+  {type:'add',   icon:'📈',title:'Promediar NFLX post-CPI',   badge:'bb', badgeText:'Condicional',body:'Si CPI < 3.5% (jueves), agregar 2-3 acciones baja costo promedio hacia ~$100. Target $114.',  tags:['NFLX']},
+  {type:'hold',  icon:'📌',title:'Mantener NTR hasta ex-div', badge:'bg', badgeText:'30 jun',    body:'No vender antes del 30 jun. Ex-div $0.55/acc = $5.50. Catalizador Iran activo. WF Buy.',       tags:['NTR','Dividendo']}
+];
+
+var HYPS = [
+  {
+    id:'semi', cls:'semi', icon:'🤖', name:'IA & Semiconductores', riskLbl:'Alto', risk:72, riskColor:'#f85149',
+    horizon:'3-6 meses', tickers:['SMH','NVDA','AMD','AMAT'],
+    thesis:'Tu portafolio tiene 0% en el sector de mayor alpha del año. Applied Digital +11% ayer por contrato datacenter $5.2B. El ciclo de capex en IA no ha terminado.',
+    directo:'Comprar 3-5 acc. SMH (ETF Semis) en zona $235-240.\nStop loss: $215 (-10%). Target: $275 (+17%).',
+    opciones:'Bull Call Spread en SMH:\n- Comprar SMH $240 CALL Sep 2026\n- Vender SMH $260 CALL Sep 2026\nPrima neta estimada: ~$350-450\nGanancia max: ~$1,550 si SMH > $260\nPerdida max: prima pagada',
+    sizing:'Usar 5-8% del buying power (~$500-800)',
+    catalizadores:'Resultados NVDA Q2 - Contratos datacenter - Jensen Huang visita Samsung/SK Hynix'
+  },
+  {
+    id:'agri', cls:'agri', icon:'🌾', name:'Ampliar Fertilizantes — CF Industries', riskLbl:'Medio', risk:42, riskColor:'#d29922',
+    horizon:'2-4 meses', tickers:['CF','MOS','NTR','SOIL'],
+    thesis:'Ya tienes NTR. CF Industries tiene mayor upside: mas exposicion a nitrogeno (el mas afectado por Iran), P/E 8.5x vs NTR 13.7x, y posicion geografica en EE.UU.',
+    directo:'Comprar 5-7 acc. CF Industries en zona $68-72.\nStop: $62 (-10%). Target: $90 (+28%).',
+    opciones:'Cash-Secured Put en NTR (ampliar posicion):\n- Vender NTR $62 PUT Ago 2026\nPrima estimada: ~$1.50 (~$150/contrato)\nSi NTR cae a $62: compras 100 acc mas baratas\nSi sube: cobras los $150',
+    sizing:'3-5% del buying power para CF. La put en NTR no requiere cash adicional.',
+    catalizadores:'Tensiones Iran - Precios urea - Cosecha maiz/soya EE.UU. Q3'
+  },
+  {
+    id:'hedge', cls:'hedge', icon:'🛡️', name:'Cobertura Pre-FOMC — Oro', riskLbl:'Bajo', risk:22, riskColor:'#3fb950',
+    horizon:'2-6 semanas', tickers:['GLD','IAU','GDXJ','TLT'],
+    thesis:'FOMC el 17-18 jun. Si el tono es hawkish, growth y cripto caen. GLD en maximos historicos ($4,475). Agregar GLD ahora es cobertura barata con momentum propio.',
+    directo:'Comprar 2-3 acc. GLD (~$440 c/u).\nStop loose: $415 (-6%). Cobertura si mercado cae post-FOMC.',
+    opciones:'Call direccional:\n- Comprar GLD $445 CALL Jul 2026\nPrima estimada: ~$200-280\nGanancia si GLD > $448: ilimitada\nPerdida max: prima\n\nO Put de proteccion:\n- Comprar SPY $520 PUT Jul 2026 (~$150)\nCubre caida general post-FOMC',
+    sizing:'2-4% del portafolio como cobertura tactica. No es posicion core.',
+    catalizadores:'Reunion FOMC 17-18 jun - CPI Mayo - Dolar DXY'
+  },
+  {
+    id:'stream', cls:'stream', icon:'📺', name:'NFLX — Potenciar con Opciones', riskLbl:'Medio', risk:50, riskColor:'#d29922',
+    horizon:'2-4 meses', tickers:['NFLX','WBD','DIS'],
+    thesis:'Ya tienes 3 acc a avg $126. Una estrategia de opciones captura el rebote con riesgo definido sin inmovilizar tanto capital como comprar mas acciones.',
+    directo:'Agregar 2-3 acciones en $80-83 si CPI es favorable.\nNuevo avg ~$100. Target analistas: $114.',
+    opciones:'Bull Call Spread en NFLX:\n- Comprar NFLX $85 CALL Sep 2026\n- Vender NFLX $105 CALL Sep 2026\nPrima neta: ~$400-500\nGanancia max: ~$1,500 si NFLX > $105\nPerdida max: prima\n\nAlternativa - Sell Put:\n- Vender NFLX $75 PUT Ago 2026\nPrima ~$250-300\nBreakeven real: $72.50',
+    sizing:'El spread usa ~$450 vs comprar 4 acc (~$320). El spread da 3x el upside en dolares.',
+    catalizadores:'CPI benigno - Q2 earnings NFLX (mid-jul) - Ad-tier momentum'
+  },
+  {
+    id:'btc', cls:'btc', icon:'₿', name:'BTC Post-Halving — Reposicionar', riskLbl:'Muy alto', risk:85, riskColor:'#f85149',
+    horizon:'3-9 meses', tickers:['GBTC','IBIT','MSTR','COIN'],
+    thesis:'Halving fue abril 2024. Historicamente el pico ocurre 12-18 meses despues. Fear & Greed en 12 (extremo miedo) = compra historica segun ciclos anteriores.',
+    directo:'Cerrar GBTC call Jul y reemplazar:\nComprar 10 acc. GBTC adicionales en $45-48 (BTC $58-62K).\nStop: $40 (-15%).',
+    opciones:'Reemplazar call que vence:\n- Comprar GBTC $52 CALL Sep 2026\nPrima estimada: ~$1.50 (~$150)\nBreakeven: GBTC $53.50 (BTC ~$66K)\n\nMas agresivo:\n- Comprar GBTC $48 CALL Sep 2026\nPrima: ~$250 - mas ITM, menos tiempo risk',
+    sizing:'No mas del 10% adicional en crypto. Ya tienes exposicion significativa.',
+    catalizadores:'CPI benigno - FOMC dovish - Compras Strategy/institucionales - Ciclo post-halving'
+  },
+  {
+    id:'ec', cls:'ec', icon:'🇨🇴', name:'EC — Rolling Covered Calls', riskLbl:'Bajo', risk:28, riskColor:'#3fb950',
+    horizon:'Post 17 jul', tickers:['EC','XLE','BNO'],
+    thesis:'Tu short call $17 de julio cap el upside de EC. Post-vencimiento, puedes hacer rolling a strikes mas altos y fechas mas lejanas para generar ingreso pasivo.',
+    directo:'Mantener las 110 acc. Dejar vencer call $17 (probablemente sin valor).\nPost-julio: evaluar call $18-19 para Oct 2026.',
+    opciones:'Covered Call rolling post-julio:\n- Vender EC $18 CALL Oct 2026\nPrima estimada: ~$0.40-0.50 (~$40-50)\nIngreso pasivo mientras esperas el Brent\n\nSi Brent sube a $105+:\n- No vender call, dejar correr EC hacia $17-19',
+    sizing:'Ya tienes la posicion. El rolling de calls es ingreso adicional sin capital nuevo.',
+    catalizadores:'Precio Brent - Produccion Q2 Ecopetrol - COP/USD - Tensiones OPEC+'
+  }
+];
+
+var NEWS = [
+  {t:'NFLX', h:'Analistas ven oportunidad en Netflix — consensus target $114.56 (+40% upside)', time:'Jun 6'},
+  {t:'NFLX', h:'Netflix aprueba propuestas 2026, nombra a Jay Hoag nuevo Chairman of the Board', time:'Jun 5'},
+  {t:'NTR',  h:'Nutrien beneficiario de tensiones Iran — precios fertilizantes nitrogenados al alza', time:'Jun 9'},
+  {t:'NTR',  h:'Wells Fargo mantiene Buy en Nutrien — P/E forward 11.68x, div yield 3.2%', time:'Jun 5'},
+  {t:'GBTC', h:'Bitcoin estabiliza en $60K con indicadores de agotamiento vendedor', time:'Jun 9'},
+  {t:'GBTC', h:'Bernstein: ownership diversificado de BTC soporta tesis store-of-value largo plazo', time:'Jun 8'},
+  {t:'ETHE', h:'Ethereum bajo $1,700 — minimo de mas de 1 año. DeFi bajo presion generalizada', time:'Jun 8'},
+  {t:'EC',   h:'Brent -0.6% hoy. Dolar fuerte presiona emergentes y commodities COP', time:'Jun 9'}
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+var lp = {};
+var donutC, sectorC, typeC;
+
+// ── UTILS ─────────────────────────────────────────────────────────────────
+function fmt(n, d) {
+  d = d === undefined ? 2 : d;
+  return '$' + (+(n)).toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function pct(n) { return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'; }
+function cc(n)  { return n >= 0 ? 'pos' : 'neg'; }
+function days(d){ return Math.ceil((new Date(d) - new Date()) / 864e5); }
+function setEl(id, h, cls) {
+  var e = document.getElementById(id);
+  if (e) { e.innerHTML = h; if (cls) e.className = cls; }
+}
+function getPrice(p) { return (lp[p.t] && lp[p.t].price) ? lp[p.t].price : p.fb; }
+
+// ── FETCH: batch Yahoo Finance v7 (pre/post market) ───────────────────────
+// Fetch con timeout manual (sin AbortSignal.timeout que no es compatible en todos los entornos)
+async function fetchT(url, ms) {
+  var controller = new AbortController();
+  var id = setTimeout(function() { controller.abort(); }, ms || 10000);
+  try {
+    var r = await fetch(url, {signal: controller.signal});
+    clearTimeout(id);
+    return r;
+  } catch(e) { clearTimeout(id); throw e; }
 }
 
-// ── FETCH YAHOO FINANCE (via proxy) ──────────────────────────────────────
-async function fetchYahoo(sym){
-  try{
-    const url=`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`;
-    const proxy=`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-    const r=await fetch(proxy,{signal:AbortSignal.timeout(8000)});
-    const j=await r.json();
-    const d=JSON.parse(j.contents).chart.result[0].meta;
-    return {price:d.regularMarketPrice, prevClose:d.chartPreviousClose||d.previousClose, chgPct:((d.regularMarketPrice-(d.chartPreviousClose||d.previousClose))/(d.chartPreviousClose||d.previousClose))*100};
-  }catch(e){return null;}
+async function yfBatch() {
+  try {
+    var symbols = ['EC','EIMI.L','NFLX','NTR','GBTC','ETHE','^GSPC','^IXIC','^VIX','GLD','BNO'];
+    var keys    = ['EC','EIMI',  'NFLX','NTR','GBTC','ETHE','IDX_SPX','IDX_NDX','IDX_VIX','IDX_GLD','IDX_OIL'];
+    var url = 'https://query1.finance.yahoo.com/v7/finance/quote?symbols=' + symbols.join(',');
+    var r = await fetchT('https://api.allorigins.win/get?url=' + encodeURIComponent(url), 12000);
+    var j = await r.json();
+    var quotes = JSON.parse(j.contents).quoteResponse.result;
+    quotes.forEach(function(q, i) {
+      if (!q) return;
+      var st = q.marketState;
+      var price, chg, label = '';
+      if (st === 'PRE' && q.preMarketPrice != null) {
+        price = q.preMarketPrice; chg = q.preMarketChangePercent; label = 'Pre-mkt';
+      } else if ((st === 'POST' || st === 'POSTPOST' || st === 'CLOSED') && q.postMarketPrice != null) {
+        price = q.postMarketPrice; chg = q.postMarketChangePercent; label = 'Post-mkt';
+      } else {
+        price = q.regularMarketPrice; chg = q.regularMarketChangePercent;
+      }
+      if (!price) { price = q.regularMarketPrice; chg = q.regularMarketChangePercent; label = 'Cierre'; }
+      lp[keys[i]] = {price: price, chg: chg || 0, label: label, state: st};
+    });
+  } catch(e) { console.warn('YF batch error:', e); }
 }
 
-// ── FETCH COINGECKO ───────────────────────────────────────────────────────
-async function fetchCrypto(){
-  try{
-    const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true',{signal:AbortSignal.timeout(8000)});
+async function yfHist(sym) {
+  try {
+    var url = 'https://query1.finance.yahoo.com/v8/finance/chart/' + sym + '?interval=1d&range=1mo';
+    var r = await fetchT('https://api.allorigins.win/get?url=' + encodeURIComponent(url), 10000);
+    var j = await r.json();
+    return JSON.parse(j.contents).chart.result[0].indicators.quote[0].close.filter(function(v){ return v != null; });
+  } catch(e) { return null; }
+}
+
+async function getCrypto() {
+  try {
+    var r = await fetchT('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true', 8000);
     return await r.json();
-  }catch(e){return null;}
+  } catch(e) { return null; }
 }
 
-// ── RENDER STOCKS TABLE ───────────────────────────────────────────────────
-function renderStocks(){
-  const rows=positions.filter(p=>p.type!=='crypto').map(p=>{
-    const lp=livePrices[p.ticker];
-    const price=lp?lp.price:null;
-    const mktVal=price?price*p.qty:null;
-    const pnl=price?(price-p.avg)*p.qty:null;
-    const pnlPct=price?((price-p.avg)/p.avg)*100:null;
-    const status=pnl===null?'—':pnl>=0?`<span class="badge badge-green">▲ Ganancia</span>`:`<span class="badge badge-red">▼ Pérdida</span>`;
-    const chgCell=lp?`<span class="${colorClass(lp.chgPct)}">${pct(lp.chgPct)}</span>`:'—';
-    return `<tr>
-      <td><span class="ticker">${p.ticker}</span></td>
-      <td style="color:var(--sub)">${p.name}</td>
-      <td>${p.qty}</td>
-      <td>${fmt(p.avg)}</td>
-      <td>${price?`${fmt(price)} <span style="font-size:10px">${chgCell}</span>`:'<span class="loading">cargando</span>'}</td>
-      <td>${mktVal?fmt(mktVal):'—'}</td>
-      <td class="${pnl!==null?colorClass(pnl):''}">${pnl!==null?fmt(pnl):'—'}</td>
-      <td class="${pnlPct!==null?colorClass(pnlPct):''}">${pnlPct!==null?pct(pnlPct):'—'}</td>
-      <td>${status}</td>
-    </tr>`;
-  }).join('');
-  document.getElementById('stocksTable').innerHTML=rows||'<tr><td colspan="9" class="loading">Sin posiciones</td></tr>';
+// Carga recomendaciones desde recommendations.json (generado semanalmente por GitHub Actions)
+var activeRecs = RECS;
+var activeHyps = HYPS;
+var recsGenerated = null;
+
+async function loadRecs() {
+  try {
+    var r = await fetchT('./recommendations.json', 5000);
+    if (!r.ok) return;
+    var data = await r.json();
+    if (data.recs)  activeRecs = data.recs;
+    if (data.hyps)  activeHyps = data.hyps;
+    if (data.generated) recsGenerated = data.generated;
+    var el = document.getElementById('recsLabel');
+    if (el && recsGenerated) el.textContent = 'Generado por Claude el ' + new Date(recsGenerated).toLocaleDateString('es-CO', {weekday:'long', day:'numeric', month:'short'});
+  } catch(e) { /* usa los datos hardcoded como fallback */ }
 }
 
-// ── RENDER OPTIONS ────────────────────────────────────────────────────────
-function renderOptions(){
-  const rows=opts.map(o=>{
-    const d=days(o.exp);
-    const pnl=(o.mkt-o.avg)*o.pos*100;
-    const urgency=d<=7?'badge-red':d<=30?'badge-yellow':'badge-green';
-    const itm=o.side==='CALL'&&livePrices[o.underlying]&&livePrices[o.underlying].price>o.strike;
-    const moneyness=livePrices[o.underlying]?
-      (itm?`<span class="badge badge-green">ITM</span>`:`<span class="badge badge-red">OTM</span>`):'—';
-    return `<tr>
-      <td style="font-size:11px;font-family:monospace">${o.desc}</td>
-      <td>${o.pos>0?'+'+o.pos:o.pos}</td>
-      <td>${fmt(o.avg)}</td>
-      <td>${fmt(o.mkt)}</td>
-      <td>${fmt(o.mkt*Math.abs(o.pos)*100)}</td>
-      <td class="${colorClass(pnl)}">${fmt(pnl)}</td>
-      <td><span class="badge ${urgency}">${d}d</span></td>
-      <td>${moneyness}</td>
-    </tr>`;
-  }).join('');
-  document.getElementById('optionsTable').innerHTML=rows;
-  // Actualizar días en alerta
-  const gbtcDays=days('2026-07-02');
-  setEl('daysToGbtcExp',gbtcDays);
+// ── SPARKLINE ─────────────────────────────────────────────────────────────
+function spark(prices) {
+  if (!prices || prices.length < 2) return '';
+  var w = 160, h = 28, pad = 2;
+  var mn = Math.min.apply(null, prices);
+  var mx = Math.max.apply(null, prices);
+  var rng = mx - mn || 1;
+  var pts = prices.map(function(v, i) {
+    var x = pad + (i / (prices.length - 1)) * (w - pad * 2);
+    var y = pad + (1 - (v - mn) / rng) * (h - pad * 2);
+    return x + ',' + y;
+  }).join(' ');
+  var trend = prices[prices.length - 1] >= prices[0] ? 'var(--green)' : 'var(--red)';
+  return '<svg width="' + w + '" height="' + h + '" style="display:block;margin-bottom:4px"><polyline points="' + pts + '" fill="none" stroke="' + trend + '" stroke-width="1.5" stroke-linejoin="round"/></svg>';
 }
 
-// ── RENDER SUMMARY ────────────────────────────────────────────────────────
-function renderSummary(){
-  let totalPnl=0, totalCost=0;
-  positions.forEach(p=>{
-    const lp=livePrices[p.ticker];
-    if(lp){
-      totalPnl+=(lp.price-p.avg)*p.qty;
-      totalCost+=p.avg*p.qty;
+// ── CHARTS ─────────────────────────────────────────────────────────────────
+function buildCharts() {
+  var colors = ['#58a6ff','#3fb950','#f85149','#bc8cff','#d29922','#79c0ff'];
+  var mktVals = POS.map(function(p) { return +(getPrice(p) * p.qty).toFixed(2); });
+  var total = mktVals.reduce(function(a,b){ return a+b; }, 0);
+
+  if (donutC) donutC.destroy();
+  donutC = new Chart(document.getElementById('donutChart'), {
+    type: 'doughnut',
+    data: {labels: POS.map(function(p){ return p.t; }), datasets: [{data: mktVals, backgroundColor: colors, borderColor: '#161b22', borderWidth: 2}]},
+    options: {plugins: {legend: {position:'right', labels: {color:'#8b949e', font:{size:10}, boxWidth:10, padding:6}}}, cutout:'62%', responsive:true, maintainAspectRatio:false}
+  });
+
+  SECTORS.forEach(function(s) {
+    s.port = 0;
+    if (s.name === 'Energia')       s.port = +((getPrice(POS[0])*110/total)*100).toFixed(1);
+    if (s.name === 'Emergentes')    s.port = +((getPrice(POS[1])*25/total)*100).toFixed(1);
+    if (s.name === 'Crypto')        s.port = +(((getPrice(POS[2])*5+getPrice(POS[3])*9)/total)*100).toFixed(1);
+    if (s.name === 'Comunicaciones')s.port = +((getPrice(POS[4])*3/total)*100).toFixed(1);
+    if (s.name === 'Materiales')    s.port = +((getPrice(POS[5])*10/total)*100).toFixed(1);
+  });
+
+  if (sectorC) sectorC.destroy();
+  sectorC = new Chart(document.getElementById('sectorChart'), {
+    type: 'bar',
+    data: {
+      labels: SECTORS.map(function(s){ return s.name; }),
+      datasets: [
+        {label:'Tu portafolio', data: SECTORS.map(function(s){ return s.port; }), backgroundColor:'rgba(88,166,255,.7)', borderRadius:3, borderSkipped:false},
+        {label:'S&P 500',       data: SECTORS.map(function(s){ return s.sp;   }), backgroundColor:'rgba(139,148,158,.25)', borderRadius:3, borderSkipped:false}
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: {legend: {position:'bottom', labels: {color:'#8b949e', font:{size:10}, boxWidth:10, padding:8}}},
+      scales: {
+        x: {ticks:{color:'#8b949e',font:{size:9},callback:function(v){return v+'%';}}, grid:{color:'rgba(48,54,61,.6)'}, max:40},
+        y: {ticks:{color:'#8b949e',font:{size:9}}, grid:{display:false}}
+      },
+      responsive: true, maintainAspectRatio: false
     }
   });
-  opts.forEach(o=>{totalPnl+=(o.mkt-o.avg)*o.pos*100;});
-  setEl('totalUnreal', fmt(totalPnl), totalPnl>=0?'stat-value pos':'stat-value neg');
-  setEl('totalUnrealPct', pct(totalCost>0?(totalPnl/totalCost)*100:0), totalPnl>=0?'pos':'neg');
 
-  // Cripto cards
-  const gbtcP=livePrices['GBTC'];
-  const etheP=livePrices['ETHE'];
-  if(gbtcP){
-    setEl('gbtcVal',fmt(gbtcP.price*9));
-    const gpnl=(gbtcP.price-71.38)*9;
-    setEl('gbtcPnl',`<span class="${colorClass(gpnl)}">${fmt(gpnl)} (${pct((gpnl/(71.38*9))*100)})</span>`);
-  }
-  if(etheP){
-    setEl('etheVal',fmt(etheP.price*5));
-    const epnl=(etheP.price-31.40)*5;
-    setEl('ethePnl',`<span class="${colorClass(epnl)}">${fmt(epnl)} (${pct((epnl/(31.40*5))*100)})</span>`);
-  }
-
-  // Alfa vs S&P (estimado YTD con S&P ~+8% 2026)
-  const spxYTD=8.2;
-  const portPct=totalCost>0?(totalPnl/totalCost)*100:0;
-  const alpha=portPct-spxYTD;
-  setEl('spxYTD', pct(spxYTD),'stat-value neu');
-  setEl('portYTD', pct(portPct), portPct>=0?'stat-value pos':'stat-value neg');
-  setEl('alphaVal', (alpha>=0?'+':'')+alpha.toFixed(2)+'pts', alpha>=0?'stat-value pos':'stat-value neg');
-}
-
-// ── RENDER MARKET ─────────────────────────────────────────────────────────
-function renderMarket(){
-  const mkts={spx:'%5EGSPC',ndx:'%5EIXIC',vix:'%5EVIX',gold:'GLD',oil:'BNO'};
-  ['spx','ndx','vix','gold','oil'].forEach(id=>{
-    const lp=livePrices[id];
-    if(lp){
-      setEl(id, lp.price>1000?'$'+Math.round(lp.price).toLocaleString():fmt(lp.price), `stat-value ${colorClass(lp.chgPct)}`);
-      setEl(id+'Chg', pct(lp.chgPct), colorClass(lp.chgPct));
-    }
+  var byType = {};
+  POS.forEach(function(p,i){ byType[p.type] = (byType[p.type]||0) + mktVals[i]; });
+  if (typeC) typeC.destroy();
+  typeC = new Chart(document.getElementById('typeChart'), {
+    type: 'pie',
+    data: {labels: Object.keys(byType), datasets: [{data: Object.values(byType), backgroundColor:['#58a6ff','#bc8cff','#3fb950'], borderColor:'#161b22', borderWidth:2}]},
+    options: {plugins: {legend: {position:'right', labels:{color:'#8b949e',font:{size:10},boxWidth:10,padding:6}}}, responsive:true, maintainAspectRatio:false}
   });
-  const btc=livePrices['btc-usd'];
-  const eth=livePrices['eth-usd'];
-  if(btc){setEl('btc','$'+Math.round(btc.price).toLocaleString(),'stat-value '+colorClass(btc.chgPct));setEl('btcChg',pct(btc.chgPct),colorClass(btc.chgPct));}
-  if(eth){setEl('eth','$'+Math.round(eth.price).toLocaleString(),'stat-value '+colorClass(eth.chgPct));setEl('ethChg',pct(eth.chgPct),colorClass(eth.chgPct));}
 }
 
-// ── MARKET STATUS ─────────────────────────────────────────────────────────
-function checkMarketStatus(){
-  const now=new Date();
-  const ny=new Date(now.toLocaleString('en-US',{timeZone:'America/New_York'}));
-  const h=ny.getHours(), m=ny.getMinutes(), d=ny.getDay();
-  const isWeekday=d>0&&d<6;
-  const isOpen=isWeekday&&(h>9||(h===9&&m>=30))&&h<16;
-  const isPre=isWeekday&&h>=4&&(h<9||(h===9&&m<30));
-  const el=document.getElementById('mktStatus');
-  if(el) el.textContent=isOpen?'🟢 Mercado Abierto':isPre?'🟡 Pre-mercado':'🔴 Mercado Cerrado';
+// ── RENDER SIDEBAR ─────────────────────────────────────────────────────────
+function renderSidebar() {
+  document.getElementById('eventsContainer').innerHTML = EVENTS.map(function(e) {
+    return '<div class="ev"><div class="ev-date">' + e.date + '</div><div class="ev-title">' + e.title + '</div><div class="ev-note">' + e.note + '</div><div class="ev-chips">' + e.tickers.map(function(t){ return '<span class="chip">'+t+'</span>'; }).join('') + '</div></div>';
+  }).join('');
+
+  document.getElementById('sidebarOpts').innerHTML = OPTS.map(function(o) {
+    var d = days(o.exp);
+    var pnl = (o.mkt - o.avg) * o.pos * 100;
+    return '<div style="margin-bottom:7px;padding:8px;background:var(--card2);border-radius:6px;border:1px solid var(--border)"><div style="font-size:11px;font-family:monospace;font-weight:600;margin-bottom:3px">' + o.desc + '</div><div style="display:flex;justify-content:space-between"><span class="badge ' + (d<=7?'br':d<=30?'by':'bg') + '">' + d + 'd</span><span class="' + cc(pnl) + '" style="font-size:11px">' + fmt(pnl) + '</span></div></div>';
+  }).join('');
 }
 
-// ── DAILY P&L (suma daily de posiciones) ──────────────────────────────────
-function renderDailyPnl(){
-  // valores fijos del último pull IBKR (actualizados por script Python)
-  const dailyTotal=45.1+(-16.45)+(-8.75)+(-1.55)+(-11.52)+(-53.82)+(-3.705)+(-10.0);
-  setEl('dailyPnl', fmt(dailyTotal), dailyTotal>=0?'stat-value pos':'stat-value neg');
-  setEl('dailyPnlPct', pct((dailyTotal/4642.88)*100), dailyTotal>=0?'pos':'neg');
+// ── RENDER POSITION CARDS ─────────────────────────────────────────────────
+function renderPosCards() {
+  document.getElementById('posCards').innerHTML = POS.map(function(p) {
+    var d = lp[p.t];
+    var pr = getPrice(p);
+    var pnl = (pr - p.avg) * p.qty;
+    var pnlPct = ((pr - p.avg) / p.avg) * 100;
+    var chgHtml = d ? '<span class="' + cc(d.chg) + '" style="font-size:10px">' + pct(d.chg) + (d.label ? ' <span style="font-size:9px;opacity:.6">'+d.label+'</span>' : '') + '</span>' : '';
+    var barW = Math.min(Math.abs(pnlPct), 100);
+    var barColor = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+    var cls = p.urgency === 'urgent' ? 'urgent' : p.urgency === 'watch' ? 'watch' : p.urgency === 'good' ? 'good' : '';
+    return '<div class="pc ' + cls + '">' +
+      '<div class="pc-top"><div><div class="pc-t">' + p.t + '</div><div class="pc-n">' + p.n + ' - ' + p.qty + ' acc.</div></div>' +
+      '<div style="text-align:right"><div class="pc-sv ' + cc(d ? d.chg : 0) + '" style="font-size:15px;font-weight:700">' + fmt(pr) + '</div>' + chgHtml + '</div></div>' +
+      (p.hist ? spark(p.hist) : '') +
+      '<div class="pc-stats">' +
+        '<div class="pc-s"><div class="pc-sl">Costo</div><div class="pc-sv">' + fmt(p.avg) + '</div></div>' +
+        '<div class="pc-s"><div class="pc-sl">Valor</div><div class="pc-sv">' + fmt(pr*p.qty) + '</div></div>' +
+        '<div class="pc-s"><div class="pc-sl">P&L $</div><div class="pc-sv ' + cc(pnl) + '">' + fmt(pnl) + '<div class="pc-bar"><div style="width:'+barW+'%;height:100%;background:'+barColor+';border-radius:2px"></div></div></div></div>' +
+        '<div class="pc-s"><div class="pc-sl">P&L %</div><div class="pc-sv ' + cc(pnlPct) + '">' + pct(pnlPct) + '</div></div>' +
+      '</div>' +
+      '<div class="pc-note">' + p.note + '</div></div>';
+  }).join('');
 }
 
-// ── LOAD ALL ──────────────────────────────────────────────────────────────
-async function loadAll(){
-  setEl('lastUpdate','actualizando...');
-  checkMarketStatus();
+// ── RENDER OPTIONS ─────────────────────────────────────────────────────────
+function renderOpts() {
+  document.getElementById('optCards').innerHTML = OPTS.map(function(o) {
+    var d = days(o.exp);
+    var pnl = (o.mkt - o.avg) * o.pos * 100;
+    var undP = lp[o.und];
+    var itm = undP && (o.side === 'long' ? undP.price > o.strike : undP.price < o.strike);
+    return '<div class="oc">' +
+      '<div><div style="font-size:12px;font-weight:600;font-family:monospace;margin-bottom:3px">' + o.desc + '</div>' +
+      '<div style="font-size:11px;color:var(--sub);margin-bottom:5px">' + o.note + '</div>' +
+      '<div style="display:flex;gap:4px;flex-wrap:wrap"><span class="badge ' + (d<=7?'br':d<=30?'by':'bg') + '">' + d + ' dias</span><span class="badge ' + (itm?'bg':'br') + '">' + (itm?'ITM':'OTM') + '</span><span class="badge ' + (o.side==='short'?'by':'bb') + '">' + o.side.toUpperCase() + '</span></div></div>' +
+      '<div style="text-align:right"><div style="font-size:14px;font-weight:700" class="' + cc(pnl) + '">' + fmt(pnl) + '</div><div style="font-size:10px;color:var(--sub);margin-top:2px">Mkt: ' + fmt(o.mkt) + ' - Avg: ' + fmt(o.avg) + '</div><div style="font-size:10px;color:var(--sub)">Valor: ' + fmt(o.mkt*Math.abs(o.pos)*100) + '</div></div></div>';
+  }).join('');
+}
 
-  // Cripto (CoinGecko)
-  const crypto=await fetchCrypto();
-  if(crypto){
-    if(crypto.bitcoin) livePrices['btc-usd']={price:crypto.bitcoin.usd, chgPct:crypto.bitcoin.usd_24h_change};
-    if(crypto.ethereum) livePrices['eth-usd']={price:crypto.ethereum.usd, chgPct:crypto.ethereum.usd_24h_change};
+// ── RENDER RECS ─────────────────────────────────────────────────────────────
+function renderRecs() {
+  document.getElementById('recCards').innerHTML = activeRecs.map(function(r) {
+    return '<div class="rc ' + r.type + '"><div class="rc-hdr"><div class="rc-title">' + r.icon + ' ' + r.title + '</div><span class="badge ' + r.badge + '">' + r.badgeText + '</span></div><div class="rc-body">' + r.body + '</div><div class="rc-tags">' + r.tags.map(function(t){ return '<span class="badge bb" style="font-size:9px">'+t+'</span>'; }).join('') + '</div></div>';
+  }).join('');
+}
+
+// ── RENDER HYPOTHESES ──────────────────────────────────────────────────────
+function renderHyps() {
+  document.getElementById('hypCards').innerHTML = HYPS.map(function(h) {
+    return '<div class="hyp-card ' + h.cls + '" id="hc-' + h.id + '">' +
+      '<div class="hyp-header" onclick="toggleHyp(\'' + h.id + '\')">' +
+        '<div class="hyp-title"><span>' + h.icon + ' ' + h.name + '</span>' +
+        '<div style="display:flex;gap:4px;flex-wrap:wrap">' + h.tickers.map(function(t){ return '<span class="chip">'+t+'</span>'; }).join('') + '</div></div>' +
+        '<div class="hyp-meta"><span style="font-size:11px;color:' + h.riskColor + ';font-weight:600">' + h.riskLbl + '</span><span style="font-size:11px;color:var(--sub)">' + h.horizon + '</span><span id="ti-' + h.id + '" style="font-size:12px">▼</span></div>' +
+      '</div>' +
+      '<div id="hb-' + h.id + '" style="display:none">' +
+        '<div style="padding:10px 14px 0;font-size:12px;color:#adbac7;line-height:1.55">' + h.thesis + '</div>' +
+        '<div style="padding:10px 14px 14px">' +
+          '<div class="hyp-grid">' +
+            '<div class="hs"><div class="hs-title">Entrada Directa</div><div style="font-size:12px;color:#adbac7;line-height:1.6;white-space:pre-line">' + h.directo + '</div></div>' +
+            '<div class="hs"><div class="hs-title">Estrategia de Opciones</div><div style="font-size:11.5px;color:#adbac7;line-height:1.65;white-space:pre-line">' + h.opciones + '</div></div>' +
+          '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">' +
+            '<div class="hs"><div class="hs-title">Sizing Sugerido</div><div style="font-size:12px;color:#adbac7;line-height:1.5">' + h.sizing + '</div></div>' +
+            '<div class="hs"><div class="hs-title">Catalizadores</div><div style="font-size:12px;color:#adbac7;line-height:1.5">' + h.catalizadores + '</div></div>' +
+          '</div>' +
+          '<div style="margin-top:8px"><div style="font-size:9px;color:var(--sub);text-transform:uppercase;margin-bottom:3px">Riesgo: <span style="color:' + h.riskColor + '">' + h.riskLbl + '</span></div><div class="meter"><div class="meter-f" style="width:' + h.risk + '%;background:' + h.riskColor + '"></div></div></div>' +
+        '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+function toggleHyp(id) {
+  var body = document.getElementById('hb-' + id);
+  var icon = document.getElementById('ti-' + id);
+  if (body) {
+    var open = body.style.display !== 'none';
+    body.style.display = open ? 'none' : 'block';
+    if (icon) icon.textContent = open ? '▼' : '▲';
+  }
+}
+
+// ── RENDER NEWS ─────────────────────────────────────────────────────────────
+function renderNews() {
+  document.getElementById('newsContainer').innerHTML = NEWS.map(function(n) {
+    return '<div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid rgba(48,54,61,.6)">' +
+      '<span style="font-size:10px;font-weight:700;font-family:monospace;background:#21262d;border:1px solid var(--border);border-radius:4px;padding:1px 5px;flex-shrink:0;margin-top:1px">' + n.t + '</span>' +
+      '<span style="font-size:11px;color:#adbac7;line-height:1.4;flex:1">' + n.h + '</span>' +
+      '<span style="font-size:10px;color:var(--sub);flex-shrink:0;margin-top:1px">' + n.time + '</span></div>';
+  }).join('');
+}
+
+// ── RENDER INDICES ─────────────────────────────────────────────────────────
+function renderIdx() {
+  var map = [['spx','IDX_SPX'],['ndx','IDX_NDX'],['vix','IDX_VIX'],['gold','IDX_GLD'],['oil','IDX_OIL']];
+  map.forEach(function(pair) {
+    var id = pair[0], key = pair[1];
+    var d = lp[key]; if (!d) return;
+    var priceStr = d.price > 1000 ? '$' + Math.round(d.price).toLocaleString() : fmt(d.price);
+    setEl(id, priceStr, 'idx-v ' + cc(d.chg));
+    var lbl = d.label ? ' <span style="font-size:9px;opacity:.65;font-weight:400">' + d.label + '</span>' : '';
+    setEl(id + 'C', pct(d.chg) + lbl, cc(d.chg));
+  });
+  var b = lp.BTC, e = lp.ETH;
+  if (b) {
+    var blbl = b.label ? ' <span style="font-size:9px;opacity:.65;font-weight:400">'+b.label+'</span>' : '';
+    setEl('btc', '$' + Math.round(b.price).toLocaleString(), 'idx-v ' + cc(b.chg));
+    setEl('btcC', pct(b.chg) + blbl, cc(b.chg));
+  }
+  if (e) {
+    var elbl = e.label ? ' <span style="font-size:9px;opacity:.65;font-weight:400">'+e.label+'</span>' : '';
+    setEl('eth', '$' + Math.round(e.price).toLocaleString(), 'idx-v ' + cc(e.chg));
+    setEl('ethC', pct(e.chg) + elbl, cc(e.chg));
+  }
+}
+
+// ── MARKET STATUS ──────────────────────────────────────────────────────────
+function mktStatus() {
+  var st = (lp['IDX_SPX'] && lp['IDX_SPX'].state) || (lp['NFLX'] && lp['NFLX'].state);
+  if (st) {
+    var labels = {REGULAR:'🟢 Mercado Abierto', PRE:'🟡 Pre-mercado', POST:'🟠 Post-mercado', POSTPOST:'🟠 Post-mercado', CLOSED:'🔴 Mercado Cerrado'};
+    setEl('mktStatus', labels[st] || '🔴 Mercado Cerrado');
+    return;
+  }
+  var ny = new Date(new Date().toLocaleString('en-US', {timeZone:'America/New_York'}));
+  var h = ny.getHours(), m = ny.getMinutes(), dw = ny.getDay(), wk = dw > 0 && dw < 6;
+  setEl('mktStatus', wk && (h > 9 || (h === 9 && m >= 30)) && h < 16 ? '🟢 Mercado Abierto' : wk && h >= 4 && (h < 9 || (h === 9 && m < 30)) ? '🟡 Pre-mercado' : '🔴 Mercado Cerrado');
+}
+
+// ── ALFA ───────────────────────────────────────────────────────────────────
+function renderAlfa() {
+  var pnlT = 0, costT = 0;
+  POS.forEach(function(p) { pnlT += (getPrice(p)-p.avg)*p.qty; costT += p.avg*p.qty; });
+  OPTS.forEach(function(o) { pnlT += (o.mkt-o.avg)*o.pos*100; });
+  var portPct = costT > 0 ? (pnlT/costT)*100 : 0;
+  var alpha = portPct - 8.2;
+  setEl('sb-port', pct(portPct), 'alfa-v ' + cc(portPct));
+  setEl('sb-alpha', (alpha >= 0 ? '+' : '') + alpha.toFixed(2) + 'pts', 'alfa-v ' + cc(alpha));
+}
+
+// ── LOAD ALL ────────────────────────────────────────────────────────────────
+async function loadAll() {
+  await loadRecs();
+  renderSidebar(); renderNews(); renderRecs(); renderHyps();
+
+  var c = await getCrypto();
+  if (c) {
+    if (c.bitcoin)  lp.BTC = {price: c.bitcoin.usd,  chg: c.bitcoin.usd_24h_change,  label: ''};
+    if (c.ethereum) lp.ETH = {price: c.ethereum.usd, chg: c.ethereum.usd_24h_change, label: ''};
   }
 
-  // Acciones & ETFs + índices (Yahoo Finance via proxy)
-  const tickers=['EC','EIMI','ETHE','GBTC','NFLX','NTR','%5EGSPC','%5EIXIC','%5EVIX','GLD','BNO'];
-  const keys   =['EC','EIMI','ETHE','GBTC','NFLX','NTR','spx','ndx','vix','gold','oil'];
-  await Promise.all(tickers.map(async(t,i)=>{
-    const d=await fetchYahoo(t);
-    if(d) livePrices[keys[i]]=d;
-  }));
+  await yfBatch();
 
-  renderMarket();
-  renderStocks();
-  renderOptions();
-  renderSummary();
-  renderDailyPnl();
-  setEl('lastUpdate', new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})+' hora Bogotá');
+  if (lp.BTC && lp.GBTC) { lp.GBTC.chg = lp.BTC.chg; lp.GBTC.label = lp.BTC.label; }
+  if (lp.ETH && lp.ETHE) { lp.ETHE.chg = lp.ETH.chg; lp.ETHE.label = lp.ETH.label; }
+
+  mktStatus();
+  renderIdx();
+  renderPosCards();
+  renderOpts();
+  renderAlfa();
+  buildCharts();
+
+  Promise.all(POS.map(async function(p) {
+    var h = await yfHist(p.yf);
+    if (h) p.hist = h;
+  })).then(function() { renderPosCards(); });
+
+  setEl('lastUpdate', new Date().toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}) + ' h Bogota');
 }
 
-// Cargar al iniciar
 loadAll();
-// Auto-refresh cada 5 minutos
-setInterval(loadAll, 5*60*1000);
+setInterval(loadAll, 5 * 60 * 1000);
 </script>
 </body>
 </html>
