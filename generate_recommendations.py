@@ -133,7 +133,7 @@ def generate_daily_alert(context, total_pnl, total_pnlp, spx, btc, btc_chg):
     today  = datetime.now().strftime("%A %d de %B de %Y")
 
     msg = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-4-6",
         max_tokens=600,
         system=ALERT_SYSTEM,
         messages=[{"role": "user", "content": f"""Hoy es {today}.
@@ -166,7 +166,7 @@ def generate_weekly_recs(context):
     today  = datetime.now().strftime("%A %d de %B de %Y")
 
     msg = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-4-6",
         max_tokens=4000,
         system=WEEKLY_SYSTEM,
         messages=[{"role": "user", "content": f"Hoy es {today}.\n\n{context}\n\nContexto: S&P YTD +8.2%, objetivo alfa S&P+1pt, buying power ~$9,116, CPI mayo esta semana, FOMC 17-18 jun."}]
