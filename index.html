@@ -145,7 +145,32 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
     <div class="idx"><div class="idx-l">Petroleo (BNO)</div><div class="idx-v" id="oil">-</div><div class="idx-c" id="oilC"></div></div>
   </div>
 
-  <div class="sec">Analisis Grafico</div>
+  <div class="sec">🇨🇴 Seguimiento en COP</div>
+  <div id="copSection" style="margin-bottom:14px">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+      <div class="idx"><div class="idx-l">USD/COP Live</div><div class="idx-v" id="copRate">—</div><div class="idx-c" id="copRateChg"></div></div>
+      <div class="idx"><div class="idx-l">Portafolio en COP</div><div class="idx-v" id="copValue">—</div><div class="idx-c" style="color:var(--sub)">Valor actual</div></div>
+      <div class="idx"><div class="idx-l">P&amp;L Total en COP</div><div class="idx-v" id="copPnl">—</div><div class="idx-c" id="copPnlPct"></div></div>
+      <div class="idx"><div class="idx-l">vs IBR Colombia</div><div class="idx-v" id="copVsIBR">—</div><div class="idx-c" id="copIBRLabel" style="color:var(--sub)">IBR: —%</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <div class="idx">
+        <div class="idx-l">Efecto Mercado (USD→COP)</div>
+        <div class="idx-v" id="copMktEffect">—</div>
+        <div class="idx-c" style="color:var(--sub);font-size:10px">P&L por movimiento de acciones</div>
+      </div>
+      <div class="idx">
+        <div class="idx-l">Efecto Divisa (COP/USD)</div>
+        <div class="idx-v" id="copFxEffect">—</div>
+        <div class="idx-c" style="color:var(--sub);font-size:10px">P&L por cambio USD/COP vs tu tasa avg $<span id="copAvgRate"></span></div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--sub);margin-top:6px;line-height:1.6;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:7px 10px">
+      ⚙️ Tasa promedio de compra: <strong style="color:var(--text)" id="copAvgLabel">$<span id="copAvgDisplay"></span> COP/USD</strong> &nbsp;·&nbsp;
+      IBR referencia: <strong style="color:var(--text)">7.75% EA</strong> &nbsp;·&nbsp;
+      <span style="color:var(--yellow)">Actualiza estas constantes en el index.html si cambian</span>
+    </div>
+  </div>
   <div class="charts-row">
     <div class="cc"><div class="ct">Distribucion del Portafolio</div><div style="position:relative;height:190px"><canvas id="donutChart"></canvas></div></div>
     <div class="cc"><div class="ct">Exposicion Sectorial vs S&P 500</div><div style="position:relative;height:190px"><canvas id="sectorChart"></canvas></div></div>
@@ -230,7 +255,8 @@ var SECTORS = [
   {name:"Crypto",        port:0, sp:0}
 ];
 
-var lp = {};
+var AVG_PURCHASE_COP = 4000; // Tasa COP/USD promedio al comprar — actualizar si cambia tu base
+var IBR_ANNUAL       = 7.75; // IBR vigente Colombia % anual — actualizar mensualmente
 var donutC, sectorC, typeC;
 var activeRecs = RECS_DEFAULT;
 var activeHyps = HYPS_DEFAULT;
@@ -471,7 +497,49 @@ function renderNews() {
   }).join("");
 }
 
-function renderIdx() {
+function fmtCOP(n) {
+  return "$" + Math.round(n).toLocaleString("es-CO") + " COP";
+}
+
+function renderCOP() {
+  var copData  = lp["IDX_COP"];
+  var usdcop   = copData ? copData.price : AVG_PURCHASE_COP;
+  var copChg   = copData ? copData.chg   : 0;
+
+  // Totales en USD
+  var totalUSD = POS.reduce(function(sum,p){ return sum + getP(p)*p.qty; }, 0);
+  var costUSD  = POS.reduce(function(sum,p){ return sum + p.avg*p.qty;   }, 0);
+  var pnlUSD   = totalUSD - costUSD;
+
+  // Conversiones a COP
+  var valueCOP  = totalUSD * usdcop;
+  var costCOP   = costUSD  * AVG_PURCHASE_COP;
+  var pnlCOP    = valueCOP - costCOP;
+  var pnlCOPpct = costCOP > 0 ? (pnlCOP / costCOP * 100) : 0;
+
+  // Efecto mercado: P&L en USD convertido a COP al tipo actual
+  var mktEffect = pnlUSD * usdcop;
+  // Efecto divisa: ganancia/pérdida por apreciación del dólar
+  var fxEffect  = costUSD * (usdcop - AVG_PURCHASE_COP);
+
+  // Retorno total COP vs IBR
+  var vsIBR = pnlCOPpct - IBR_ANNUAL;
+
+  // Render
+  setEl("copRate",    usdcop.toLocaleString("es-CO"), "idx-v " + cc(-copChg)); // COP sube = dolar baja
+  setEl("copRateChg", pct(copChg) + (copData && copData.label ? " <span style='font-size:9px;opacity:.65'>" + copData.label + "</span>" : ""), cc(copChg));
+  setEl("copValue",   "$" + Math.round(valueCOP/1e6).toLocaleString("es-CO") + "M", "idx-v");
+  setEl("copPnl",     fmtCOP(pnlCOP), "idx-v " + cc(pnlCOP));
+  setEl("copPnlPct",  pct(pnlCOPpct), cc(pnlCOP));
+  setEl("copMktEffect", fmtCOP(mktEffect), "idx-v " + cc(mktEffect));
+  setEl("copFxEffect",  fmtCOP(fxEffect),  "idx-v " + cc(fxEffect));
+  setEl("copVsIBR",   (vsIBR >= 0 ? "+" : "") + vsIBR.toFixed(1) + "pts", "idx-v " + cc(vsIBR));
+  setEl("copIBRLabel", "IBR ref: " + IBR_ANNUAL + "% EA");
+  setEl("copAvgDisplay", AVG_PURCHASE_COP.toLocaleString("es-CO"));
+  setEl("copAvgLabel", "");
+}
+
+
   var map = [["spx","IDX_SPX"],["ndx","IDX_NDX"],["vix","IDX_VIX"],["gold","IDX_GLD"],["oil","IDX_OIL"]];
   map.forEach(function(pair) {
     var d = lp[pair[1]]; if(!d) return;
@@ -514,7 +582,7 @@ async function loadAll() {
   await yfBatch();
   if(lp.BTC&&lp.GBTC&&!lp.GBTC.ibkr){lp.GBTC.chg=lp.BTC.chg;lp.GBTC.label=lp.BTC.label;}
   if(lp.ETH&&lp.ETHE&&!lp.ETHE.ibkr){lp.ETHE.chg=lp.ETH.chg;lp.ETHE.label=lp.ETH.label;}
-  mktStatus(); renderIdx(); renderPosCards(); renderOpts(); renderAlfa(); buildCharts();
+  mktStatus(); renderIdx(); renderCOP(); renderPosCards(); renderOpts(); renderAlfa(); buildCharts();
   Promise.all(POS.map(function(p){
     return yfHist(p.yf).then(function(h){if(h)p.hist=h;});
   })).then(function(){renderPosCards();});
