@@ -153,7 +153,82 @@ Contexto adicional:
     return msg.content[0].text
 
 # ── RECOMENDACIONES SEMANALES (solo lunes) ────────────────────────────────────
-WEEKLY_SYSTEM = """Eres un asesor financiero senior con 20+ anos de experiencia.
+STRATEGIC_DAYS_SYSTEM = """Eres un analista financiero senior. Dado el contexto del mercado y el calendario
+economico de esta semana, decide cuales son los 3 dias mas estrategicos para regenerar
+las recomendaciones del portafolio.
+
+Responde SOLO con JSON valido, sin texto adicional:
+{
+  "strategic_days": [1, 3, 5],
+  "reasoning": "Lunes apertura semana, Miercoles post-CPI, Viernes cierre semana"
+}
+
+Donde los numeros representan: 1=Lunes, 2=Martes, 3=Miercoles, 4=Jueves, 5=Viernes.
+Siempre incluye el lunes. Prioriza dias con eventos macro importantes (CPI, FOMC, NFP,
+earnings relevantes, vencimiento de opciones) y dias de alta volatilidad esperada."""
+
+def get_strategic_days(context):
+    """Pregunta a Claude cuales son los 3 dias estrategicos de esta semana."""
+    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    today  = datetime.now()
+    # Obtener calendario economico de la semana via web si es lunes
+    week_dates = [today.strftime("%B %d"), ]
+
+    msg = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=200,
+        system=STRATEGIC_DAYS_SYSTEM,
+        messages=[{"role": "user", "content": f"""Hoy es {today.strftime('%A %d de %B de %Y')}.
+
+{context}
+
+Calendario economico conocido esta semana:
+- CPI Mayo 2026: miercoles 10 jun (consenso 4.2% - dato critico)
+- FOMC reunion: 17-18 jun (proxima semana)
+- Vencimiento opciones mensuales: tercer viernes de cada mes
+
+Con base en estos eventos y el estado del portafolio, elige los 3 dias mas estrategicos
+de esta semana para regenerar las recomendaciones completas."""}]
+    )
+    raw = msg.content[0].text.strip()
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"): raw = raw[4:]
+    result = json.loads(raw)
+    return result["strategic_days"], result["reasoning"]
+
+# Cache de dias estrategicos (se recalcula cada lunes)
+STRATEGIC_DAYS_FILE = "strategic_days.json"
+
+def load_or_compute_strategic_days(today, context):
+    """Carga los dias estrategicos de la semana o los calcula si es lunes."""
+    is_monday = today.weekday() == 0
+
+    if is_monday or not os.path.exists(STRATEGIC_DAYS_FILE):
+        print("Calculando dias estrategicos de la semana con Claude...")
+        days, reasoning = get_strategic_days(context)
+        cache = {
+            "week_start": today.strftime("%Y-%m-%d"),
+            "strategic_days": days,
+            "reasoning": reasoning
+        }
+        with open(STRATEGIC_DAYS_FILE, "w") as f:
+            json.dump(cache, f, indent=2)
+        print(f"Dias estrategicos: {days} — {reasoning}")
+        return days
+    else:
+        with open(STRATEGIC_DAYS_FILE) as f:
+            cache = json.load(f)
+        print(f"Dias estrategicos esta semana: {cache['strategic_days']} — {cache['reasoning']}")
+        return cache["strategic_days"]
+
+def should_update_recommendations(today, context):
+    """Retorna True si hoy es uno de los 3 dias estrategicos de la semana."""
+    strategic_days = load_or_compute_strategic_days(today, context)
+    current_day = today.weekday() + 1  # 1=Lunes...5=Viernes
+    return current_day in strategic_days
+
+
 Genera recomendaciones semanales en JSON valido, sin texto adicional ni backticks.
 {
   "recs": [{"type":"action|rotate|add|hold","icon":"emoji","title":"titulo","badge":"br|by|bb|bg","badgeText":"texto","body":"2-3 oraciones","tags":["TAG"]}],
@@ -196,8 +271,10 @@ if __name__ == "__main__":
     print(alert)
     send_telegram(alert)
 
-    if is_monday:
-        print("\nEs lunes - generando recomendaciones semanales...")
+    # Decidir si hoy es día estratégico para regenerar recomendaciones
+    should_update = should_update_recommendations(today, context)
+    if should_update:
+        print(f"\nHoy es día estratégico — regenerando recomendaciones...")
         data = generate_weekly_recs(context)
         data["generated"] = today.isoformat()
         data["week"]      = today.strftime("%Y-%m-%d")
@@ -205,4 +282,4 @@ if __name__ == "__main__":
             json.dump(data, f, ensure_ascii=False, indent=2)
         print(f"✅ recommendations.json generado: {len(data['recs'])} recs, {len(data['hyps'])} hipotesis")
     else:
-        print(f"\nHoy es {today.strftime('%A')} - solo alerta diaria, sin recomendaciones semanales")
+        print(f"\nHoy no es día estratégico — solo alerta diaria")
