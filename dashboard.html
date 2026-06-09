@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>📊 Portfolio Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--green:#3fb950;--red:#f85149;--yellow:#d29922;--blue:#58a6ff;--purple:#bc8cff;--gray:#8b949e;--text:#e6edf3;--sub:#8b949e}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:13px;padding:16px;min-height:100vh}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.topbar h1{font-size:16px;font-weight:700;color:var(--blue)}
+.topbar-right{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--sub)}
+.btn{background:#21262d;border:1px solid var(--border);color:var(--text);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;transition:.2s}
+.btn:hover{background:#30363d}
+.btn-blue{background:rgba(88,166,255,0.15);border-color:rgba(88,166,255,0.4);color:var(--blue)}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+@media(max-width:700px){.grid4{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.stat-label{font-size:10px;color:var(--sub);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em}
+.stat-value{font-size:18px;font-weight:700}
+.stat-change{font-size:11px;margin-top:2px}
+.pos{color:var(--green)}.neg{color:var(--red)}.neu{color:var(--yellow)}
+.sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{color:var(--sub);font-weight:600;font-size:10px;text-transform:uppercase;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:8px 8px;border-bottom:1px solid rgba(48,54,61,0.5);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.ticker{font-weight:700;font-family:monospace;font-size:13px;color:var(--blue)}
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.badge-green{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3)}
+.badge-red{background:rgba(248,81,73,.15);color:var(--red);border:1px solid rgba(248,81,73,.3)}
+.badge-yellow{background:rgba(210,153,34,.15);color:var(--yellow);border:1px solid rgba(210,153,34,.3)}
+.badge-blue{background:rgba(88,166,255,.15);color:var(--blue);border:1px solid rgba(88,166,255,.3)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px}
+.alert{border-radius:6px;padding:8px 12px;margin-bottom:8px;font-size:12px;line-height:1.55;border-left:3px solid}
+.alert-red{background:rgba(248,81,73,.08);border-color:var(--red)}
+.alert-yellow{background:rgba(210,153,34,.08);border-color:var(--yellow)}
+.alert-green{background:rgba(63,185,80,.08);border-color:var(--green)}
+.loading{color:var(--sub);font-style:italic}
+.pnl-bar-wrap{height:3px;background:var(--border);border-radius:2px;width:60px;display:inline-block;vertical-align:middle;margin-left:4px}
+.pnl-bar{height:100%;border-radius:2px}
+.section{margin-bottom:20px}
+.sparkline{display:inline-block;vertical-align:middle;opacity:.6}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>📊 Portfolio Dashboard — MaxBernal77</h1>
+    <div style="font-size:11px;color:var(--sub);margin-top:2px">Actualizado: <span id="lastUpdate">cargando...</span></div>
+  </div>
+  <div class="topbar-right">
+    <div class="pulse"></div><span id="mktStatus">Verificando mercado...</span>
+    <button class="btn btn-blue" onclick="loadAll()">⟳ Actualizar</button>
+  </div>
+</div>
+
+<!-- RESUMEN CUENTA -->
+<div class="section">
+  <div class="sec-title">💼 Resumen de Cuenta (IBKR)</div>
+  <div class="grid4">
+    <div class="stat">
+      <div class="stat-label">Net Liquidation</div>
+      <div class="stat-value" id="netLiq">$3,894</div>
+      <div class="stat-change" id="netLiqChange" style="color:var(--sub)">Desde IBKR</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">P&L del Día</div>
+      <div class="stat-value" id="dailyPnl">cargando...</div>
+      <div class="stat-change" id="dailyPnlPct"></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">P&L No Realizado Total</div>
+      <div class="stat-value neg" id="totalUnreal">cargando...</div>
+      <div class="stat-change" id="totalUnrealPct"></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Buying Power</div>
+      <div class="stat-value pos">$10,692</div>
+      <div class="stat-change" style="color:var(--sub)">Leverage: 1.19x</div>
+    </div>
+  </div>
+</div>
+
+<!-- MERCADO -->
+<div class="section">
+  <div class="sec-title">🌐 Mercado en Vivo</div>
+  <div class="grid4">
+    <div class="stat"><div class="stat-label">S&P 500</div><div class="stat-value" id="spx">—</div><div class="stat-change" id="spxChg">cargando</div></div>
+    <div class="stat"><div class="stat-label">Nasdaq</div><div class="stat-value" id="ndx">—</div><div class="stat-change" id="ndxChg">cargando</div></div>
+    <div class="stat"><div class="stat-label">Bitcoin (BTC)</div><div class="stat-value" id="btc">—</div><div class="stat-change" id="btcChg">cargando</div></div>
+    <div class="stat"><div class="stat-label">Ethereum (ETH)</div><div class="stat-value" id="eth">—</div><div class="stat-change" id="ethChg">cargando</div></div>
+  </div>
+  <div class="grid3">
+    <div class="stat"><div class="stat-label">VIX</div><div class="stat-value" id="vix">—</div><div class="stat-change" id="vixChg"></div></div>
+    <div class="stat"><div class="stat-label">Oro (GLD)</div><div class="stat-value" id="gold">—</div><div class="stat-change" id="goldChg"></div></div>
+    <div class="stat"><div class="stat-label">Petróleo (BNO)</div><div class="stat-value" id="oil">—</div><div class="stat-change" id="oilChg"></div></div>
+  </div>
+</div>
+
+<!-- PORTAFOLIO -->
+<div class="section">
+  <div class="sec-title">📈 Posiciones — Acciones & ETFs</div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table>
+      <thead>
+        <tr>
+          <th>Ticker</th><th>Nombre</th><th>Pos.</th><th>Costo Avg</th>
+          <th>Precio Live</th><th>Valor Mkt</th><th>P&L $</th><th>P&L %</th><th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="stocksTable"><tr><td colspan="9" class="loading" style="padding:16px">Cargando precios en vivo...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- OPCIONES -->
+<div class="section">
+  <div class="sec-title">⚙️ Opciones</div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table>
+      <thead>
+        <tr><th>Contrato</th><th>Pos.</th><th>Precio Avg</th><th>Precio Mkt</th><th>Valor</th><th>P&L</th><th>Vence</th><th>Estado</th></tr>
+      </thead>
+      <tbody id="optionsTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- CRIPTO -->
+<div class="section">
+  <div class="sec-title">₿ Exposición Cripto (vía ETFs)</div>
+  <div class="grid2">
+    <div class="stat" id="btcCard">
+      <div class="stat-label">GBTC — Bitcoin Trust (9 acc.)</div>
+      <div class="stat-value" id="gbtcVal">cargando...</div>
+      <div class="stat-change" id="gbtcPnl"></div>
+    </div>
+    <div class="stat" id="ethCard">
+      <div class="stat-label">ETHE — Ethereum Trust (5 acc.)</div>
+      <div class="stat-value" id="etheVal">cargando...</div>
+      <div class="stat-change" id="ethePnl"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERTAS -->
+<div class="section">
+  <div class="sec-title">⚠️ Alertas Activas</div>
+  <div id="alertsContainer">
+    <div class="alert alert-red"><strong>🚨 GBTC Call Jul2 $51:</strong> Vence en <strong id="daysToGbtcExp">calculando...</strong> días. GBTC necesita subir a >$51 para estar ITM. Monitorear posición.</div>
+    <div class="alert alert-yellow"><strong>📅 NTR Dividendo:</strong> Ex-date 30 jun 2026. Mantener las 10 acciones para recibir $5.50 total. Pago: 17 jul.</div>
+    <div id="dynamicAlerts"></div>
+  </div>
+</div>
+
+<!-- OBJETIVO ALFA -->
+<div class="section">
+  <div class="sec-title">🎯 Seguimiento vs S&P 500</div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;text-align:center">
+      <div><div style="color:var(--sub);font-size:10px;margin-bottom:4px">RENDIMIENTO S&P (2026)</div><div style="font-size:20px;font-weight:700" id="spxYTD">—</div></div>
+      <div><div style="color:var(--sub);font-size:10px;margin-bottom:4px">TU PORTAFOLIO (YTD)</div><div style="font-size:20px;font-weight:700" id="portYTD">—</div></div>
+      <div><div style="color:var(--sub);font-size:10px;margin-bottom:4px">ALFA vs S&P</div><div style="font-size:20px;font-weight:700" id="alphaVal">—</div></div>
+    </div>
+    <div style="margin-top:12px;background:#21262d;border-radius:6px;padding:8px 12px;font-size:11px;color:var(--sub)">
+      ℹ️ El portafolio YTD se calcula sobre el costo promedio total de las posiciones actuales. El alfa objetivo es S&P+1pt.
+    </div>
+  </div>
+</div>
+
+<div style="color:var(--sub);font-size:10px;text-align:center;margin-top:8px;line-height:1.6">
+  Datos de mercado: Yahoo Finance · CoinGecko · Posiciones: IBKR (última sync: <span id="ibkrSync">9 jun 2026</span>)<br/>
+  Este dashboard es solo informativo. No constituye asesoría financiera.
+</div>
+
+<script>
+// ── DATOS DEL PORTAFOLIO (sincronizados desde IBKR) ──────────────────────
+const positions = [
+  {ticker:'EC',  name:'Ecopetrol',    qty:110, avg:15.19, type:'stock'},
+  {ticker:'EIMI',name:'MSCI EM ETF',  qty:25,  avg:50.948,type:'etf'},
+  {ticker:'ETHE',name:'Ethereum Trust',qty:5,  avg:31.40, type:'crypto'},
+  {ticker:'GBTC',name:'Bitcoin Trust',qty:9,   avg:71.38, type:'crypto'},
+  {ticker:'NFLX',name:'Netflix',      qty:3,   avg:126.267,type:'stock'},
+  {ticker:'NTR', name:'Nutrien',      qty:10,  avg:74.609,type:'stock'},
+];
+const opts = [
+  {desc:'EC Jul17\'26 $17 CALL',  pos:-1, avg:0.699,  mkt:0.740, exp:'2026-07-17', strike:17,  underlying:'EC',  side:'CALL', type:'short'},
+  {desc:'GBTC Jul02\'26 $51 CALL',pos: 1, avg:1.682,  mkt:0.912, exp:'2026-07-02', strike:51, underlying:'GBTC', side:'CALL', type:'long'},
+];
+const livePrices = {};
+
+// ── HELPERS ──────────────────────────────────────────────────────────────
+const fmt  = (n,d=2)=>'$'+Number(n).toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+const pct  = n=>(n>=0?'+':'')+n.toFixed(2)+'%';
+const days = d=>Math.ceil((new Date(d)-new Date())/(1000*60*60*24));
+const colorClass = n=>n>=0?'pos':'neg';
+
+function setEl(id,html,cls=''){
+  const el=document.getElementById(id);
+  if(el){el.innerHTML=html;if(cls)el.className=cls;}
+}
+
+// ── FETCH YAHOO FINANCE (via proxy) ──────────────────────────────────────
+async function fetchYahoo(sym){
+  try{
+    const url=`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`;
+    const proxy=`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const r=await fetch(proxy,{signal:AbortSignal.timeout(8000)});
+    const j=await r.json();
+    const d=JSON.parse(j.contents).chart.result[0].meta;
+    return {price:d.regularMarketPrice, prevClose:d.chartPreviousClose||d.previousClose, chgPct:((d.regularMarketPrice-(d.chartPreviousClose||d.previousClose))/(d.chartPreviousClose||d.previousClose))*100};
+  }catch(e){return null;}
+}
+
+// ── FETCH COINGECKO ───────────────────────────────────────────────────────
+async function fetchCrypto(){
+  try{
+    const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true',{signal:AbortSignal.timeout(8000)});
+    return await r.json();
+  }catch(e){return null;}
+}
+
+// ── RENDER STOCKS TABLE ───────────────────────────────────────────────────
+function renderStocks(){
+  const rows=positions.filter(p=>p.type!=='crypto').map(p=>{
+    const lp=livePrices[p.ticker];
+    const price=lp?lp.price:null;
+    const mktVal=price?price*p.qty:null;
+    const pnl=price?(price-p.avg)*p.qty:null;
+    const pnlPct=price?((price-p.avg)/p.avg)*100:null;
+    const status=pnl===null?'—':pnl>=0?`<span class="badge badge-green">▲ Ganancia</span>`:`<span class="badge badge-red">▼ Pérdida</span>`;
+    const chgCell=lp?`<span class="${colorClass(lp.chgPct)}">${pct(lp.chgPct)}</span>`:'—';
+    return `<tr>
+      <td><span class="ticker">${p.ticker}</span></td>
+      <td style="color:var(--sub)">${p.name}</td>
+      <td>${p.qty}</td>
+      <td>${fmt(p.avg)}</td>
+      <td>${price?`${fmt(price)} <span style="font-size:10px">${chgCell}</span>`:'<span class="loading">cargando</span>'}</td>
+      <td>${mktVal?fmt(mktVal):'—'}</td>
+      <td class="${pnl!==null?colorClass(pnl):''}">${pnl!==null?fmt(pnl):'—'}</td>
+      <td class="${pnlPct!==null?colorClass(pnlPct):''}">${pnlPct!==null?pct(pnlPct):'—'}</td>
+      <td>${status}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('stocksTable').innerHTML=rows||'<tr><td colspan="9" class="loading">Sin posiciones</td></tr>';
+}
+
+// ── RENDER OPTIONS ────────────────────────────────────────────────────────
+function renderOptions(){
+  const rows=opts.map(o=>{
+    const d=days(o.exp);
+    const pnl=(o.mkt-o.avg)*o.pos*100;
+    const urgency=d<=7?'badge-red':d<=30?'badge-yellow':'badge-green';
+    const itm=o.side==='CALL'&&livePrices[o.underlying]&&livePrices[o.underlying].price>o.strike;
+    const moneyness=livePrices[o.underlying]?
+      (itm?`<span class="badge badge-green">ITM</span>`:`<span class="badge badge-red">OTM</span>`):'—';
+    return `<tr>
+      <td style="font-size:11px;font-family:monospace">${o.desc}</td>
+      <td>${o.pos>0?'+'+o.pos:o.pos}</td>
+      <td>${fmt(o.avg)}</td>
+      <td>${fmt(o.mkt)}</td>
+      <td>${fmt(o.mkt*Math.abs(o.pos)*100)}</td>
+      <td class="${colorClass(pnl)}">${fmt(pnl)}</td>
+      <td><span class="badge ${urgency}">${d}d</span></td>
+      <td>${moneyness}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('optionsTable').innerHTML=rows;
+  // Actualizar días en alerta
+  const gbtcDays=days('2026-07-02');
+  setEl('daysToGbtcExp',gbtcDays);
+}
+
+// ── RENDER SUMMARY ────────────────────────────────────────────────────────
+function renderSummary(){
+  let totalPnl=0, totalCost=0;
+  positions.forEach(p=>{
+    const lp=livePrices[p.ticker];
+    if(lp){
+      totalPnl+=(lp.price-p.avg)*p.qty;
+      totalCost+=p.avg*p.qty;
+    }
+  });
+  opts.forEach(o=>{totalPnl+=(o.mkt-o.avg)*o.pos*100;});
+  setEl('totalUnreal', fmt(totalPnl), totalPnl>=0?'stat-value pos':'stat-value neg');
+  setEl('totalUnrealPct', pct(totalCost>0?(totalPnl/totalCost)*100:0), totalPnl>=0?'pos':'neg');
+
+  // Cripto cards
+  const gbtcP=livePrices['GBTC'];
+  const etheP=livePrices['ETHE'];
+  if(gbtcP){
+    setEl('gbtcVal',fmt(gbtcP.price*9));
+    const gpnl=(gbtcP.price-71.38)*9;
+    setEl('gbtcPnl',`<span class="${colorClass(gpnl)}">${fmt(gpnl)} (${pct((gpnl/(71.38*9))*100)})</span>`);
+  }
+  if(etheP){
+    setEl('etheVal',fmt(etheP.price*5));
+    const epnl=(etheP.price-31.40)*5;
+    setEl('ethePnl',`<span class="${colorClass(epnl)}">${fmt(epnl)} (${pct((epnl/(31.40*5))*100)})</span>`);
+  }
+
+  // Alfa vs S&P (estimado YTD con S&P ~+8% 2026)
+  const spxYTD=8.2;
+  const portPct=totalCost>0?(totalPnl/totalCost)*100:0;
+  const alpha=portPct-spxYTD;
+  setEl('spxYTD', pct(spxYTD),'stat-value neu');
+  setEl('portYTD', pct(portPct), portPct>=0?'stat-value pos':'stat-value neg');
+  setEl('alphaVal', (alpha>=0?'+':'')+alpha.toFixed(2)+'pts', alpha>=0?'stat-value pos':'stat-value neg');
+}
+
+// ── RENDER MARKET ─────────────────────────────────────────────────────────
+function renderMarket(){
+  const mkts={spx:'%5EGSPC',ndx:'%5EIXIC',vix:'%5EVIX',gold:'GLD',oil:'BNO'};
+  ['spx','ndx','vix','gold','oil'].forEach(id=>{
+    const lp=livePrices[id];
+    if(lp){
+      setEl(id, lp.price>1000?'$'+Math.round(lp.price).toLocaleString():fmt(lp.price), `stat-value ${colorClass(lp.chgPct)}`);
+      setEl(id+'Chg', pct(lp.chgPct), colorClass(lp.chgPct));
+    }
+  });
+  const btc=livePrices['btc-usd'];
+  const eth=livePrices['eth-usd'];
+  if(btc){setEl('btc','$'+Math.round(btc.price).toLocaleString(),'stat-value '+colorClass(btc.chgPct));setEl('btcChg',pct(btc.chgPct),colorClass(btc.chgPct));}
+  if(eth){setEl('eth','$'+Math.round(eth.price).toLocaleString(),'stat-value '+colorClass(eth.chgPct));setEl('ethChg',pct(eth.chgPct),colorClass(eth.chgPct));}
+}
+
+// ── MARKET STATUS ─────────────────────────────────────────────────────────
+function checkMarketStatus(){
+  const now=new Date();
+  const ny=new Date(now.toLocaleString('en-US',{timeZone:'America/New_York'}));
+  const h=ny.getHours(), m=ny.getMinutes(), d=ny.getDay();
+  const isWeekday=d>0&&d<6;
+  const isOpen=isWeekday&&(h>9||(h===9&&m>=30))&&h<16;
+  const isPre=isWeekday&&h>=4&&(h<9||(h===9&&m<30));
+  const el=document.getElementById('mktStatus');
+  if(el) el.textContent=isOpen?'🟢 Mercado Abierto':isPre?'🟡 Pre-mercado':'🔴 Mercado Cerrado';
+}
+
+// ── DAILY P&L (suma daily de posiciones) ──────────────────────────────────
+function renderDailyPnl(){
+  // valores fijos del último pull IBKR (actualizados por script Python)
+  const dailyTotal=45.1+(-16.45)+(-8.75)+(-1.55)+(-11.52)+(-53.82)+(-3.705)+(-10.0);
+  setEl('dailyPnl', fmt(dailyTotal), dailyTotal>=0?'stat-value pos':'stat-value neg');
+  setEl('dailyPnlPct', pct((dailyTotal/4642.88)*100), dailyTotal>=0?'pos':'neg');
+}
+
+// ── LOAD ALL ──────────────────────────────────────────────────────────────
+async function loadAll(){
+  setEl('lastUpdate','actualizando...');
+  checkMarketStatus();
+
+  // Cripto (CoinGecko)
+  const crypto=await fetchCrypto();
+  if(crypto){
+    if(crypto.bitcoin) livePrices['btc-usd']={price:crypto.bitcoin.usd, chgPct:crypto.bitcoin.usd_24h_change};
+    if(crypto.ethereum) livePrices['eth-usd']={price:crypto.ethereum.usd, chgPct:crypto.ethereum.usd_24h_change};
+  }
+
+  // Acciones & ETFs + índices (Yahoo Finance via proxy)
+  const tickers=['EC','EIMI','ETHE','GBTC','NFLX','NTR','%5EGSPC','%5EIXIC','%5EVIX','GLD','BNO'];
+  const keys   =['EC','EIMI','ETHE','GBTC','NFLX','NTR','spx','ndx','vix','gold','oil'];
+  await Promise.all(tickers.map(async(t,i)=>{
+    const d=await fetchYahoo(t);
+    if(d) livePrices[keys[i]]=d;
+  }));
+
+  renderMarket();
+  renderStocks();
+  renderOptions();
+  renderSummary();
+  renderDailyPnl();
+  setEl('lastUpdate', new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})+' hora Bogotá');
+}
+
+// Cargar al iniciar
+loadAll();
+// Auto-refresh cada 5 minutos
+setInterval(loadAll, 5*60*1000);
+</script>
+</body>
+</html>
