@@ -4,8 +4,78 @@ import requests
 from datetime import datetime
 import anthropic
 
-# ── PORTAFOLIO ────────────────────────────────────────────────────────────────
-PORTFOLIO = [
+import xml.etree.ElementTree as ET
+
+# ── IBKR FLEX ─────────────────────────────────────────────────────────────────
+def get_ibkr_positions():
+    token    = os.environ.get("IBKR_FLEX_TOKEN")
+    query_id = os.environ.get("IBKR_FLEX_QUERY_ID")
+    if not token or not query_id:
+        print("IBKR Flex no configurado, usando portafolio hardcodeado")
+        return None
+
+    try:
+        # Paso 1: solicitar el reporte
+        url1 = "https://gdcdyn.interactivebrokers.com/Universal/servlet/FlexStatementService.SendRequest"
+        r1   = requests.get(url1, params={"t": token, "q": query_id, "v": "3"}, timeout=15)
+        root1 = ET.fromstring(r1.text)
+        ref   = root1.findtext("ReferenceCode")
+        if not ref:
+            print("IBKR Flex: no se obtuvo ReferenceCode. Respuesta: " + r1.text[:200])
+            return None
+        print("IBKR Flex ReferenceCode: " + ref)
+
+        # Paso 2: descargar el reporte (esperar hasta 30s)
+        import time
+        url2 = "https://gdcdyn.interactivebrokers.com/Universal/servlet/FlexStatementService.GetStatement"
+        for attempt in range(6):
+            time.sleep(5)
+            r2   = requests.get(url2, params={"t": token, "q": ref, "v": "3"}, timeout=15)
+            root2 = ET.fromstring(r2.text)
+            status = root2.findtext("Status")
+            if status == "Complete" or root2.tag == "FlexQueryResponse":
+                break
+            print("IBKR Flex esperando... intento " + str(attempt + 1))
+
+        # Paso 3: parsear posiciones
+        positions = []
+        for pos in root2.iter("OpenPosition"):
+            symbol     = pos.get("symbol", "")
+            asset      = pos.get("assetCategory", "STK")
+            qty        = float(pos.get("position", 0))
+            avg_cost   = float(pos.get("costBasisPrice", 0))
+            mark_price = float(pos.get("markPrice", 0))
+            description= pos.get("description", symbol)
+            strike     = pos.get("strike", "")
+            expiry     = pos.get("expiry", "")
+            put_call   = pos.get("putCall", "")
+            unreal_pnl = float(pos.get("fifoPnlUnrealized", 0))
+
+            if not symbol:
+                continue
+
+            positions.append({
+                "ticker":      symbol,
+                "name":        description,
+                "qty":         qty,
+                "avg_cost":    avg_cost,
+                "mark_price":  mark_price,
+                "unrealized":  unreal_pnl,
+                "type":        "crypto" if symbol in ["GBTC","ETHE"] else ("etf" if asset == "ETF" else "stock"),
+                "asset_class": asset,
+                "strike":      strike,
+                "expiry":      expiry,
+                "put_call":    put_call,
+            })
+
+        print("IBKR Flex: " + str(len(positions)) + " posiciones obtenidas")
+        return positions if positions else None
+
+    except Exception as e:
+        print("IBKR Flex error: " + str(e))
+        return None
+
+
     {"ticker": "EC",   "name": "Ecopetrol",       "qty": 110, "avg_cost": 15.19,   "type": "stock",  "sector": "Energia"},
     {"ticker": "EIMI", "name": "MSCI EM IMI ETF",  "qty": 25,  "avg_cost": 50.948,  "type": "etf",    "sector": "Emergentes"},
     {"ticker": "ETHE", "name": "Ethereum Trust",   "qty": 5,   "avg_cost": 31.40,   "type": "crypto", "sector": "Crypto"},
@@ -238,12 +308,15 @@ def generate_weekly_recs(context_str):
 if __name__ == "__main__":
     today = datetime.now()
 
-    print("Obteniendo precios...")
+    print("Obteniendo posiciones desde IBKR Flex...")
+    ibkr_positions = get_ibkr_positions()
+
+    print("Obteniendo precios de mercado...")
     prices = get_prices()
     crypto = get_crypto()
 
     print("Construyendo contexto...")
-    context_str, total_pnl, total_pnlp, spx, btc, btc_chg = build_context(prices, crypto)
+    context_str, total_pnl, total_pnlp, spx, btc, btc_chg = build_context(prices, crypto, ibkr_positions)
     print(context_str)
 
     print("\nGenerando alerta diaria...")
