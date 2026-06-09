@@ -21,7 +21,38 @@ OPTIONS_FALLBACK = [
     {"desc": "NTR Aug21 $62.5 PUT SHORT", "pos": -1, "avg": 2.37,  "strike": 62.5, "exp": "2026-08-21"},
 ]
 
-# ── TELEGRAM ──────────────────────────────────────────────────────────────────
+# ── USD/COP e IBR ─────────────────────────────────────────────────────────────
+IBR_ANNUAL       = 7.75   # IBR Colombia % anual — actualizar mensualmente
+AVG_PURCHASE_COP = 4000   # Tasa COP/USD promedio al comprar el portafolio
+
+def get_usdcop():
+    try:
+        url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=COP=X"
+        r   = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=8)
+        q   = r.json()["quoteResponse"]["result"][0]
+        return q.get("regularMarketPrice", AVG_PURCHASE_COP)
+    except Exception:
+        return AVG_PURCHASE_COP
+
+def calc_cop_metrics(total_usd_value, total_usd_cost, pnl_usd, usdcop):
+    value_cop   = total_usd_value * usdcop
+    cost_cop    = total_usd_cost  * AVG_PURCHASE_COP
+    pnl_cop     = value_cop - cost_cop
+    pnl_cop_pct = (pnl_cop / cost_cop * 100) if cost_cop else 0
+    mkt_effect  = pnl_usd * usdcop
+    fx_effect   = total_usd_cost * (usdcop - AVG_PURCHASE_COP)
+    vs_ibr      = pnl_cop_pct - IBR_ANNUAL
+    return {
+        "usdcop":      round(usdcop, 0),
+        "value_cop":   round(value_cop, 0),
+        "pnl_cop":     round(pnl_cop, 0),
+        "pnl_cop_pct": round(pnl_cop_pct, 2),
+        "mkt_effect":  round(mkt_effect, 0),
+        "fx_effect":   round(fx_effect, 0),
+        "vs_ibr":      round(vs_ibr, 2),
+    }
+
+─
 def send_telegram(message):
     token   = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
@@ -224,9 +255,13 @@ def load_or_compute_strategic_days(today, context_str):
 # ── ALERTA DIARIA ─────────────────────────────────────────────────────────────
 ALERT_PROMPT = (
     "Eres un asesor financiero senior. Genera una alerta diaria concisa para Telegram en espanol. "
-    "Maximo 25 lineas usando solo emojis y saltos de linea. Estructura: "
-    "ALERTA PREMERCADO [fecha] | MERCADO (indices y BTC) | PORTAFOLIO HOY (P&L y movimientos clave) | "
-    "OPCIONES (estado) | ACCION DEL DIA (una sola, con EJECUTAR/ESPERAR/NO EJECUTAR si hay decision pendiente) | "
+    "Maximo 30 lineas usando solo emojis y saltos de linea. Estructura: "
+    "ALERTA PREMERCADO [fecha] | "
+    "MERCADO (indices y BTC) | "
+    "PORTAFOLIO HOY (P&L USD y movimientos clave) | "
+    "PORTAFOLIO EN COP (valor COP, P&L COP, efecto divisa, comparacion vs IBR) | "
+    "OPCIONES (estado) | "
+    "ACCION DEL DIA (una sola, con EJECUTAR/ESPERAR/NO EJECUTAR si hay decision pendiente) | "
     "EVENTO CLAVE HOY"
 )
 
@@ -295,8 +330,18 @@ if __name__ == "__main__":
     context_str, total_pnl, total_pnlp, spx, btc, btc_chg = build_context(prices, crypto, ibkr_positions)
     print(context_str)
 
+    print("Obteniendo USD/COP...")
+    usdcop = get_usdcop()
+    print("USD/COP: " + str(usdcop))
+
+    # Calcular métricas COP
+    total_usd = sum((p.get("mark_price") or p["avg_cost"]) * abs(p["qty"]) for p in (ibkr_positions or PORTFOLIO_FALLBACK))
+    cost_usd  = sum(p["avg_cost"] * abs(p["qty"]) for p in (ibkr_positions or PORTFOLIO_FALLBACK))
+    cop_metrics = calc_cop_metrics(total_usd, cost_usd, total_usd - cost_usd, usdcop)
+    print("P&L COP: ${:,.0f} ({:.1f}%) | vs IBR: {:.2f}pts".format(cop_metrics["pnl_cop"], cop_metrics["pnl_cop_pct"], cop_metrics["vs_ibr"]))
+
     print("\nGenerando alerta diaria...")
-    alert = generate_daily_alert(context_str, btc, btc_chg)
+    alert = generate_daily_alert(context_str, btc, btc_chg, cop_metrics)
     print(alert)
     send_telegram(alert)
 
