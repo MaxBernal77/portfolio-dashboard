@@ -311,14 +311,41 @@ function fetchT(url, ms) {
   return Promise.race([p, t]);
 }
 
+// Proxy con fallback: intenta allorigins, si falla intenta corsproxy.io
+function fetchProxy(url, ms) {
+  var proxies = [
+    "https://api.allorigins.win/get?url=",
+    "https://corsproxy.io/?",
+    "https://api.codetabs.com/v1/proxy?quest="
+  ];
+  function tryProxy(i) {
+    if (i >= proxies.length) return Promise.reject(new Error("All proxies failed"));
+    return fetchT(proxies[i] + encodeURIComponent(url), ms || 10000)
+      .then(function(r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .then(function(j) {
+        // allorigins y codetabs devuelven {contents: "..."}
+        // corsproxy.io devuelve el contenido directo
+        var text = j.contents !== undefined ? j.contents : JSON.stringify(j);
+        return JSON.parse(text);
+      })
+      .catch(function(e) {
+        console.warn("Proxy " + i + " fallo: " + e.message + " - intentando siguiente...");
+        return tryProxy(i + 1);
+      });
+  }
+  return tryProxy(0);
+}
+
 function yfBatch() {
   var symbols = ["EC","EIMI.L","NFLX","NTR","GBTC","ETHE","^GSPC","^IXIC","^VIX","GLD","BNO","COP%3DX"];
   var keys    = ["EC","EIMI","NFLX","NTR","GBTC","ETHE","IDX_SPX","IDX_NDX","IDX_VIX","IDX_GLD","IDX_OIL","IDX_COP"];
   var url     = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + symbols.join(",");
-  return fetchT("https://api.allorigins.win/get?url=" + encodeURIComponent(url), 12000)
-    .then(function(r) { return r.json(); })
-    .then(function(j) {
-      var quotes = JSON.parse(j.contents).quoteResponse.result;
+  return fetchProxy(url, 12000)
+    .then(function(data) {
+      var quotes = data.quoteResponse ? data.quoteResponse.result : [];
       quotes.forEach(function(q, i) {
         if (!q) return;
         var st = q.marketState;
@@ -334,15 +361,14 @@ function yfBatch() {
         lp[keys[i]] = {price: price, chg: chg || 0, label: label, state: st};
       });
     })
-    .catch(function(e) { console.warn("YF error:", e); });
+    .catch(function(e) { console.warn("YF batch fallo: " + e.message); });
 }
 
 function yfHist(sym) {
   var url = "https://query1.finance.yahoo.com/v8/finance/chart/" + sym + "?interval=1d&range=1mo";
-  return fetchT("https://api.allorigins.win/get?url=" + encodeURIComponent(url), 10000)
-    .then(function(r) { return r.json(); })
-    .then(function(j) {
-      return JSON.parse(j.contents).chart.result[0].indicators.quote[0].close.filter(function(v){ return v != null; });
+  return fetchProxy(url, 10000)
+    .then(function(data) {
+      return data.chart.result[0].indicators.quote[0].close.filter(function(v){ return v != null; });
     })
     .catch(function() { return null; });
 }
