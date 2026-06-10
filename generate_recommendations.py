@@ -52,7 +52,6 @@ def calc_cop_metrics(total_usd_value, total_usd_cost, pnl_usd, usdcop):
         "vs_ibr":      round(vs_ibr, 2),
     }
 
-─
 def send_telegram(message):
     token   = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
