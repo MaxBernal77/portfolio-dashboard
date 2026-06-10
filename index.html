@@ -254,39 +254,52 @@ function getP(p) {
 
 // ── Carga prices.json generado por GitHub Actions ────────────────────────
 function loadPrices() {
-  return fetch("./prices.json?_=" + Date.now())
-    .then(function(r) { return r.ok ? r.json() : null; })
-    .then(function(data) {
-      if (!data || !data.prices) {
-        setEl("dataStatus", "⚠️ prices.json no encontrado");
-        return;
-      }
-      // Cargar todos los precios al objeto lp (no sobreescribir si IBKR ya los tiene)
-      Object.keys(data.prices).forEach(function(key) {
-        if (!lp[key] || !lp[key].ibkr) {
-          lp[key] = data.prices[key];
-        }
-      });
-      // Cargar historicos de sparklines si vienen en el JSON
-      if (data.hist) {
-        POS.forEach(function(p) {
-          if (data.hist[p.t]) p.hist = data.hist[p.t];
+  // Intentar con y sin cache-busting para compatibilidad con GitHub Pages
+  var urls = ["./prices.json", "/portfolio-dashboard/prices.json"];
+  
+  function tryUrl(idx) {
+    if (idx >= urls.length) {
+      setEl("dataStatus", "⚠️ No se pudo leer prices.json");
+      return Promise.resolve();
+    }
+    return fetch(urls[idx])
+      .then(function(r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .then(function(data) {
+        if (!data || !data.prices) throw new Error("sin campo prices");
+        
+        // Poblar lp{} con todos los precios
+        Object.keys(data.prices).forEach(function(key) {
+          if (!lp[key] || !lp[key].ibkr) {
+            lp[key] = data.prices[key];
+          }
         });
-      }
-      // Mostrar timestamp de ultima actualizacion del JSON
-      if (data.updated) {
-        var d = new Date(data.updated);
-        var ago = Math.round((Date.now() - d) / 60000);
-        var agoStr = ago < 60 ? ago + " min" : Math.round(ago/60) + " h";
-        setEl("dataStatus", "✅ Precios OK · hace " + agoStr);
-      } else {
-        setEl("dataStatus", "✅ Precios OK");
-      }
-    })
-    .catch(function(e) {
-      console.warn("prices.json error:", e);
-      setEl("dataStatus", "⚠️ Error leyendo prices.json");
-    });
+        
+        // Sparklines
+        if (data.hist) {
+          POS.forEach(function(p) {
+            if (data.hist[p.t]) p.hist = data.hist[p.t];
+          });
+        }
+        
+        // Timestamp
+        var agoStr = "";
+        if (data.updated) {
+          var ago = Math.round((Date.now() - new Date(data.updated)) / 60000);
+          agoStr = " · " + (Math.abs(ago) < 60 ? Math.abs(ago) + " min" : Math.round(Math.abs(ago)/60) + " h");
+        }
+        setEl("dataStatus", "✅ " + Object.keys(lp).length + " precios" + agoStr);
+        console.log("prices.json OK via", urls[idx], "| claves:", Object.keys(lp).join(", "));
+      })
+      .catch(function(e) {
+        console.warn("prices.json falló en", urls[idx], e.message);
+        return tryUrl(idx + 1);
+      });
+  }
+  
+  return tryUrl(0);
 }
 
 // IBKR Bridge (corre en tu PC cuando el bridge esta activo)
