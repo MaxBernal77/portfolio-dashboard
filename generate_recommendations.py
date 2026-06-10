@@ -531,7 +531,7 @@ def generate_weekly_recs(context_str):
     content = ("Hoy es " + datetime.now().strftime("%A %d de %B de %Y") + ".\n\n" + context_str +
                "\nS&P YTD +8.2%, objetivo alfa S&P+1pt, buying power ~$9,116, FOMC 17-18 jun.")
     for attempt in range(2):
-        msg = client.messages.create(model="claude-sonnet-4-6", max_tokens=6000,
+        msg = client.messages.create(model="claude-sonnet-4-6", max_tokens=8192,
                   system=WEEKLY_PROMPT, messages=[{"role":"user","content":content}])
         raw = msg.content[0].text.strip()
         if raw.startswith("```"): raw = raw.split("```")[1]; raw = raw[4:] if raw.startswith("json") else raw
@@ -552,7 +552,7 @@ if __name__ == "__main__":
 
     print("2. Obteniendo precios Yahoo Finance (directo Python)...")
     idx_tickers  = ["^GSPC","^IXIC","^VIX","GLD","BNO","COP=X"]
-    pos_tickers  = [p["ticker"] for p in PORTFOLIO_FALLBACK]
+    pos_tickers  = [p["ticker"] for p in (ibkr_data["positions"] if ibkr_data else PORTFOLIO_FALLBACK)]
     yahoo_prices = get_yahoo_prices(idx_tickers + pos_tickers)
 
     print("3. Obteniendo cripto CoinGecko...")
@@ -595,9 +595,13 @@ if __name__ == "__main__":
                   "ibr":ibr_annual,"vs_ibr":vs_ibr}
 
     print("9. Generando y enviando alerta Telegram...")
-    alert = generate_daily_alert(context_str, spx, btc, btc_chg, cop_info)
-    print(alert)
-    send_telegram(alert)
+    try:
+        alert = generate_daily_alert(context_str, spx, btc, btc_chg, cop_info)
+        print(alert)
+        send_telegram(alert)
+    except Exception as e:
+        send_telegram("ERROR en alerta diaria: " + str(e))
+        print("ERROR alerta: " + str(e))
 
     print("10. Verificando dias estrategicos...")
     strategic_days = get_strategic_days(today, context_str)
@@ -605,12 +609,16 @@ if __name__ == "__main__":
 
     if current_day in strategic_days:
         print("11. Dia estrategico - generando recomendaciones...")
-        data = generate_weekly_recs(context_str)
-        data["generated"] = today.isoformat()
-        data["week"]      = today.strftime("%Y-%m-%d")
-        with open("recommendations.json","w",encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        print("recommendations.json: " + str(len(data["recs"])) + " recs, " + str(len(data["hyps"])) + " hyps")
+        try:
+            data = generate_weekly_recs(context_str)
+            data["generated"] = today.isoformat()
+            data["week"]      = today.strftime("%Y-%m-%d")
+            with open("recommendations.json","w",encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            print("recommendations.json: " + str(len(data["recs"])) + " recs, " + str(len(data["hyps"])) + " hyps")
+        except Exception as e:
+            send_telegram("ERROR en recomendaciones: " + str(e))
+            print("ERROR recs: " + str(e))
     else:
         print("Hoy no es dia estrategico - solo alerta diaria")
 
