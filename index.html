@@ -340,7 +340,25 @@ function fetchProxy(url,ms){
   }
   return tryP(0);
 }
-function fetchLocal(url,ms){
+// Carga precios desde prices.json (generado cada mañana por GitHub Actions)
+function loadPrices(){
+  return fetchLocal("./prices.json", 4000)
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      if(!d || !d.prices) return;
+      Object.keys(d.prices).forEach(function(key){
+        var p = d.prices[key];
+        if(!lp[key] || !lp[key].ibkr){
+          lp[key] = {price: p.price, chg: p.chg || 0, label: p.label || "Cierre"};
+        }
+      });
+      if(lp.BTC && lp.GBTC && !lp.GBTC.ibkr){ lp.GBTC.chg = lp.BTC.chg; }
+      if(lp.ETH && lp.ETHE && !lp.ETHE.ibkr){ lp.ETHE.chg = lp.ETH.chg; }
+      console.log("prices.json cargado: " + Object.keys(d.prices).length + " precios");
+    }).catch(function(){});
+}
+
+
   var p=fetch(url).then(function(r){return r;});
   var t=new Promise(function(_,rej){setTimeout(function(){rej(new Error("timeout"));},ms||4000);});
   return Promise.race([p,t]);
@@ -684,14 +702,16 @@ function mktStatus(){
 // ── LOAD ALL ─────────────────────────────────────────────────────────────────
 async function loadAll(){
   renderSidebar(); renderNews();
-  await Promise.all([loadRecs(), loadMarketConfig()]);
+  await Promise.all([loadRecs(), loadMarketConfig(), loadPrices()]);
   renderRecs(); renderHyps();
   await loadIBKR();
-  var c=await getCrypto();
+  // Cripto en tiempo real desde CoinGecko (siempre disponible, sin proxy)
+  var c = await getCrypto();
   if(c){
     if(c.bitcoin) lp.BTC={price:c.bitcoin.usd,chg:c.bitcoin.usd_24h_change,label:""};
     if(c.ethereum)lp.ETH={price:c.ethereum.usd,chg:c.ethereum.usd_24h_change,label:""};
   }
+  // Intentar Yahoo Finance para precios mas frescos (opcional, puede fallar)
   await yfBatch();
   if(lp.BTC&&lp.GBTC&&!lp.GBTC.ibkr){lp.GBTC.chg=lp.BTC.chg;lp.GBTC.label=lp.BTC.label;}
   if(lp.ETH&&lp.ETHE&&!lp.ETHE.ibkr){lp.ETHE.chg=lp.ETH.chg;lp.ETHE.label=lp.ETH.label;}
