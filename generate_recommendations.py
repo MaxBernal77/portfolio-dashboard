@@ -84,6 +84,12 @@ def get_ibkr_data():
 
         # Posiciones
         positions = []
+        # Debug: verificar que el XML tiene OpenPosition
+        open_pos_count = len(list(root2.iter("OpenPosition")))
+        print("OpenPosition tags encontrados: " + str(open_pos_count))
+        if open_pos_count == 0:
+            all_tags = set(elem.tag for elem in root2.iter())
+            print("Tags disponibles en XML: " + ", ".join(sorted(all_tags)))
         for pos in root2.iter("OpenPosition"):
             symbol = pos.get("symbol", "")
             if not symbol: continue
@@ -108,16 +114,67 @@ def get_ibkr_data():
                 "type":        "crypto" if symbol in ("GBTC","ETHE") else "stock",
             })
 
-        # Cash balance desde NAV
+        # Cash balance — buscar en multiples tags y atributos que genera IBKR Flex
         cash_balance = CASH_BALANCE_FALLBACK
-        for nav in list(root2.iter("NAVInBase")) + list(root2.iter("ChangeInNAVInBase")):
-            val = nav.get("cash") or nav.get("Cash") or nav.get("endingCash")
-            if val:
-                try:
-                    cash_balance = float(val)
-                    print("Cash balance desde NAV: $" + str(round(cash_balance, 2)))
-                    break
-                except ValueError: pass
+        cash_found   = False
+
+        # 1. CashReport (el mas confiable para USD cash)
+        for cr in root2.iter("CashReportCurrency"):
+            if cr.get("currency", "") == "USD" and not cash_found:
+                for attr in ("endingCash","ending","endCash","cashBalance","cash","Cash"):
+                    val = cr.get(attr)
+                    if val is not None:
+                        try:
+                            cash_balance = float(val)
+                            print("Cash desde CashReportCurrency." + attr + ": $" + str(round(cash_balance,2)))
+                            cash_found = True; break
+                        except ValueError: pass
+
+        # 2. EquitySummaryByReportDateInBase
+        if not cash_found:
+            for eq in root2.iter("EquitySummaryByReportDateInBase"):
+                for attr in ("cash","Cash","totalCash","cashAndCashEquivalents"):
+                    val = eq.get(attr)
+                    if val is not None:
+                        try:
+                            cash_balance = float(val)
+                            print("Cash desde EquitySummary." + attr + ": $" + str(round(cash_balance,2)))
+                            cash_found = True; break
+                        except ValueError: pass
+                if cash_found: break
+
+        # 3. NAVInBase / ChangeInNAVInBase
+        if not cash_found:
+            for nav in list(root2.iter("NAVInBase")) + list(root2.iter("ChangeInNAVInBase")):
+                for attr in ("cash","Cash","endingCash","cashAndCashEquivalents","starting","ending"):
+                    val = nav.get(attr)
+                    if val is not None:
+                        try:
+                            cash_balance = float(val)
+                            print("Cash desde NAV." + attr + ": $" + str(round(cash_balance,2)))
+                            cash_found = True; break
+                        except ValueError: pass
+                if cash_found: break
+
+        # 4. Si aun no encontramos, buscar cualquier tag con "cash" en el nombre
+        if not cash_found:
+            for elem in root2.iter():
+                if "cash" in elem.tag.lower():
+                    for attr, val in elem.attrib.items():
+                        if "cash" in attr.lower() or attr in ("ending","endingCash","balance"):
+                            try:
+                                cash_balance = float(val)
+                                if -50000 < cash_balance < 0 or 0 <= cash_balance < 100000:
+                                    print("Cash desde " + elem.tag + "." + attr + ": $" + str(round(cash_balance,2)))
+                                    cash_found = True; break
+                            except (ValueError, TypeError): pass
+                    if cash_found: break
+
+        if not cash_found:
+            # Debug: imprimir todos los tags disponibles en el XML para diagnostico
+            tags = set(elem.tag for elem in root2.iter())
+            print("⚠️  Cash no encontrado. Tags en XML: " + ", ".join(sorted(tags)[:30]))
+            print("   Usando fallback: $" + str(CASH_BALANCE_FALLBACK))
 
         # Depositos para tasa COP promedio
         deposits = []
@@ -227,53 +284,19 @@ def get_avg_purchase_cop(deposits, usdcop_raw):
     return round(usdcop_raw, 0)
 
 # ── GUARDAR ARCHIVOS JSON ─────────────────────────────────────────────────────
-def save_prices_json(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, avg_purchase, cash_balance=0):
+def save_prices_json(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, avg_purchase):
     data = {
         "updated":          datetime.now().isoformat(),
         "ibr_annual":       ibr_annual,
         "avg_purchase_cop": avg_purchase,
         "usdcop_effective": round(usdcop_raw * COP_SPREAD, 2),
-        "cash_balance":     round(cash_balance, 2),
-        "prices":           {},
-        "options":          []   # array con metadata completa de cada opcion
+        "prices":           {}
     }
     # Posiciones desde IBKR (fuente primaria)
     if ibkr_data and ibkr_data.get("positions"):
         for p in ibkr_data["positions"]:
             t = p["ticker"]
-            is_opt = p.get("asset_class") == "OPT" or p.get("put_call")
-            if is_opt:
-                # Opciones: guardar en array con clave unica y metadata completa
-                expiry_raw = str(p.get("expiry", ""))
-                # Formatear expiry de YYYYMMDD a YYYY-MM-DD
-                if len(expiry_raw) == 8:
-                    exp_fmt = expiry_raw[:4] + "-" + expiry_raw[4:6] + "-" + expiry_raw[6:]
-                else:
-                    exp_fmt = expiry_raw
-                strike   = p.get("strike", "")
-                put_call = p.get("put_call", "")
-                qty      = p.get("qty", 0)
-                avg      = p.get("avg_cost", 0)
-                mkt      = p.get("mark_price", 0)
-                # Clave unica: TICKER_STRIKE_PUTCALL_EXPIRY
-                key = t + "_" + str(strike) + "_" + put_call + "_" + expiry_raw
-                side = "short" if qty < 0 else "long"
-                desc = t + " " + exp_fmt[5:] + " $" + str(strike) + " " + put_call + " " + side.upper()
-                data["options"].append({
-                    "key":     key,
-                    "desc":    desc,
-                    "und":     t,
-                    "strike":  float(strike) if strike else 0,
-                    "exp":     exp_fmt,
-                    "put_call":put_call,
-                    "side":    side,
-                    "pos":     int(qty),
-                    "avg":     round(float(avg), 4) if avg else 0,
-                    "mkt":     round(float(mkt), 4) if mkt else 0,
-                    "label":   "IBKR"
-                })
-                print("  Opcion: " + desc + " | mkt=" + str(round(float(mkt),3)) + " avg=" + str(round(float(avg),3)))
-            elif p["mark_price"] > 0:
+            if p["mark_price"] > 0:
                 data["prices"][t] = {"price": round(p["mark_price"],4), "chg": 0, "label": "IBKR"}
 
     # Indices desde Yahoo Finance
@@ -321,84 +344,6 @@ def save_market_config(usdcop_raw, ibr_annual, avg_purchase, cash_balance):
     print("market_config.json: USD/COP=" + str(round(usdcop_raw*COP_SPREAD,0)) + " IBR=" + str(ibr_annual) + "%")
 
 # ── CONTEXTO PARA CLAUDE ──────────────────────────────────────────────────────
-def update_portfolio_history(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, avg_purchase, cash_balance=0):
-    """Append snapshot diario a portfolio_history.json. Max 365 dias."""
-    HISTORY_FILE = "portfolio_history.json"
-    today_str    = datetime.now().strftime("%Y-%m-%d")
-    usdcop       = round(usdcop_raw * COP_SPREAD, 2)
-
-    portfolio = ibkr_data["positions"] if ibkr_data else PORTFOLIO_FALLBACK
-    stocks    = [p for p in portfolio if not p.get("put_call") and p.get("asset_class","STK") != "OPT"]
-    options   = [p for p in portfolio if p.get("asset_class") == "OPT" or p.get("put_call")]
-
-    total_pos_usd  = 0.0
-    total_cost_usd = 0.0
-    for p in stocks:
-        price = p.get("mark_price") or 0
-        if price <= 0:
-            price = yahoo.get(p["ticker"], {}).get("price") or p.get("avg_cost", 0)
-        total_pos_usd  += price * abs(p.get("qty", 0))
-        total_cost_usd += p.get("avg_cost", 0) * abs(p.get("qty", 0))
-
-    opt_mkt_usd  = sum(p.get("mark_price", 0) * p.get("qty", 0) * 100 for p in options)
-    opt_cost_usd = sum(p.get("avg_cost",   0) * p.get("qty", 0) * 100 for p in options)
-
-    net_liq_usd    = total_pos_usd + opt_mkt_usd + cash_balance
-    total_val_cop  = net_liq_usd   * usdcop
-    total_cost_cop = (total_cost_usd + opt_cost_usd) * avg_purchase
-    pnl_usd        = net_liq_usd   - (total_cost_usd + opt_cost_usd)
-    pnl_cop        = total_val_cop  - total_cost_cop
-    pnl_pct_usd    = round((pnl_usd / abs(total_cost_usd + opt_cost_usd) * 100) if total_cost_usd else 0, 3)
-    pnl_pct_cop    = round((pnl_cop / abs(total_cost_cop) * 100) if total_cost_cop else 0, 3)
-    mkt_effect     = round((total_pos_usd + opt_mkt_usd - total_cost_usd - opt_cost_usd) * usdcop, 0)
-    fx_effect      = round((total_cost_usd + opt_cost_usd) * (usdcop - avg_purchase), 0)
-    vs_ibr         = round(pnl_pct_cop - ibr_annual, 3)
-    spx_price      = yahoo.get("^GSPC", {}).get("price") or 0
-    btc_price      = (crypto.get("bitcoin") or {}).get("usd", 0)
-
-    snapshot = {
-        "date":          today_str,
-        "val_usd":       round(net_liq_usd,   2),
-        "pos_usd":       round(total_pos_usd, 2),
-        "opt_mkt_usd":   round(opt_mkt_usd,   2),
-        "cash_balance":  round(cash_balance,  2),
-        "cost_usd":      round(total_cost_usd + opt_cost_usd, 2),
-        "pnl_usd":       round(pnl_usd,       2),
-        "pnl_pct_usd":   pnl_pct_usd,
-        "val_cop":       round(total_val_cop,  0),
-        "cost_cop":      round(total_cost_cop, 0),
-        "pnl_cop":       round(pnl_cop,        0),
-        "pnl_pct_cop":   pnl_pct_cop,
-        "mkt_effect":    mkt_effect,
-        "fx_effect":     fx_effect,
-        "usdcop":        usdcop,
-        "avg_purchase":  avg_purchase,
-        "ibr_annual":    ibr_annual,
-        "vs_ibr":        vs_ibr,
-        "spx":           round(spx_price, 2),
-        "btc":           btc_price,
-    }
-
-    history = []
-    if os.path.exists("portfolio_history.json"):
-        try:
-            with open("portfolio_history.json") as f: history = json.load(f)
-        except Exception as e:
-            print("Warning historial: " + str(e))
-
-    existing = [i for i, h in enumerate(history) if h.get("date") == today_str]
-    if existing:
-        history[existing[0]] = snapshot
-        print("Historial actualizado: " + today_str)
-    else:
-        history.append(snapshot)
-        print("Historial nueva entrada: " + today_str + " (" + str(len(history)) + " dias)")
-
-    history = sorted(history, key=lambda x: x["date"])[-365:]
-    with open("portfolio_history.json", "w") as f:
-        json.dump(history, f, indent=2)
-
-
 def build_context(ibkr_data, yahoo, crypto, cash_balance):
     lines       = ["PORTAFOLIO:\n"]
     total_value = total_cost = 0.0
@@ -531,7 +476,7 @@ def generate_weekly_recs(context_str):
     content = ("Hoy es " + datetime.now().strftime("%A %d de %B de %Y") + ".\n\n" + context_str +
                "\nS&P YTD +8.2%, objetivo alfa S&P+1pt, buying power ~$9,116, FOMC 17-18 jun.")
     for attempt in range(2):
-        msg = client.messages.create(model="claude-sonnet-4-6", max_tokens=8192,
+        msg = client.messages.create(model="claude-sonnet-4-6", max_tokens=6000,
                   system=WEEKLY_PROMPT, messages=[{"role":"user","content":content}])
         raw = msg.content[0].text.strip()
         if raw.startswith("```"): raw = raw.split("```")[1]; raw = raw[4:] if raw.startswith("json") else raw
@@ -552,7 +497,7 @@ if __name__ == "__main__":
 
     print("2. Obteniendo precios Yahoo Finance (directo Python)...")
     idx_tickers  = ["^GSPC","^IXIC","^VIX","GLD","BNO","COP=X"]
-    pos_tickers  = [p["ticker"] for p in (ibkr_data["positions"] if ibkr_data else PORTFOLIO_FALLBACK)]
+    pos_tickers  = [p["ticker"] for p in PORTFOLIO_FALLBACK]
     yahoo_prices = get_yahoo_prices(idx_tickers + pos_tickers)
 
     print("3. Obteniendo cripto CoinGecko...")
@@ -571,9 +516,8 @@ if __name__ == "__main__":
     avg_purchase = get_avg_purchase_cop(deposits, usdcop_raw)
 
     print("6. Guardando prices.json y market_config.json...")
-    save_prices_json(ibkr_data, yahoo_prices, crypto, usdcop_raw, ibr_annual, avg_purchase, cash_balance)
+    save_prices_json(ibkr_data, yahoo_prices, crypto, usdcop_raw, ibr_annual, avg_purchase)
     save_market_config(usdcop_raw, ibr_annual, avg_purchase, cash_balance)
-    update_portfolio_history(ibkr_data, yahoo_prices, crypto, usdcop_raw, ibr_annual, avg_purchase, cash_balance)
 
     print("7. Construyendo contexto...")
     context_str, net_pnl, net_pnlp, net_liq, cost_usd, spx, btc, btc_chg = build_context(
@@ -595,13 +539,9 @@ if __name__ == "__main__":
                   "ibr":ibr_annual,"vs_ibr":vs_ibr}
 
     print("9. Generando y enviando alerta Telegram...")
-    try:
-        alert = generate_daily_alert(context_str, spx, btc, btc_chg, cop_info)
-        print(alert)
-        send_telegram(alert)
-    except Exception as e:
-        send_telegram("ERROR en alerta diaria: " + str(e))
-        print("ERROR alerta: " + str(e))
+    alert = generate_daily_alert(context_str, spx, btc, btc_chg, cop_info)
+    print(alert)
+    send_telegram(alert)
 
     print("10. Verificando dias estrategicos...")
     strategic_days = get_strategic_days(today, context_str)
@@ -609,16 +549,12 @@ if __name__ == "__main__":
 
     if current_day in strategic_days:
         print("11. Dia estrategico - generando recomendaciones...")
-        try:
-            data = generate_weekly_recs(context_str)
-            data["generated"] = today.isoformat()
-            data["week"]      = today.strftime("%Y-%m-%d")
-            with open("recommendations.json","w",encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-            print("recommendations.json: " + str(len(data["recs"])) + " recs, " + str(len(data["hyps"])) + " hyps")
-        except Exception as e:
-            send_telegram("ERROR en recomendaciones: " + str(e))
-            print("ERROR recs: " + str(e))
+        data = generate_weekly_recs(context_str)
+        data["generated"] = today.isoformat()
+        data["week"]      = today.strftime("%Y-%m-%d")
+        with open("recommendations.json","w",encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print("recommendations.json: " + str(len(data["recs"])) + " recs, " + str(len(data["hyps"])) + " hyps")
     else:
         print("Hoy no es dia estrategico - solo alerta diaria")
 
