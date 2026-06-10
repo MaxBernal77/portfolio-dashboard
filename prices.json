@@ -1,73 +1,73 @@
 {
-  "updated": "2026-06-10T13:43:21.026869",
+  "updated": "2026-06-10T16:48:03.839578",
   "ibr_annual": 8.25,
-  "avg_purchase_cop": 3580.0,
-  "usdcop_effective": 3436.45,
+  "avg_purchase_cop": 3560.0,
+  "usdcop_effective": 3417.91,
   "cash_balance": -605.34,
   "prices": {
     "IDX_SPX": {
-      "price": 7363.98,
-      "chg": -0.31,
+      "price": 7307.1099,
+      "chg": -1.08,
       "label": "Cierre"
     },
     "IDX_NDX": {
-      "price": 25572.8086,
-      "chg": -0.41,
+      "price": 25301.5566,
+      "chg": -1.47,
       "label": "Cierre"
     },
     "IDX_VIX": {
-      "price": 20.97,
-      "chg": 5.54,
+      "price": 21.98,
+      "chg": 10.62,
       "label": "Cierre"
     },
     "IDX_GLD": {
-      "price": 382.8011,
-      "chg": -1.26,
+      "price": 377.81,
+      "chg": -2.55,
       "label": "Cierre"
     },
     "IDX_OIL": {
-      "price": 50.825,
-      "chg": -0.93,
+      "price": 51.8,
+      "chg": 0.97,
       "label": "Cierre"
     },
     "IDX_COP": {
-      "price": 3436.45,
-      "chg": 0.37,
+      "price": 3417.91,
+      "chg": -0.17,
       "label": "Cierre"
     },
     "EC": {
-      "price": 15.96,
-      "chg": 0.5,
+      "price": 16.6724,
+      "chg": 4.99,
       "label": "Cierre"
     },
     "ETHE": {
-      "price": 13.43,
-      "chg": 1.71,
+      "price": 13.2311,
+      "chg": 0.2,
       "label": "Cierre"
     },
     "GBTC": {
-      "price": 48.21,
-      "chg": 0.27,
+      "price": 48.07,
+      "chg": -0.02,
       "label": "Cierre"
     },
     "NFLX": {
-      "price": 82.38,
-      "chg": 0.59,
+      "price": 82.355,
+      "chg": 0.56,
       "label": "Cierre"
     },
     "NTR": {
-      "price": 65.4185,
-      "chg": -1.99,
+      "price": 65.72,
+      "chg": -1.54,
       "label": "Cierre"
     },
     "BTC": {
-      "price": 62057,
-      "chg": -0.49298634536285907,
+      "price": 62143,
+      "chg": 1.4276057178065569,
       "label": ""
     },
     "ETH": {
-      "price": 1657.18,
-      "chg": -0.8500556176519024,
+      "price": 1642.55,
+      "chg": 0.9431509095425413,
       "label": ""
     }
   },
