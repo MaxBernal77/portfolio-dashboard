@@ -361,6 +361,20 @@ function loadPrices() {
         if (data.avg_purchase_cop)        cop.avg_purchase  = data.avg_purchase_cop;
         cop.cash_balance = (data.cash_balance !== undefined) ? data.cash_balance : cop.cash_balance;
 
+        // Sincronizar posiciones acciones/ETF desde IBKR
+        if (data.positions && data.positions.length > 0) {
+          data.positions.forEach(function(ibkrPos) {
+            var match = POS.filter(function(p){ return p.t === ibkrPos.t; })[0];
+            if (match) {
+              match.qty = ibkrPos.qty;
+              match.avg = ibkrPos.avg;
+              // Actualizar lp con precio IBKR
+              lp[ibkrPos.t] = { price: ibkrPos.mkt, chg: 0, label:"IBKR", ibkr:true };
+            }
+          });
+          console.log("Posiciones IBKR sincronizadas: " + data.positions.length);
+        }
+
         // Cargar opciones IBKR si vienen en prices.json
         if (data.options && data.options.length > 0) {
           OPTS = data.options.map(function(o) {
