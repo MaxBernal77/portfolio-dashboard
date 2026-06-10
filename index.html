@@ -91,6 +91,39 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .ibkr-off{background:rgba(139,148,158,.1);color:var(--sub);border:1px solid var(--border)}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.cop-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
+.cop-grid2{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+@media(max-width:700px){.cop-grid{grid-template-columns:repeat(2,1fr)}.cop-grid2{grid-template-columns:1fr}}
+.cop-c{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:9px 11px}
+.cop-l{font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.cop-v{font-size:15px;font-weight:700}
+.cop-s{font-size:10px;color:var(--sub);margin-top:2px}
+.cop-bar-wrap{height:3px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden}
+.cop-bar-fill{height:100%;border-radius:2px;background:var(--green)}
+/* ── Análisis de rendimientos ────────────────────────────────── */
+.rend-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+@media(max-width:750px){.rend-summary{grid-template-columns:repeat(2,1fr)}}
+.rs-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:11px 13px}
+.rs-label{font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.rs-val{font-size:18px;font-weight:800;line-height:1.1}
+.rs-sub{font-size:10px;color:var(--sub);margin-top:3px}
+.rs-badge{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;margin-top:4px}
+.rend-table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px}
+.rend-table th{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--sub);padding:6px 8px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
+.rend-table th:first-child{text-align:left}
+.rend-table td{padding:8px 8px;border-bottom:1px solid rgba(48,54,61,.5);vertical-align:middle;text-align:right;white-space:nowrap}
+.rend-table td:first-child{text-align:left}
+.rend-table tr:last-child td{border-bottom:none;font-weight:700;background:rgba(255,255,255,.02)}
+.rend-table tr:hover td{background:rgba(255,255,255,.02)}
+.rend-ticker{font-weight:700;font-family:monospace;color:var(--blue);font-size:12px}
+.rend-name{font-size:10px;color:var(--sub);margin-top:1px}
+.pbar{height:3px;background:var(--border);border-radius:2px;margin-top:3px;overflow:hidden;width:60px}
+.pbar-f{height:100%;border-radius:2px}
+.fx-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px;margin-bottom:14px}
+.fx-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(48,54,61,.5)}
+.fx-row:last-child{border-bottom:none}
+.fx-label{font-size:11px;color:#adbac7}
+.fx-val{font-size:13px;font-weight:700}
 </style>
 </head>
 <body>
@@ -139,10 +172,11 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
     <div class="idx"><div class="idx-l">Bitcoin</div><div class="idx-v" id="btc">-</div><div class="idx-c" id="btcC">-</div></div>
     <div class="idx"><div class="idx-l">Ethereum</div><div class="idx-v" id="eth">-</div><div class="idx-c" id="ethC">-</div></div>
   </div>
-  <div class="g3">
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px">
     <div class="idx"><div class="idx-l">VIX</div><div class="idx-v" id="vix">-</div><div class="idx-c" id="vixC"></div></div>
     <div class="idx"><div class="idx-l">Oro (GLD)</div><div class="idx-v" id="gold">-</div><div class="idx-c" id="goldC"></div></div>
     <div class="idx"><div class="idx-l">Petroleo (BNO)</div><div class="idx-v" id="oil">-</div><div class="idx-c" id="oilC"></div></div>
+    <div class="idx"><div class="idx-l">USD / COP</div><div class="idx-v" id="copr">-</div><div class="idx-c" id="copC"></div></div>
   </div>
 
   <div class="sec">Analisis Grafico</div>
@@ -157,6 +191,9 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 
   <div class="sec">Opciones Activas</div>
   <div id="optCards"></div>
+
+  <div class="sec">Analisis de Rendimientos — USD &amp; COP</div>
+  <div id="rendSection"></div>
 
   <div class="sec">Acciones Sobre Posiciones Actuales</div>
   <div style="font-size:10px;color:var(--sub);margin-bottom:8px" id="recsLabel">Cargando recomendaciones...</div>
@@ -231,6 +268,7 @@ var SECTORS = [
 ];
 
 var lp = {};
+var cop = {};   // datos COP desde prices.json
 var donutC, sectorC, typeC;
 var activeRecs = RECS_DEFAULT;
 var activeHyps = HYPS_DEFAULT;
@@ -277,6 +315,11 @@ function loadPrices() {
           }
         });
         
+        // Capturar métricas COP del JSON
+        if (data.usdcop_effective) cop.usdcop     = data.usdcop_effective;
+        if (data.ibr_annual)       cop.ibr         = data.ibr_annual;
+        if (data.avg_purchase_cop) cop.avg_purchase = data.avg_purchase_cop;
+
         // Sparklines
         if (data.hist) {
           POS.forEach(function(p) {
@@ -409,6 +452,174 @@ function buildCharts() {
   });
 }
 
+function fmtCOP(n) {
+  if (!n && n !== 0) return "-";
+  var abs = Math.abs(n);
+  var str;
+  if (abs >= 1e9)      str = "$" + (n/1e9).toFixed(1) + "B";
+  else if (abs >= 1e6) str = "$" + Math.round(n/1e6) + "M";
+  else                 str = "$" + Math.round(n).toLocaleString("es-CO");
+  return str + " COP";
+}
+function fmtUSD(n) {
+  if (!n && n !== 0) return "-";
+  return (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function renderRendimientos() {
+  var el = document.getElementById("rendSection");
+  if (!el) return;
+
+  var usdcop    = cop.usdcop      || 0;
+  var avgPurch  = cop.avg_purchase || usdcop;
+  var ibr       = cop.ibr         || 0;
+
+  if (!usdcop) {
+    el.innerHTML = "<div style='color:var(--sub);font-size:11px;padding:8px 0'>Datos COP no disponibles — esperar próxima ejecución de GitHub Actions.</div>";
+    return;
+  }
+
+  // ── Calcular por posición ────────────────────────────────────────────────
+  var rows = [];
+  var totCostUSD = 0, totValUSD = 0;
+
+  POS.forEach(function(p) {
+    var pr      = getP(p);
+    var costUSD = p.avg * p.qty;
+    var valUSD  = pr    * p.qty;
+    var pnlUSD  = valUSD - costUSD;
+    var pnlPct  = p.avg > 0 ? (pr - p.avg) / p.avg * 100 : 0;
+
+    var costCOP = costUSD * avgPurch;
+    var valCOP  = valUSD  * usdcop;
+    var pnlCOP  = valCOP  - costCOP;
+    // Desglose: efecto precio vs efecto divisa
+    var mktEff  = pnlUSD  * usdcop;
+    var fxEff   = costUSD * (usdcop - avgPurch);
+
+    totCostUSD += costUSD;
+    totValUSD  += valUSD;
+
+    rows.push({
+      t: p.t, n: p.n, qty: p.qty,
+      pr: pr, avg: p.avg,
+      pnlUSD: pnlUSD, pnlPct: pnlPct,
+      costUSD: costUSD, valUSD: valUSD,
+      costCOP: costCOP, valCOP: valCOP,
+      pnlCOP: pnlCOP, mktEff: mktEff, fxEff: fxEff
+    });
+  });
+
+  // Opciones
+  var optPnlUSD = 0;
+  OPTS.forEach(function(o) { optPnlUSD += (o.mkt - o.avg) * o.pos * 100; });
+  var optPnlCOP = optPnlUSD * usdcop;
+
+  var totPnlUSD  = (totValUSD - totCostUSD) + optPnlUSD;
+  var totPnlPct  = totCostUSD > 0 ? totPnlUSD / totCostUSD * 100 : 0;
+  var totValCOP  = totValUSD  * usdcop;
+  var totCostCOP = totCostUSD * avgPurch;
+  var totPnlCOP  = (totValCOP - totCostCOP) + optPnlCOP;
+  var totPnlCOPpct = totCostCOP > 0 ? totPnlCOP / totCostCOP * 100 : 0;
+  var fxTotal    = totCostUSD * (usdcop - avgPurch);
+  var mktTotal   = totPnlUSD  * usdcop;
+  var vsIBR      = totPnlCOPpct - ibr;
+
+  // ── Tarjetas resumen ─────────────────────────────────────────────────────
+  var summCards = [
+    { label:"Valor Portafolio USD",  val: fmtUSD(totValUSD),
+      sub: "Costo: " + fmtUSD(totCostUSD),
+      badge: (totPnlUSD>=0?"bg":"br"), badgeTxt: (totPnlUSD>=0?"+":"")+totPnlPct.toFixed(2)+"%" },
+    { label:"P&L Total USD",         val: fmtUSD(totPnlUSD),
+      sub: "Opciones: " + fmtUSD(optPnlUSD),
+      badge: (totPnlUSD>=0?"bg":"br"), badgeTxt: (totPnlUSD>=0?"+":"")+totPnlPct.toFixed(2)+"%" },
+    { label:"Valor Portafolio COP",  val: fmtCOP(totValCOP),
+      sub: "Costo: " + fmtCOP(totCostCOP),
+      badge: (totPnlCOP>=0?"bg":"br"), badgeTxt: (totPnlCOP>=0?"+":"")+totPnlCOPpct.toFixed(2)+"%" },
+    { label:"P&L Total COP",         val: fmtCOP(totPnlCOP),
+      sub: "vs IBR " + ibr.toFixed(2) + "%: " + (vsIBR>=0?"+":"")+vsIBR.toFixed(2)+"pts",
+      badge: (vsIBR>=0?"bg":"br"), badgeTxt: (totPnlCOP>=0?"+":"")+totPnlCOPpct.toFixed(2)+"%" }
+  ];
+
+  var summHTML = "<div class='rend-summary'>" +
+    summCards.map(function(c) {
+      return "<div class='rs-card'>" +
+        "<div class='rs-label'>" + c.label + "</div>" +
+        "<div class='rs-val " + (c.badge==="bg"?"pos":c.badge==="br"?"neg":"") + "'>" + c.val + "</div>" +
+        "<div class='rs-sub'>" + c.sub + "</div>" +
+        "<span class='rs-badge " + c.badge + "'>" + c.badgeTxt + "</span>" +
+        "</div>";
+    }).join("") + "</div>";
+
+  // ── Tabla de posiciones ──────────────────────────────────────────────────
+  var thead = "<thead><tr>" +
+    "<th style='text-align:left'>Posición</th>" +
+    "<th>Precio / Costo</th>" +
+    "<th>Valor USD</th>" +
+    "<th>P&L USD</th>" +
+    "<th>P&L %</th>" +
+    "<th>Valor COP</th>" +
+    "<th>P&L COP</th>" +
+    "<th title='Efecto precio'>Mkt 📈</th>" +
+    "<th title='Efecto divisa'>FX 💱</th>" +
+    "</tr></thead>";
+
+  var tbody = "<tbody>" + rows.map(function(r) {
+    var barW = Math.min(Math.abs(r.pnlPct), 100);
+    var barC = r.pnlPct >= 0 ? "var(--green)" : "var(--red)";
+    return "<tr>" +
+      "<td><div class='rend-ticker'>" + r.t + "</div><div class='rend-name'>" + r.n + " · " + r.qty + " acc</div></td>" +
+      "<td>" + fmtUSD(r.pr) + "<div style='font-size:9px;color:var(--sub)'>avg " + fmtUSD(r.avg) + "</div></td>" +
+      "<td>" + fmtUSD(r.valUSD) + "<div style='font-size:9px;color:var(--sub)'>" + fmtUSD(r.costUSD) + "</div></td>" +
+      "<td class='" + (r.pnlUSD>=0?"pos":"neg") + "'>" + fmtUSD(r.pnlUSD) + "</td>" +
+      "<td class='" + (r.pnlPct>=0?"pos":"neg") + "'>" +
+        (r.pnlPct>=0?"+":"") + r.pnlPct.toFixed(2) + "%" +
+        "<div class='pbar'><div class='pbar-f' style='width:" + barW + "%;background:" + barC + "'></div></div>" +
+      "</td>" +
+      "<td>" + fmtCOP(r.valCOP) + "<div style='font-size:9px;color:var(--sub)'>" + fmtCOP(r.costCOP) + "</div></td>" +
+      "<td class='" + (r.pnlCOP>=0?"pos":"neg") + "'>" + fmtCOP(r.pnlCOP) + "</td>" +
+      "<td class='" + (r.mktEff>=0?"pos":"neg") + "' style='font-size:10px'>" + fmtCOP(r.mktEff) + "</td>" +
+      "<td class='" + (r.fxEff>=0?"pos":"neg") + "' style='font-size:10px'>" + fmtCOP(r.fxEff) + "</td>" +
+      "</tr>";
+  }).join("") +
+  // Fila totales
+  "<tr>" +
+    "<td><strong>TOTAL</strong></td>" +
+    "<td>-</td>" +
+    "<td><strong>" + fmtUSD(totValUSD) + "</strong></td>" +
+    "<td class='" + (totPnlUSD>=0?"pos":"neg") + "'><strong>" + fmtUSD(totPnlUSD) + "</strong></td>" +
+    "<td class='" + (totPnlPct>=0?"pos":"neg") + "'><strong>" + (totPnlPct>=0?"+":"") + totPnlPct.toFixed(2) + "%</strong></td>" +
+    "<td><strong>" + fmtCOP(totValCOP) + "</strong></td>" +
+    "<td class='" + (totPnlCOP>=0?"pos":"neg") + "'><strong>" + fmtCOP(totPnlCOP) + "</strong></td>" +
+    "<td class='" + (mktTotal>=0?"pos":"neg") + "'><strong>" + fmtCOP(mktTotal) + "</strong></td>" +
+    "<td class='" + (fxTotal>=0?"pos":"neg") + "'><strong>" + fmtCOP(fxTotal) + "</strong></td>" +
+  "</tr>" +
+  "</tbody>";
+
+  var tableHTML = "<div style='overflow-x:auto;margin-bottom:14px'>" +
+    "<table class='rend-table' style='background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden'>" +
+    thead + tbody + "</table></div>";
+
+  // ── Tarjeta desglose divisa / benchmarks ─────────────────────────────────
+  var fxHTML = "<div class='fx-card'>" +
+    "<div style='font-size:11px;font-weight:700;margin-bottom:8px;color:var(--sub);text-transform:uppercase;letter-spacing:.06em'>Desglose P&L COP · Efecto Precio vs Efecto Divisa</div>" +
+    "<div class='fx-row'><span class='fx-label'>📈 Efecto Mercado <span style='font-size:10px;color:var(--sub)'>(P&L USD × tasa actual)</span></span>" +
+      "<span class='fx-val " + (mktTotal>=0?"pos":"neg") + "'>" + fmtCOP(mktTotal) + "</span></div>" +
+    "<div class='fx-row'><span class='fx-label'>💱 Efecto Divisa <span style='font-size:10px;color:var(--sub)'>(" + Math.round(avgPurch).toLocaleString("es-CO") + " → " + Math.round(usdcop).toLocaleString("es-CO") + " COP/USD)</span></span>" +
+      "<span class='fx-val " + (fxTotal>=0?"pos":"neg") + "'>" + fmtCOP(fxTotal) + "</span></div>" +
+    "<div class='fx-row'><span class='fx-label'>🏦 IBR Overnight <span style='font-size:10px;color:var(--sub)'>(tasa libre de riesgo Colombia)</span></span>" +
+      "<span class='fx-val'>" + ibr.toFixed(2) + "% anual</span></div>" +
+    "<div class='fx-row'><span class='fx-label'>📊 Rendimiento portafolio COP vs IBR</span>" +
+      "<span class='fx-val " + (vsIBR>=0?"pos":"neg") + "'>" + (vsIBR>=0?"+":"") + vsIBR.toFixed(2) + " pts</span></div>" +
+    "<div class='fx-row'><span class='fx-label'>💵 Tasa compra promedio ponderada</span>" +
+      "<span class='fx-val'>$" + Math.round(avgPurch).toLocaleString("es-CO") + " COP/USD</span></div>" +
+    "<div class='fx-row' style='border-bottom:none'><span class='fx-label'>📅 Tasa efectiva actual <span style='font-size:10px;color:var(--sub)'>(spread aplicado)</span></span>" +
+      "<span class='fx-val'>$" + Math.round(usdcop).toLocaleString("es-CO") + " COP/USD</span></div>" +
+    "</div>";
+
+  el.innerHTML = summHTML + tableHTML + fxHTML;
+}
+
 function renderSidebar() {
   document.getElementById("eventsContainer").innerHTML = EVENTS.map(function(e){
     return "<div class='ev'><div class='ev-date'>"+e.date+"</div><div class='ev-title'>"+e.title+"</div><div class='ev-note'>"+e.note+"</div><div class='ev-chips'>"+e.tickers.map(function(t){return "<span class='chip'>"+t+"</span>";}).join("")+"</div></div>";
@@ -471,6 +682,12 @@ function renderIdx() {
   var b=lp.BTC, e=lp.ETH;
   if(b){setEl("btc","$"+Math.round(b.price).toLocaleString(),"idx-v "+cc(b.chg));setEl("btcC",pct(b.chg)+(b.label?"<span style='font-size:9px;opacity:.65'> "+b.label+"</span>":""),cc(b.chg));}
   if(e){setEl("eth","$"+Math.round(e.price).toLocaleString(),"idx-v "+cc(e.chg));setEl("ethC",pct(e.chg)+(e.label?"<span style='font-size:9px;opacity:.65'> "+e.label+"</span>":""),cc(e.chg));}
+  // USD/COP desde prices.json (via cop object)
+  if(cop.usdcop){
+    setEl("copr", Math.round(cop.usdcop).toLocaleString("es-CO"), "idx-v");
+    var copLbl = cop.avg_purchase ? "<span style='font-size:9px;opacity:.65'> compra " + Math.round(cop.avg_purchase).toLocaleString("es-CO") + "</span>" : "";
+    setEl("copC", "Efectiva" + copLbl, "");
+  }
 }
 
 function mktStatus() {
@@ -498,7 +715,7 @@ async function loadAll() {
   await Promise.all([loadPrices(), loadRecs(), loadIBKR()]);
 
   renderRecs(); renderHyps();
-  mktStatus(); renderIdx(); renderPosCards(); renderOpts(); renderAlfa(); buildCharts();
+  mktStatus(); renderIdx(); renderPosCards(); renderOpts(); renderAlfa(); renderRendimientos(); buildCharts();
 
   setEl("lastUpdate", new Date().toLocaleTimeString("es-CO",{hour:"2-digit",minute:"2-digit"})+" h Bogota");
 }
