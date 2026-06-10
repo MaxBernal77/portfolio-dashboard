@@ -7,12 +7,13 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 import anthropic
 
-# Configuracion COP
-IBR_FALLBACK     = 8.25
-AVG_PURCHASE_COP = 4000
-COP_SPREAD       = 0.96
+# Unica constante manual — spread entre tasa interbancaria y tasa real al convertir en Colombia
+COP_SPREAD = 0.96
 
-# Portafolio fallback si IBKR Flex no responde
+# Valores dinamicos — se calculan automaticamente cada ejecucion
+IBR_FALLBACK     = 8.25   # solo si BanRep no responde
+AVG_PURCHASE_COP = None   # se calcula desde depositos IBKR; None = sin datos aun
+IBKR_CASH_BALANCE = -605.34  # se actualiza desde NAV de IBKR Flex
 PORTFOLIO_FALLBACK = [
     {"ticker": "EC",   "name": "Ecopetrol",      "qty": 110, "avg_cost": 15.19,   "type": "stock",  "sector": "Energia"},
     {"ticker": "EIMI", "name": "MSCI EM IMI ETF", "qty": 25,  "avg_cost": 50.948,  "type": "etf",    "sector": "Emergentes"},
@@ -73,6 +74,32 @@ def get_ibkr_positions():
             return None
 
         positions = []
+        cash_balance = 0.0
+
+        # Leer NAV para obtener cash balance real
+        for nav in root2.iter("NAVInBase"):
+            cash = nav.get("cash") or nav.get("Cash")
+            if cash:
+                try:
+                    cash_balance = float(cash)
+                    print("Cash balance desde NAV: $" + str(round(cash_balance, 2)))
+                except ValueError:
+                    pass
+
+        # Si no vino en NAVInBase buscar en ChangeInNAVInBase
+        if cash_balance == 0.0:
+            for nav in root2.iter("ChangeInNAVInBase"):
+                cash = nav.get("endingCash") or nav.get("cash")
+                if cash:
+                    try:
+                        cash_balance = float(cash)
+                        print("Cash balance desde ChangeInNAV: $" + str(round(cash_balance, 2)))
+                    except ValueError:
+                        pass
+
+        if cash_balance == 0.0:
+            cash_balance = IBKR_CASH_BALANCE
+            print("Cash balance usando fallback: $" + str(cash_balance))
         for pos in root2.iter("OpenPosition"):
             symbol   = pos.get("symbol", "")
             asset    = pos.get("assetCategory", "STK")
@@ -107,8 +134,8 @@ def get_ibkr_positions():
                 if amount > 0 and currency == "USD":
                     deposits.append({"date": date_str[:8], "amount": amount})
 
-        print("IBKR Flex: " + str(len(positions)) + " posiciones, " + str(len(deposits)) + " depositos")
-        return {"positions": positions, "deposits": deposits}
+        print("IBKR Flex: " + str(len(positions)) + " posiciones | Cash: $" + str(round(cash_balance, 2)))
+        return {"positions": positions, "deposits": deposits, "cash_balance": cash_balance}
 
     except Exception as e:
         print("IBKR Flex error: " + str(e))
@@ -266,7 +293,19 @@ def build_context(prices, crypto, ibkr_data=None):
 
     total_pnl  = total_value - total_cost
     total_pnlp = (total_pnl / total_cost * 100) if total_cost else 0
-    lines.append("\nTOTAL: $" + str(round(total_value, 0)) + " | P&L $" + str(round(total_pnl, 0)) + " (" + str(round(total_pnlp, 1)) + "%)")
+
+    # Net liquidation = valor bruto posiciones + cash (negativo si hay margen)
+    net_liq    = total_value + IBKR_CASH_BALANCE
+    net_pnl    = net_liq - total_cost
+    net_pnlp   = (net_pnl / total_cost * 100) if total_cost else 0
+
+    lines.append(
+        "\nRESUMEN USD:" +
+        "\n  Valor bruto posiciones: $" + str(round(total_value, 0)) +
+        "\n  Cash / Margen: $" + str(round(IBKR_CASH_BALANCE, 0)) +
+        "\n  NET LIQUIDATION: $" + str(round(net_liq, 0)) +
+        " | P&L real: $" + str(round(net_pnl, 0)) + " (" + str(round(net_pnlp, 1)) + "%)"
+    )
 
     lines.append("\nOPCIONES:")
     if options:
@@ -294,7 +333,7 @@ def build_context(prices, crypto, ibkr_data=None):
     )
     lines.append("Fuente: " + ("IBKR Flex" if ibkr_positions else "fallback"))
 
-    return "\n".join(lines), total_pnl, total_pnlp, spx, btc, btc_chg, total_value, total_cost
+    return "\n".join(lines), net_pnl, net_pnlp, spx, btc, btc_chg, net_liq, total_cost
 
 
 STRATEGIC_PROMPT = (
@@ -359,10 +398,13 @@ def generate_daily_alert(context_str, btc, btc_chg, cop_info):
         system     = ALERT_PROMPT,
         messages   = [{"role": "user", "content":
             "Hoy es " + datetime.now().strftime("%A %d de %B de %Y") + ".\n\n" + context_str +
-            "\nCOP: USD/COP=" + str(cop_info["usdcop"]) +
-            " | Portafolio=" + "${:,.0f}".format(cop_info["value_cop"]) + " COP" +
-            " | P&L=" + "${:,.0f}".format(cop_info["pnl_cop"]) + " COP (" + str(cop_info["pnl_pct"]) + "%)" +
-            " | vs IBR " + str(cop_info["ibr"]) + "%: " + str(cop_info["vs_ibr"]) + "pts" +
+            "\nRESUMEN COP:" +
+            "\n  USD/COP efectivo: " + str(int(cop_info["usdcop"])) +
+            "\n  Net Liq en COP: $" + "{:,.0f}".format(cop_info["value_cop"]) +
+            "\n  P&L en COP: $" + "{:,.0f}".format(cop_info["pnl_cop"]) + " (" + str(cop_info["pnl_pct"]) + "%)" +
+            "\n  Efecto mercado: $" + "{:,.0f}".format(cop_info["mkt_eff"]) +
+            "\n  Efecto divisa: $" + "{:,.0f}".format(cop_info["fx_eff"]) +
+            "\n  vs IBR " + str(cop_info["ibr"]) + "%: " + str(cop_info["vs_ibr"]) + "pts" +
             "\nFOMC 17-18 jun. BTC $" + str(btc) + " (" + str(round(btc_chg,1)) + "%)."
         }]
     )
@@ -387,22 +429,33 @@ WEEKLY_PROMPT = (
 
 
 def generate_weekly_recs(context_str):
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-    msg    = client.messages.create(
-        model      = "claude-sonnet-4-6",
-        max_tokens = 4000,
-        system     = WEEKLY_PROMPT,
-        messages   = [{"role": "user", "content":
-            "Hoy es " + datetime.now().strftime("%A %d de %B de %Y") + ".\n\n" + context_str +
-            "\nContexto: S&P YTD +8.2%, objetivo alfa S&P+1pt, buying power ~$9,116, FOMC 17-18 jun."
-        }]
+    client  = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    today   = datetime.now().strftime("%A %d de %B de %Y")
+    content = (
+        "Hoy es " + today + ".\n\n" + context_str +
+        "\n\nContexto: S&P YTD +8.2%, objetivo alfa S&P+1pt, buying power ~$9,116, FOMC 17-18 jun."
     )
-    raw = msg.content[0].text.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    return json.loads(raw)
+    for attempt in range(2):
+        msg = client.messages.create(
+            model      = "claude-sonnet-4-6",
+            max_tokens = 6000,
+            system     = WEEKLY_PROMPT,
+            messages   = [{"role": "user", "content": content}]
+        )
+        raw = msg.content[0].text.strip()
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        raw = raw.strip()
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError as e:
+            print("JSON error intento " + str(attempt+1) + ": " + str(e))
+            if attempt == 0:
+                # Pedir version mas corta
+                content = content + "\n\nIMPORTANTE: Genera JSON mas conciso. Limita body/thesis a 1 oracion."
+    raise ValueError("No se pudo generar JSON valido despues de 2 intentos")
 
 
 if __name__ == "__main__":
@@ -420,22 +473,44 @@ if __name__ == "__main__":
     context_str, total_pnl, total_pnlp, spx, btc, btc_chg, total_usd, cost_usd = build_context(prices, crypto, ibkr_data)
     print(context_str)
 
-    print("\nObteniendo USD/COP e IBR...")
+    # Tomar cash balance real de IBKR si está disponible
+    if ibkr_data and "cash_balance" in ibkr_data:
+        IBKR_CASH_BALANCE = ibkr_data["cash_balance"]
+        print("Cash balance actualizado desde IBKR Flex: $" + str(round(IBKR_CASH_BALANCE, 2)))
     usdcop     = get_usdcop()
     ibr_annual = get_ibr()
 
     # Calcular tasa promedio COP real desde depositos IBKR
+    # Tasa promedio COP real desde depositos IBKR
     deposits     = ibkr_data.get("deposits", []) if ibkr_data else []
-    avg_purchase = calc_avg_purchase_cop(deposits) if deposits else AVG_PURCHASE_COP
+    avg_purchase = calc_avg_purchase_cop(deposits) if deposits else None
+
+    if avg_purchase is None:
+        # Sin depositos aun — usar tasa actual como aproximacion
+        avg_purchase = round(usdcop / COP_SPREAD, 0)
+        print("Sin depositos IBKR — usando tasa actual como avg_purchase: " + str(avg_purchase))
     save_market_config(usdcop, ibr_annual, avg_purchase)
 
-    # Metricas COP
-    value_cop  = total_usd * usdcop
+    # Metricas COP usando NET LIQUIDATION (no valor bruto)
+    value_cop  = total_usd * usdcop        # total_usd ya es net_liq
     cost_cop   = cost_usd  * avg_purchase
     pnl_cop    = value_cop - cost_cop
     pnl_pct    = round((pnl_cop / cost_cop * 100) if cost_cop else 0, 2)
+    mkt_eff    = (total_usd - cost_usd) * usdcop
+    fx_eff     = cost_usd * (usdcop - avg_purchase)
     vs_ibr     = round(pnl_pct - ibr_annual, 2)
-    cop_info   = {"usdcop": usdcop, "value_cop": value_cop, "pnl_cop": pnl_cop, "pnl_pct": pnl_pct, "ibr": ibr_annual, "vs_ibr": vs_ibr}
+    cop_info   = {
+        "usdcop":    usdcop,
+        "value_cop": value_cop,
+        "pnl_cop":   pnl_cop,
+        "pnl_pct":   pnl_pct,
+        "mkt_eff":   mkt_eff,
+        "fx_eff":    fx_eff,
+        "ibr":       ibr_annual,
+        "vs_ibr":    vs_ibr,
+        "net_liq":   total_usd,
+        "cash":      IBKR_CASH_BALANCE,
+    }
 
     print("\nGenerando alerta diaria...")
     alert = generate_daily_alert(context_str, btc, btc_chg, cop_info)
