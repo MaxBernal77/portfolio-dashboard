@@ -173,7 +173,7 @@ def get_usdcop():
     try:
         url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=COP%3DX"
         r   = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=8)
-        raw = r.json()["quoteResponse"]["result"][0].get("regularMarketPrice", 4200)
+        raw = r.json()["quoteResponse"]["result"][0].get("regularMarketPrice", 3850)
         return round(raw * COP_SPREAD, 2)
     except Exception:
         return round(4200 * COP_SPREAD, 2)  # fallback con tasa aproximada
