@@ -8,7 +8,14 @@ import json, os, re, time, requests, xml.etree.ElementTree as ET
 from datetime import datetime
 import anthropic
 
-# ── UNICA CONSTANTE MANUAL ────────────────────────────────────────────────────
+# Nombres en español para fechas (GitHub Actions corre en inglés)
+MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"]
+DIAS  = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"]
+
+def fecha_es(dt):
+    return DIAS[dt.weekday()] + " " + str(dt.day) + " de " + MESES[dt.month-1] + " de " + str(dt.year)
+
+
 COP_SPREAD = 0.96   # spread entre tasa interbancaria y tasa real en Colombia
 
 # ── FALLBACKS (usados solo si las fuentes automaticas fallan) ─────────────────
@@ -363,10 +370,14 @@ def get_strategic_days(today, context_str):
 # ── ALERTAS Y RECOMENDACIONES ─────────────────────────────────────────────────
 ALERT_PROMPT = (
     "Eres un asesor financiero senior. Genera alerta diaria para Telegram en espanol. "
-    "Maximo 30 lineas con emojis. Estructura: "
-    "ALERTA PREMERCADO [fecha] | MERCADO | PORTAFOLIO HOY (USD) | "
-    "PORTAFOLIO EN COP (net liq COP, P&L COP, efecto divisa, vs IBR) | "
-    "OPCIONES | ACCION DEL DIA (EJECUTAR/ESPERAR/NO EJECUTAR) | EVENTO CLAVE"
+    "Maximo 30 lineas con emojis. Estructura EXACTA: "
+    "ALERTA PREMERCADO [fecha] | "
+    "MERCADO (S&P Nasdaq BTC variacion) | "
+    "PORTAFOLIO HOY USD: usar SIEMPRE el NET LIQUIDATION (ya descuenta margen), NO el valor bruto. Mostrar: Net Liq, Cash/Margen, P&L | "
+    "PORTAFOLIO EN COP: Net Liq en pesos, P&L COP, efecto divisa, vs IBR | "
+    "OPCIONES: estado | "
+    "ACCION DEL DIA: una sola, EJECUTAR/ESPERAR/NO EJECUTAR | "
+    "EVENTO CLAVE HOY"
 )
 WEEKLY_PROMPT = (
     "Eres un asesor financiero senior. Genera recomendaciones en JSON valido sin backticks. "
@@ -383,16 +394,17 @@ WEEKLY_PROMPT = (
 
 def generate_daily_alert(context_str, spx, btc, btc_chg, cop_info):
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-    msg    = client.messages.create(model="claude-sonnet-4-6", max_tokens=700,
+    msg = client.messages.create(model="claude-sonnet-4-6", max_tokens=700,
                  system=ALERT_PROMPT,
                  messages=[{"role":"user","content":
-                     "Hoy es " + datetime.now().strftime("%A %d de %B de %Y") + ".\n\n" + context_str +
+                     "Hoy es " + fecha_es(datetime.now()) + ".\n\n" + context_str +
                      "\nCOP: USD/COP=" + str(int(cop_info["usdcop"])) +
-                     " | Net Liq=" + "${:,.0f}".format(cop_info["net_liq_cop"]) + " COP" +
-                     " | P&L=" + "${:,.0f}".format(cop_info["pnl_cop"]) + " COP (" + str(cop_info["pnl_pct"]) + "%)" +
+                     " | Net Liq COP=" + "${:,.0f}".format(cop_info["net_liq_cop"]) +
+                     " | P&L COP=" + "${:,.0f}".format(cop_info["pnl_cop"]) + " (" + str(cop_info["pnl_pct"]) + "%)" +
                      " | Efecto mercado=" + "${:,.0f}".format(cop_info["mkt_eff"]) +
                      " | Efecto divisa=" + "${:,.0f}".format(cop_info["fx_eff"]) +
                      " | vs IBR " + str(cop_info["ibr"]) + "%: " + str(cop_info["vs_ibr"]) + "pts" +
+                     "\nRECORDATORIO: el valor del portafolio es NET LIQUIDATION = valor bruto + cash (negativo si hay margen). NO usar valor bruto." +
                      "\nFOMC 17-18 jun. BTC $" + str(btc) + " (" + str(round(btc_chg,1)) + "%)."
                  }])
     return msg.content[0].text
@@ -433,7 +445,11 @@ if __name__ == "__main__":
     ibr_annual = get_ibr()
 
     print("5. Calculando tasa COP promedio...")
-    usdcop_raw   = yahoo_prices.get("COP=X",{}).get("price") or 4200
+    usdcop_raw = yahoo_prices.get("COP=X",{}).get("price") or 4200
+    # Yahoo Finance COP=X a veces devuelve el inverso (USD por COP ~0.00024)
+    if usdcop_raw < 10:
+        usdcop_raw = round(1.0 / usdcop_raw, 2)
+        print("COP=X era inverso, corregido a: " + str(usdcop_raw))
     deposits     = ibkr_data.get("deposits",[]) if ibkr_data else []
     avg_purchase = get_avg_purchase_cop(deposits, usdcop_raw)
 
