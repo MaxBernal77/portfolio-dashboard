@@ -1,0 +1,33 @@
+{
+  "updated": "2026-06-10T01:33:40.662485",
+  "ibr_annual": 8.25,
+  "avg_purchase_cop": 4200,
+  "usdcop_effective": 4032.0,
+  "prices": {
+    "IDX_COP": {
+      "price": 4032.0,
+      "chg": 0,
+      "label": "Cierre"
+    },
+    "BTC": {
+      "price": 61760,
+      "chg": -1.6394015536564732,
+      "label": ""
+    },
+    "GBTC": {
+      "price": 47.56,
+      "chg": -1.6394015536564732,
+      "label": "BTC-ratio"
+    },
+    "ETH": {
+      "price": 1639.78,
+      "chg": -1.8176930903904869,
+      "label": ""
+    },
+    "ETHE": {
+      "price": 13.94,
+      "chg": -1.8176930903904869,
+      "label": "ETH-ratio"
+    }
+  }
+}
