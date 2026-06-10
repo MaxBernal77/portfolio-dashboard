@@ -253,12 +253,15 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 </div>
 
 <script>
-// ── CONFIGURACION ──────────────────────────────────────────────────────────
-var CASH_BALANCE     = -605.34;  // Actualizado desde IBKR bridge
-var BUYING_POWER     = 10692.12;
-var IBR_ANNUAL       = 8.25;     // Actualizado desde market_config.json
-var AVG_PURCHASE_COP = 4000;     // Actualizado desde market_config.json
-var COP_EFFECTIVE    = null;     // Actualizado desde market_config.json
+// Unica constante manual
+var COP_SPREAD = 0.96;
+
+// Valores dinamicos — se cargan desde market_config.json (generado por GitHub Actions)
+var CASH_BALANCE     = -605.34;  // actualizado desde IBKR bridge o market_config
+var BUYING_POWER     = 10692.12; // actualizado desde IBKR bridge
+var IBR_ANNUAL       = 8.25;     // actualizado desde market_config (BanRep)
+var AVG_PURCHASE_COP = null;     // calculado desde depositos IBKR — null hasta primer run
+var COP_EFFECTIVE    = null;     // tasa efectiva con spread — calculada desde market_config
 
 // ── PORTAFOLIO ──────────────────────────────────────────────────────────────
 var POS = [
@@ -401,11 +404,14 @@ function loadMarketConfig(){
     .then(function(r){return r.ok?r.json():null;})
     .then(function(d){
       if(!d)return;
-      if(d.ibr_annual)IBR_ANNUAL=d.ibr_annual;
-      if(d.usdcop_effective)COP_EFFECTIVE=d.usdcop_effective;
-      if(d.avg_purchase_cop)AVG_PURCHASE_COP=d.avg_purchase_cop;
-      var upd=d.updated?new Date(d.updated).toLocaleDateString("es-CO",{day:"numeric",month:"short"}):"";
-      setEl("copUpdated","market_config actualizado: "+upd);
+      if(d.ibr_annual)       IBR_ANNUAL    = d.ibr_annual;
+      if(d.usdcop_effective) COP_EFFECTIVE = d.usdcop_effective;
+      if(d.avg_purchase_cop) AVG_PURCHASE_COP = d.avg_purchase_cop;
+      if(d.cash_balance)     CASH_BALANCE  = d.cash_balance;
+      if(d.buying_power)     BUYING_POWER  = d.buying_power;
+      var upd = d.updated ? new Date(d.updated).toLocaleDateString("es-CO",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) : "";
+      setEl("copUpdated","market_config: " + upd);
+      console.log("Config cargado: IBR=" + IBR_ANNUAL + "% | USD/COP=" + COP_EFFECTIVE + " | avg_cop=" + AVG_PURCHASE_COP + " | cash=" + CASH_BALANCE);
     }).catch(function(){setEl("copUpdated","Sin market_config.json aun");});
 }
 function loadRecs(){
