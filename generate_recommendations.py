@@ -573,6 +573,7 @@ if __name__ == "__main__":
     print("6. Guardando prices.json y market_config.json...")
     save_prices_json(ibkr_data, yahoo_prices, crypto, usdcop_raw, ibr_annual, avg_purchase, cash_balance)
     save_market_config(usdcop_raw, ibr_annual, avg_purchase, cash_balance)
+    update_portfolio_history(ibkr_data, yahoo_prices, crypto, usdcop_raw, ibr_annual, avg_purchase, cash_balance)
 
     print("7. Construyendo contexto...")
     context_str, net_pnl, net_pnlp, net_liq, cost_usd, spx, btc, btc_chg = build_context(
