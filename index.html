@@ -131,6 +131,31 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
     <button class="btn" onclick="loadAll()">Actualizar</button>
   </div>
 
+  <!-- RESUMEN USD -->
+  <div class="sec" style="margin-top:0">💵 Resumen en USD</div>
+  <div class="g4" style="margin-bottom:14px">
+    <div class="idx">
+      <div class="idx-l">Net Liquidation</div>
+      <div class="idx-v" id="netLiqVal">-</div>
+      <div class="idx-c" style="color:var(--sub)">Valor real de la cuenta</div>
+    </div>
+    <div class="idx">
+      <div class="idx-l">Posiciones (Gross)</div>
+      <div class="idx-v" id="grossPosVal">-</div>
+      <div class="idx-c" style="color:var(--sub)">Valor bruto de activos</div>
+    </div>
+    <div class="idx">
+      <div class="idx-l">Cash / Margen</div>
+      <div class="idx-v" id="cashVal">-</div>
+      <div class="idx-c" id="cashLbl" style="color:var(--sub)">Apalancamiento activo</div>
+    </div>
+    <div class="idx">
+      <div class="idx-l">Buying Power</div>
+      <div class="idx-v pos" id="bpVal">-</div>
+      <div class="idx-c" style="color:var(--sub)">Disponible para operar</div>
+    </div>
+  </div>
+
   <!-- MERCADO -->
   <div class="sec" style="margin-top:0">Mercado en Vivo</div>
   <div class="g4">
@@ -205,8 +230,9 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 </div>
 
 <script>
-// Valores dinamicos — se cargan desde market_config.json (generado diariamente por GitHub Actions)
-var IBR_ANNUAL       = 8.25;   // fallback hasta que cargue market_config.json
+// Balance de efectivo (negativo = margen/apalancamiento) — se actualiza desde IBKR bridge
+var CASH_BALANCE = -605.34;
+var BUYING_POWER = 10692.12;   // fallback hasta que cargue market_config.json
 var AVG_PURCHASE_COP = 4000;   // tasa COP/USD promedio al comprar — actualizar manualmente
 var COP_EFFECTIVE    = null;   // tasa efectiva con spread (se carga de market_config.json)
 
@@ -428,7 +454,17 @@ function spark(prices) {
   return "<svg width='" + w + "' height='" + h + "' style='display:block;margin-bottom:4px'><polyline points='" + pts + "' fill='none' stroke='" + trend + "' stroke-width='1.5' stroke-linejoin='round'/></svg>";
 }
 
-function renderCOP() {
+function renderUSD() {
+  var grossPos = POS.reduce(function(s,p){ return s + getP(p)*p.qty; }, 0);
+  var netLiq   = grossPos + CASH_BALANCE;  // cash negativo = margen restado
+  setEl("netLiqVal",  fmt(netLiq),   "idx-v " + cc(netLiq));
+  setEl("grossPosVal",fmt(grossPos), "idx-v");
+  setEl("cashVal",    fmt(CASH_BALANCE), "idx-v " + cc(CASH_BALANCE));
+  setEl("cashLbl",    CASH_BALANCE < 0 ? "Margen utilizado" : "Cash disponible");
+  setEl("bpVal",      fmt(BUYING_POWER));
+}
+
+
   var copD   = lp["IDX_COP"];
   // Usar tasa efectiva de market_config, o Yahoo x 0.96, o fallback
   var usdcop;
@@ -636,12 +672,16 @@ function mktStatus() {
 }
 
 function renderAlfa() {
-  var pT=0,cT=0;
-  POS.forEach(function(p){pT+=(getP(p)-p.avg)*p.qty;cT+=p.avg*p.qty;});
-  OPTS.forEach(function(o){pT+=(o.mkt-o.avg)*o.pos*100;});
-  var pp=cT>0?(pT/cT)*100:0, al=pp-8.2;
-  setEl("sb-port",pct(pp),"alfa-v "+cc(pp));
-  setEl("sb-alpha",(al>=0?"+":"")+al.toFixed(2)+"pts","alfa-v "+cc(al));
+  var grossPos = POS.reduce(function(s,p){ return s + getP(p)*p.qty; }, 0);
+  var costUSD  = POS.reduce(function(s,p){ return s + p.avg*p.qty;   }, 0);
+  var pnlOpts  = OPTS.reduce(function(s,o){ return s + (o.mkt-o.avg)*o.pos*100; }, 0);
+  // P&L real = Net Liq actual - costo invertido (sin contar el cash/margen)
+  var netLiq   = grossPos + CASH_BALANCE;
+  var pnlTotal = netLiq - costUSD + pnlOpts;
+  var pp       = costUSD > 0 ? (pnlTotal / costUSD * 100) : 0;
+  var al       = pp - 8.2;
+  setEl("sb-port", pct(pp), "alfa-v " + cc(pp));
+  setEl("sb-alpha", (al>=0?"+":"") + al.toFixed(2) + "pts", "alfa-v " + cc(al));
 }
 
 // ── LOAD ALL ──────────────────────────────────────────────────────────────────
@@ -659,7 +699,7 @@ async function loadAll() {
   await yfBatch();
   if(lp.BTC&&lp.GBTC&&!lp.GBTC.ibkr){lp.GBTC.chg=lp.BTC.chg;lp.GBTC.label=lp.BTC.label;}
   if(lp.ETH&&lp.ETHE&&!lp.ETHE.ibkr){lp.ETHE.chg=lp.ETH.chg;lp.ETHE.label=lp.ETH.label;}
-  mktStatus(); renderIdx(); renderCOP(); renderPosCards(); renderOpts(); renderAlfa(); buildCharts();
+  mktStatus(); renderIdx(); renderUSD(); renderCOP(); renderPosCards(); renderOpts(); renderAlfa(); buildCharts();
   Promise.all(POS.map(function(p){
     return yfHist(p.yf).then(function(h){if(h)p.hist=h;});
   })).then(function(){renderPosCards();});
