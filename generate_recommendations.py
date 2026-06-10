@@ -173,7 +173,7 @@ def get_usdcop():
     try:
         url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=COP%3DX"
         r   = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=8)
-        raw = r.json()["quoteResponse"]["result"][0].get("regularMarketPrice", 3850)
+        raw = r.json()["quoteResponse"]["result"][0].get("regularMarketPrice", 4200)
         return round(raw * COP_SPREAD, 2)
     except Exception:
         return round(4200 * COP_SPREAD, 2)  # fallback con tasa aproximada
@@ -252,7 +252,29 @@ def calc_avg_purchase_cop(deposits):
     return AVG_PURCHASE_COP
 
 
-def save_market_config(usdcop, ibr, avg_purchase):
+def save_prices(prices, crypto, usdcop):
+    data = {"updated": datetime.now().isoformat(), "prices": {}}
+    # Indices
+    map_keys = {"^GSPC":"IDX_SPX","^IXIC":"IDX_NDX","^VIX":"IDX_VIX","GLD":"IDX_GLD","BNO":"IDX_OIL"}
+    for yf_sym, key in map_keys.items():
+        if yf_sym in prices:
+            data["prices"][key] = {"price": prices[yf_sym]["price"], "chg": prices[yf_sym]["chg_pct"], "label": "Cierre"}
+    # Posiciones
+    for p in PORTFOLIO_FALLBACK:
+        t = p["ticker"]
+        if t in prices:
+            data["prices"][t] = {"price": prices[t]["price"], "chg": prices[t]["chg_pct"], "label": "Cierre"}
+    # Cripto
+    if crypto.get("bitcoin"):
+        data["prices"]["BTC"] = {"price": crypto["bitcoin"]["usd"], "chg": crypto["bitcoin"].get("usd_24h_change", 0), "label": ""}
+    if crypto.get("ethereum"):
+        data["prices"]["ETH"] = {"price": crypto["ethereum"]["usd"], "chg": crypto["ethereum"].get("usd_24h_change", 0), "label": ""}
+    # COP
+    data["prices"]["IDX_COP"] = {"price": round(usdcop / COP_SPREAD, 2), "chg": 0, "label": "Cierre"}
+
+    with open("prices.json", "w") as f:
+        json.dump(data, f, indent=2)
+    print("prices.json guardado con " + str(len(data["prices"])) + " precios")
     config = {
         "usdcop_effective": usdcop,
         "usdcop_spread":    COP_SPREAD,
@@ -491,6 +513,7 @@ if __name__ == "__main__":
         # Sin depositos aun — usar tasa actual como aproximacion
         avg_purchase = round(usdcop / COP_SPREAD, 0)
         print("Sin depositos IBKR — usando tasa actual como avg_purchase: " + str(avg_purchase))
+    save_prices(prices, crypto, usdcop)
     save_market_config(usdcop, ibr_annual, avg_purchase)
 
     # Metricas COP usando NET LIQUIDATION (no valor bruto)
