@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Dashboard Estrategico</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -32,7 +31,8 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .ev-chips{margin-top:4px;display:flex;flex-wrap:wrap;gap:3px}
 .chip{font-size:10px;font-weight:700;font-family:monospace;background:#21262d;border:1px solid var(--border);border-radius:4px;padding:1px 5px}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
 .idx{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:8px 10px}
 .idx-l{font-size:9px;color:var(--sub);text-transform:uppercase;letter-spacing:.05em}
 .idx-v{font-size:15px;font-weight:700;margin-top:2px}
@@ -84,18 +84,17 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .alfa-i{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px;text-align:center}
 .alfa-l{font-size:9px;color:var(--sub);text-transform:uppercase;margin-bottom:3px}
 .alfa-v{font-size:16px;font-weight:800}
-.pulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:p 2s infinite;display:inline-block;vertical-align:middle}
-@keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
 .ibkr-pill{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;margin-left:6px}
 .ibkr-on{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3)}
 .ibkr-off{background:rgba(139,148,158,.1);color:var(--sub);border:1px solid var(--border)}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:p 2s infinite;display:inline-block;vertical-align:middle}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 </style>
 </head>
 <body>
 <div class="layout">
-
 <div class="sidebar">
   <div style="font-size:14px;font-weight:700;color:var(--blue);margin-bottom:2px">Eventos Semana</div>
   <div style="font-size:10px;color:var(--sub);margin-bottom:10px">9-13 jun 2026</div>
@@ -132,6 +131,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
     <button class="btn" onclick="loadAll()">Actualizar</button>
   </div>
 
+  <!-- MERCADO -->
   <div class="sec" style="margin-top:0">Mercado en Vivo</div>
   <div class="g4">
     <div class="idx"><div class="idx-l">S&P 500</div><div class="idx-v" id="spx">-</div><div class="idx-c" id="spxC">-</div></div>
@@ -145,52 +145,59 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
     <div class="idx"><div class="idx-l">Petroleo (BNO)</div><div class="idx-v" id="oil">-</div><div class="idx-c" id="oilC"></div></div>
   </div>
 
-  <div class="sec">🇨🇴 Seguimiento en COP</div>
-  <div id="copSection" style="margin-bottom:14px">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
-      <div class="idx"><div class="idx-l">USD/COP Live</div><div class="idx-v" id="copRate">—</div><div class="idx-c" id="copRateChg"></div></div>
-      <div class="idx"><div class="idx-l">Portafolio en COP</div><div class="idx-v" id="copValue">—</div><div class="idx-c" style="color:var(--sub)">Valor actual</div></div>
-      <div class="idx"><div class="idx-l">P&amp;L Total en COP</div><div class="idx-v" id="copPnl">—</div><div class="idx-c" id="copPnlPct"></div></div>
-      <div class="idx"><div class="idx-l">vs IBR Colombia</div><div class="idx-v" id="copVsIBR">—</div><div class="idx-c" id="copIBRLabel" style="color:var(--sub)">IBR: —%</div></div>
+  <!-- COP -->
+  <div class="sec">Seguimiento en COP</div>
+  <div class="g4" style="margin-bottom:8px">
+    <div class="idx"><div class="idx-l">USD/COP Live</div><div class="idx-v" id="copRate">-</div><div class="idx-c" id="copRateChg"></div></div>
+    <div class="idx"><div class="idx-l">Portafolio en COP</div><div class="idx-v" id="copValue">-</div><div class="idx-c" style="color:var(--sub)">Valor actual</div></div>
+    <div class="idx"><div class="idx-l">P&L Total en COP</div><div class="idx-v" id="copPnl">-</div><div class="idx-c" id="copPnlPct"></div></div>
+    <div class="idx"><div class="idx-l">vs IBR Colombia</div><div class="idx-v" id="copVsIBR">-</div><div class="idx-c" id="copIBRlbl" style="color:var(--sub)">IBR: -% EA</div></div>
+  </div>
+  <div class="g2" style="margin-bottom:8px">
+    <div class="idx">
+      <div class="idx-l">Efecto Mercado (acciones)</div>
+      <div class="idx-v" id="copMktEff">-</div>
+      <div class="idx-c" style="color:var(--sub);font-size:10px">P&L por movimiento de acciones en USD convertido a COP</div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-      <div class="idx">
-        <div class="idx-l">Efecto Mercado (USD→COP)</div>
-        <div class="idx-v" id="copMktEffect">—</div>
-        <div class="idx-c" style="color:var(--sub);font-size:10px">P&L por movimiento de acciones</div>
-      </div>
-      <div class="idx">
-        <div class="idx-l">Efecto Divisa (COP/USD)</div>
-        <div class="idx-v" id="copFxEffect">—</div>
-        <div class="idx-c" style="color:var(--sub);font-size:10px">P&L por cambio USD/COP vs tu tasa avg $<span id="copAvgRate"></span></div>
-      </div>
-    </div>
-    <div style="font-size:10px;color:var(--sub);margin-top:6px;line-height:1.6;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:7px 10px">
-      ⚙️ Tasa promedio de compra: <strong style="color:var(--text)" id="copAvgLabel">$<span id="copAvgDisplay"></span> COP/USD</strong> &nbsp;·&nbsp;
-      IBR referencia: <strong style="color:var(--text)">7.75% EA</strong> &nbsp;·&nbsp;
-      <span style="color:var(--yellow)">Actualiza estas constantes en el index.html si cambian</span>
+    <div class="idx">
+      <div class="idx-l">Efecto Divisa (USD/COP)</div>
+      <div class="idx-v" id="copFxEff">-</div>
+      <div class="idx-c" id="copFxLbl" style="color:var(--sub);font-size:10px">P&L por apreciacion del dolar</div>
     </div>
   </div>
+  <div style="font-size:10px;color:var(--sub);background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;margin-bottom:14px;line-height:1.7">
+    Tasa promedio de compra: <strong style="color:var(--text)" id="copAvgShow">-</strong> COP/USD
+    &nbsp;|&nbsp; IBR referencia: <strong style="color:var(--text)" id="copIBRshow">-</strong>% EA
+    &nbsp;|&nbsp; <span style="color:var(--yellow)">Actualiza AVG_PURCHASE_COP e IBR_ANNUAL en el script si cambian</span>
+  </div>
+
+  <!-- GRAFICAS -->
+  <div class="sec">Analisis Grafico</div>
   <div class="charts-row">
     <div class="cc"><div class="ct">Distribucion del Portafolio</div><div style="position:relative;height:190px"><canvas id="donutChart"></canvas></div></div>
     <div class="cc"><div class="ct">Exposicion Sectorial vs S&P 500</div><div style="position:relative;height:190px"><canvas id="sectorChart"></canvas></div></div>
     <div class="cc"><div class="ct">Tipo de Activo</div><div style="position:relative;height:190px"><canvas id="typeChart"></canvas></div></div>
   </div>
 
+  <!-- POSICIONES -->
   <div class="sec">Posiciones</div>
   <div class="pg" id="posCards"></div>
 
+  <!-- OPCIONES -->
   <div class="sec">Opciones Activas</div>
   <div id="optCards"></div>
 
+  <!-- RECOMENDACIONES -->
   <div class="sec">Acciones Sobre Posiciones Actuales</div>
   <div style="font-size:10px;color:var(--sub);margin-bottom:8px" id="recsLabel">Cargando recomendaciones...</div>
   <div class="rg" id="recCards"></div>
 
+  <!-- HIPOTESIS -->
   <div class="sec">Ideas de Inversion - Tickers y Estrategias</div>
   <div style="font-size:11px;color:var(--sub);margin-bottom:12px;line-height:1.5">Clic para expandir cada idea.</div>
   <div id="hypCards"></div>
 
+  <!-- NOTICIAS -->
   <div class="sec">Noticias por Posicion</div>
   <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px" id="newsContainer"></div>
   <div style="font-size:10px;color:var(--sub);text-align:center;margin-top:14px;padding-bottom:12px">Solo informativo. No constituye asesoria financiera.</div>
@@ -198,6 +205,25 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 </div>
 
 <script>
+// Valores dinamicos — se cargan desde market_config.json (generado diariamente por GitHub Actions)
+var IBR_ANNUAL       = 8.25;   // fallback hasta que cargue market_config.json
+var AVG_PURCHASE_COP = 4000;   // tasa COP/USD promedio al comprar — actualizar manualmente
+var COP_EFFECTIVE    = null;   // tasa efectiva con spread (se carga de market_config.json)
+
+function loadMarketConfig() {
+  return fetchT("./market_config.json", 3000)
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(d) {
+      if (!d) return;
+      if (d.ibr_annual)       IBR_ANNUAL    = d.ibr_annual;
+      if (d.usdcop_effective) COP_EFFECTIVE = d.usdcop_effective;
+      if (d.avg_purchase_cop) AVG_PURCHASE_COP = d.avg_purchase_cop;
+      console.log("market_config cargado: IBR=" + IBR_ANNUAL + "% USD/COP=" + COP_EFFECTIVE);
+    })
+    .catch(function() {});
+}
+
+// ── PORTAFOLIO ────────────────────────────────────────────────────────────────
 var POS = [
   {t:"EC",  n:"Ecopetrol",      qty:110, avg:15.19,  yf:"EC",    type:"Acciones", sector:"Energia",        urgency:"good",   fb:15.76, note:"Short call $17 jul cubierta. Brent bajo presiona. Catalizador: produccion Q2 y COP/USD."},
   {t:"EIMI",n:"MSCI EM IMI",   qty:25,  avg:50.948, yf:"EIMI.L", type:"ETFs",    sector:"Emergentes",     urgency:"neutral", fb:53.24, note:"ETF emergentes LSE. Dolar fuerte en contra. Posicion estructural largo plazo."},
@@ -207,63 +233,61 @@ var POS = [
   {t:"NTR", n:"Nutrien",        qty:10,  avg:74.609, yf:"NTR",    type:"Acciones",sector:"Materiales",     urgency:"watch",   fb:66.28, note:"Ex-div $0.55 el 30 jun. NO vender antes. Iran activo. Wells Fargo Buy."}
 ];
 var OPTS = [
-  {desc:"EC Jul17 $17 CALL",    pos:-1, avg:0.699, mkt:0.740, exp:"2026-07-17", strike:17, und:"EC",   side:"short", note:"OTM. EC ~$15.76. Probablemente vence sin valor. Prima cobrada."},
-  {desc:"GBTC Jul02 $51 CALL",  pos:1,  avg:1.682, mkt:0.912, exp:"2026-07-02", strike:51, und:"GBTC", side:"long",  note:"URGENTE: OTM, 23 dias. BTC necesita +6%. Considerar cerrar hoy."}
+  {desc:"EC Jul17 $17 CALL",    pos:-1, avg:0.699, mkt:0.740, exp:"2026-07-17", strike:17,   und:"EC",   side:"short", note:"OTM. EC ~$15.76. Probablemente vence sin valor. Prima cobrada."},
+  {desc:"NTR Aug21 $62.5 PUT",  pos:-1, avg:2.37,  mkt:2.37,  exp:"2026-08-21", strike:62.5, und:"NTR",  side:"short", note:"OTM con margen. NTR ~$66. Prima cobrada $237. Margen $1,813 bloqueado."}
 ];
 var EVENTS = [
-  {date:"Hoy 9 jun",      title:"Premercado bajista",  note:"S&P -0.42%, BTC -5%. Mercado espera CPI.",          tickers:["GBTC","ETHE"]},
-  {date:"Jue-Vie 11-12",  title:"CPI Mayo 2026",        note:"Dato caliente = presion. Dato frio = rally.",        tickers:["NFLX","GBTC","ETHE"]},
+  {date:"Hoy 9 jun",      title:"Premercado bajista",   note:"S&P -0.42%, BTC -5%. Mercado espera CPI.",          tickers:["GBTC","ETHE"]},
+  {date:"Jue-Vie 11-12",  title:"CPI Mayo 2026",        note:"Consenso 4.2% - dato caliente esperado.",           tickers:["NFLX","GBTC","ETHE"]},
   {date:"Mie-Jue 17-18",  title:"FOMC Junio",           note:"Sin recorte esperado. Dot plot mueve expectativas.", tickers:["GBTC","NFLX","EC"]},
   {date:"Mar 30 jun",     title:"NTR Ex-Dividendo",     note:"$0.55/acc. Mantener antes del 30 jun.",             tickers:["NTR"]},
-  {date:"Mie 2 jul",      title:"GBTC Call Vence",      note:"Long call $51 OTM. Actuar esta semana.",            tickers:["GBTC"]}
+  {date:"Mie 2 jul",      title:"EC Call Vence",        note:"Short call $17. EC ~$15.76, vence sin valor.",      tickers:["EC"]}
 ];
 var RECS_DEFAULT = [
-  {type:"action", icon:"🚨", title:"Cerrar GBTC Call Jul2 $51", badge:"br", badgeText:"Hoy",        body:"Vale ~$91. BTC cae -5%, 23 dias. Sin rally a $53+ pierdes todo. Cierra hoy.", tags:["GBTC","Opciones"]},
-  {type:"rotate", icon:"🔄", title:"Rotar ETHE hacia GBTC",     badge:"by", badgeText:"Esta semana", body:"ETHE -57%. ETH pierde traccion. Vender 5 ETHE libera ~$67 para agregar GBTC.", tags:["ETHE","GBTC"]},
-  {type:"add",    icon:"📈", title:"Promediar NFLX post-CPI",   badge:"bb", badgeText:"Condicional", body:"Si CPI < 3.5%, agregar 2-3 acc baja avg hacia ~$100. Target analistas $114.", tags:["NFLX"]},
-  {type:"hold",   icon:"📌", title:"Mantener NTR hasta ex-div", badge:"bg", badgeText:"30 jun",      body:"No vender antes del 30 jun. Ex-div $0.55/acc = $5.50. Iran activo. WF Buy.", tags:["NTR","Dividendo"]}
+  {type:"rotate", icon:"🔄", title:"Rotar ETHE hacia GBTC",    badge:"by", badgeText:"Esta semana", body:"ETHE -57%. ETH pierde traccion. Vender 5 ETHE libera ~$67 para agregar GBTC.", tags:["ETHE","GBTC"]},
+  {type:"add",    icon:"📈", title:"Promediar NFLX post-CPI",  badge:"bb", badgeText:"Condicional", body:"Si CPI < 3.5%, agregar 2-3 acc baja avg hacia ~$100. Target analistas $114.", tags:["NFLX"]},
+  {type:"hold",   icon:"📌", title:"Mantener NTR hasta ex-div",badge:"bg", badgeText:"30 jun",      body:"No vender antes del 30 jun. Ex-div $0.55/acc = $5.50. Iran activo. WF Buy.", tags:["NTR","Dividendo"]},
+  {type:"action", icon:"🎯", title:"NFLX Put $72.5 Ago 2026",  badge:"br", badgeText:"Post-CPI",   body:"Esperar dato CPI. Si benigno ejecutar. Prima estimada ~$210. Margen ~$1,800.", tags:["NFLX","Opciones"]}
 ];
 var HYPS_DEFAULT = [
-  {id:"semi",  cls:"semi",   icon:"🤖", name:"IA y Semiconductores",            riskLbl:"Alto",    risk:72, riskColor:"#f85149", horizon:"3-6 meses",  tickers:["SMH","NVDA","AMD"],   thesis:"0% exposicion al sector de mayor alpha del año. Applied Digital +11%. Ciclo capex IA no terminado.", directo:"Comprar 3-5 acc SMH en $235-240. Stop $215. Target $275 (+17%).", opciones:"Bull Call Spread SMH:\n- Comprar $240 CALL Sep 2026\n- Vender $260 CALL Sep 2026\nPrima ~$350-450. Ganancia max ~$1,550.", sizing:"5-8% del buying power (~$500-800).", catalizadores:"Resultados NVDA Q2 - Contratos datacenter - Jensen Huang visita Samsung"},
-  {id:"agri",  cls:"agri",   icon:"🌾", name:"Ampliar Fertilizantes - CF",      riskLbl:"Medio",   risk:42, riskColor:"#d29922", horizon:"2-4 meses",  tickers:["CF","MOS","NTR"],     thesis:"CF Industries: mayor upside que NTR. P/E 8.5x vs 13.7x. Mas exposicion a nitrogeno afectado por Iran.", directo:"Comprar 5-7 acc CF en $68-72. Stop $62. Target $90 (+28%).", opciones:"Cash-Secured Put NTR:\n- Vender NTR $62 PUT Ago 2026\nPrima ~$150/contrato. Si cae compras mas barato.", sizing:"3-5% buying power para CF.", catalizadores:"Tension Iran - Precios urea - Cosecha maiz/soya Q3"},
-  {id:"hedge", cls:"hedge",  icon:"🛡", name:"Cobertura Pre-FOMC - Oro",        riskLbl:"Bajo",    risk:22, riskColor:"#3fb950", horizon:"2-6 semanas", tickers:["GLD","TLT"],          thesis:"FOMC 17-18 jun. Tono hawkish = growth y cripto caen. GLD en maximos. Cobertura barata con momentum.", directo:"Comprar 2-3 acc GLD (~$440). Stop $415. Cobertura si mercado cae.", opciones:"Call GLD:\n- Comprar GLD $445 CALL Jul 2026\nPrima ~$200-280\n\nO Put proteccion:\n- Comprar SPY $520 PUT Jul 2026 (~$150)", sizing:"2-4% portafolio. No es posicion core.", catalizadores:"FOMC 17-18 jun - CPI Mayo - DXY"},
-  {id:"stream",cls:"stream", icon:"📺", name:"NFLX - Potenciar con Opciones",   riskLbl:"Medio",   risk:50, riskColor:"#d29922", horizon:"2-4 meses",  tickers:["NFLX","WBD"],         thesis:"Ya tienes 3 acc a $126. Opciones capturan el rebote con riesgo definido y menos capital inmovilizado.", directo:"Agregar 2-3 acc en $80-83 si CPI favorable. Nuevo avg ~$100.", opciones:"Bull Call Spread NFLX:\n- Comprar $85 CALL Sep 2026\n- Vender $105 CALL Sep 2026\nPrima ~$400-500. Ganancia max ~$1,500\n\nAlternativa: Vender $75 PUT Ago (~$250)", sizing:"El spread usa ~$450 vs comprar 4 acc (~$320). 3x upside.", catalizadores:"CPI benigno - Q2 earnings NFLX mid-jul - Ad-tier"},
-  {id:"btc",   cls:"btc",    icon:"₿",  name:"BTC Ciclo Post-Halving",          riskLbl:"Muy alto",risk:85, riskColor:"#f85149", horizon:"3-9 meses",  tickers:["GBTC","IBIT","MSTR"], thesis:"Halving abril 2024. Pico historico 12-18 meses despues. Fear & Greed en 12 (extremo miedo) = compra historica.", directo:"Cerrar call Jul y comprar 10 acc GBTC adicionales en $45-48. Stop $40.", opciones:"Reemplazar call vencida:\n- Comprar GBTC $52 CALL Sep 2026\nPrima ~$150. Breakeven GBTC $53.50 (BTC ~$66K)", sizing:"Max 10% adicional en crypto. Ya tienes exposicion.", catalizadores:"CPI benigno - FOMC dovish - Compras Strategy/institucionales"},
-  {id:"ec",    cls:"ec",     icon:"🇨🇴","name":"EC - Rolling Covered Calls",    riskLbl:"Bajo",    risk:28, riskColor:"#3fb950", horizon:"Post 17 jul", tickers:["EC","BNO"],           thesis:"Short call $17 jul cap el upside. Post-vencimiento hacer rolling a strikes mas altos para generar ingreso.", directo:"Mantener 110 acc. Dejar vencer call $17. Post-julio vender $18-19 Oct.", opciones:"Rolling post-julio:\n- Vender EC $18 CALL Oct 2026\nPrima ~$40-50/contrato\n\nSi Brent > $105: no vender call, dejar correr.", sizing:"Ya tienes la posicion. Rolling = ingreso sin capital nuevo.", catalizadores:"Precio Brent - Produccion Q2 Ecopetrol - OPEC+"}
+  {id:"semi",  cls:"semi",   icon:"🤖", name:"IA y Semiconductores",          riskLbl:"Alto",    risk:72, riskColor:"#f85149", horizon:"3-6 meses",  tickers:["SMH","NVDA","AMD"],   thesis:"0% exposicion al sector de mayor alpha. Ciclo capex IA no terminado.", directo:"Comprar 3-5 acc SMH en $235-240. Stop $215. Target $275.", opciones:"Bull Call Spread SMH: Comprar $240C/Vender $260C Sep 2026. Prima ~$400. Ganancia max ~$1,550.", sizing:"5-8% buying power (~$500-800).", catalizadores:"NVDA Q2 - Contratos datacenter - Jensen Huang visita Samsung"},
+  {id:"agri",  cls:"agri",   icon:"🌾", name:"Ampliar Fertilizantes - CF",    riskLbl:"Medio",   risk:42, riskColor:"#d29922", horizon:"2-4 meses",  tickers:["CF","MOS","NTR"],     thesis:"CF Industries: P/E 8.5x vs NTR 13.7x. Mas exposicion a nitrogeno afectado por Iran.", directo:"Comprar 5-7 acc CF en $68-72. Stop $62. Target $90.", opciones:"Vender NTR $62 PUT Ago 2026. Prima ~$150. Si cae compras mas barato.", sizing:"3-5% buying power para CF.", catalizadores:"Tension Iran - Precios urea - Cosecha Q3"},
+  {id:"hedge", cls:"hedge",  icon:"🛡", name:"Cobertura Pre-FOMC - Oro",      riskLbl:"Bajo",    risk:22, riskColor:"#3fb950", horizon:"2-6 semanas", tickers:["GLD","TLT"],          thesis:"FOMC 17-18 jun. Tono hawkish = growth y cripto caen. GLD en maximos.", directo:"Comprar 2-3 acc GLD ~$440. Stop $415.", opciones:"Comprar GLD $445 CALL Jul 2026. Prima ~$200-280.", sizing:"2-4% portafolio.", catalizadores:"FOMC 17-18 jun - CPI Mayo - DXY"},
+  {id:"stream",cls:"stream", icon:"📺", name:"NFLX - Bull Call Spread",       riskLbl:"Medio",   risk:50, riskColor:"#d29922", horizon:"2-4 meses",  tickers:["NFLX"],               thesis:"3 acc a $126 avg. Opciones capturan rebote con riesgo definido y menos capital.", directo:"Agregar 2-3 acc en $80-83 si CPI favorable. Nuevo avg ~$100.", opciones:"Bull Call Spread: Comprar $85C/Vender $105C Sep 2026. Prima ~$450. Ganancia max ~$1,500.", sizing:"El spread da 3x upside vs comprar acciones.", catalizadores:"CPI benigno - Q2 earnings NFLX - Ad-tier"},
+  {id:"btc",   cls:"btc",    icon:"₿",  name:"BTC Ciclo Post-Halving",        riskLbl:"Muy alto",risk:85, riskColor:"#f85149", horizon:"3-9 meses",  tickers:["GBTC","IBIT","MSTR"], thesis:"Halving abril 2024. Fear & Greed en 10 (extremo miedo) = señal contraria historica.", directo:"Comprar 10 acc GBTC adicionales en $45-48. Stop $40.", opciones:"Comprar GBTC $52 CALL Sep 2026. Prima ~$150. Breakeven BTC ~$66K.", sizing:"Max 10% adicional en crypto.", catalizadores:"CPI benigno - FOMC dovish - Strategy comprando"},
+  {id:"ec",    cls:"ec",     icon:"🇨🇴","name":"EC - Rolling Covered Calls",  riskLbl:"Bajo",    risk:28, riskColor:"#3fb950", horizon:"Post 17 jul", tickers:["EC","BNO"],           thesis:"Short call $17 jul vence sin valor. Post-julio hacer rolling a strikes mas altos.", directo:"Mantener 110 acc. Post-julio vender $18-19 Oct.", opciones:"Rolling: Vender EC $18 CALL Oct 2026. Prima ~$40-50. Ingreso sin capital nuevo.", sizing:"Ya tienes la posicion. Solo rolling.", catalizadores:"Precio Brent - Produccion Q2 Ecopetrol - OPEC+"}
 ];
 var NEWS = [
-  {t:"NFLX", h:"Analistas ven oportunidad en Netflix - consensus target $114.56 (+40%)", time:"Jun 6"},
+  {t:"NFLX", h:"Analistas ven oportunidad - consensus target $114.56 (+40%)", time:"Jun 6"},
   {t:"NFLX", h:"Netflix nombra a Jay Hoag nuevo Chairman of the Board", time:"Jun 5"},
   {t:"NTR",  h:"Nutrien beneficiario de tensiones Iran - fertilizantes al alza", time:"Jun 9"},
-  {t:"NTR",  h:"Wells Fargo mantiene Buy en Nutrien - P/E forward 11.68x", time:"Jun 5"},
+  {t:"NTR",  h:"Wells Fargo mantiene Buy - P/E forward 11.68x, div yield 3.2%", time:"Jun 5"},
   {t:"GBTC", h:"Bitcoin estabiliza en $60K con indicadores de agotamiento vendedor", time:"Jun 9"},
   {t:"GBTC", h:"Bernstein: BTC diversificado soporta tesis store-of-value", time:"Jun 8"},
   {t:"ETHE", h:"Ethereum bajo $1,700 - minimo de mas de 1 ano. DeFi bajo presion", time:"Jun 8"},
   {t:"EC",   h:"Brent -0.6%. Dolar fuerte presiona emergentes y commodities COP", time:"Jun 9"}
 ];
 var SECTORS = [
-  {name:"Tecnologia",    port:0, sp:29},
-  {name:"Financieras",   port:0, sp:13},
-  {name:"Salud",         port:0, sp:12},
-  {name:"Cons.Disc.",    port:0, sp:10},
-  {name:"Comunicaciones",port:0, sp:9},
-  {name:"Industriales",  port:0, sp:8},
-  {name:"Cons.Basico",   port:0, sp:6},
-  {name:"Energia",       port:0, sp:4},
-  {name:"Materiales",    port:0, sp:3},
-  {name:"Emergentes",    port:0, sp:0},
+  {name:"Tecnologia",    port:0, sp:29},{name:"Financieras",   port:0, sp:13},
+  {name:"Salud",         port:0, sp:12},{name:"Cons.Disc.",    port:0, sp:10},
+  {name:"Comunicaciones",port:0, sp:9}, {name:"Industriales",  port:0, sp:8},
+  {name:"Cons.Basico",   port:0, sp:6}, {name:"Energia",       port:0, sp:4},
+  {name:"Materiales",    port:0, sp:3}, {name:"Emergentes",    port:0, sp:0},
   {name:"Crypto",        port:0, sp:0}
 ];
 
-var AVG_PURCHASE_COP = 4000; // Tasa COP/USD promedio al comprar — actualizar si cambia tu base
-var IBR_ANNUAL       = 7.75; // IBR vigente Colombia % anual — actualizar mensualmente
+var lp = {};
 var donutC, sectorC, typeC;
 var activeRecs = RECS_DEFAULT;
 var activeHyps = HYPS_DEFAULT;
 
+// ── UTILS ─────────────────────────────────────────────────────────────────────
 function fmt(n, d) {
   d = (d === undefined) ? 2 : d;
   return "$" + (+(n)).toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+function fmtCOP(n) {
+  return "$" + Math.round(n).toLocaleString("es-CO") + " COP";
 }
 function pct(n)  { return (n >= 0 ? "+" : "") + n.toFixed(2) + "%"; }
 function cc(n)   { return n >= 0 ? "pos" : "neg"; }
@@ -278,52 +302,19 @@ function getP(p) {
   return (lp[p.t] && lp[p.t].price) ? lp[p.t].price : p.fb;
 }
 
-// Fetch con timeout manual
+// ── FETCH ─────────────────────────────────────────────────────────────────────
 function fetchT(url, ms) {
-  return new Promise(function(resolve, reject) {
-    var controller = new AbortController();
-    var id = setTimeout(function() { controller.abort(); }, ms || 8000);
-    fetch(url, {signal: controller.signal})
-      .then(function(r) { clearTimeout(id); resolve(r); })
-      .catch(function(e) { clearTimeout(id); reject(e); });
+  var p = fetch(url).then(function(r) { return r; });
+  var t = new Promise(function(_, reject) {
+    setTimeout(function() { reject(new Error("timeout")); }, ms || 8000);
   });
+  return Promise.race([p, t]);
 }
 
-// IBKR Bridge (corre en tu PC cuando el bridge esta activo)
-function loadIBKR() {
-  return fetchT("http://localhost:5050/positions", 3000)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (!data.connected) return;
-      data.positions.forEach(function(p) {
-        if (p.mkt_price && p.asset_class === "STK") {
-          lp[p.ticker] = lp[p.ticker] || {};
-          lp[p.ticker].price = p.mkt_price;
-          lp[p.ticker].ibkr  = true;
-          POS.forEach(function(pos) {
-            if (pos.t === p.ticker) {
-              pos.qty = Math.abs(p.qty);
-              pos.avg = p.avg_cost;
-            }
-          });
-        }
-      });
-      if (data.summary && data.summary.net_liquidation) {
-        var pill = document.getElementById("ibkrPill");
-        if (pill) { pill.textContent = "IBKR Live"; pill.className = "ibkr-pill ibkr-on"; }
-        setEl("ibkrStatus", "IBKR Live - " + new Date().toLocaleTimeString("es-CO", {hour:"2-digit", minute:"2-digit"}));
-      }
-    })
-    .catch(function() {
-      // silencioso - IBKR offline es normal
-    });
-}
-
-// Yahoo Finance batch
 function yfBatch() {
-  var symbols = ["EC","EIMI.L","NFLX","NTR","GBTC","ETHE","^GSPC","^IXIC","^VIX","GLD","BNO"];
-  var keys    = ["EC","EIMI","NFLX","NTR","GBTC","ETHE","IDX_SPX","IDX_NDX","IDX_VIX","IDX_GLD","IDX_OIL"];
-  var url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + symbols.join(",");
+  var symbols = ["EC","EIMI.L","NFLX","NTR","GBTC","ETHE","^GSPC","^IXIC","^VIX","GLD","BNO","COP%3DX"];
+  var keys    = ["EC","EIMI","NFLX","NTR","GBTC","ETHE","IDX_SPX","IDX_NDX","IDX_VIX","IDX_GLD","IDX_OIL","IDX_COP"];
+  var url     = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + symbols.join(",");
   return fetchT("https://api.allorigins.win/get?url=" + encodeURIComponent(url), 12000)
     .then(function(r) { return r.json(); })
     .then(function(j) {
@@ -340,19 +331,10 @@ function yfBatch() {
           price = q.regularMarketPrice; chg = q.regularMarketChangePercent;
         }
         if (!price) { price = q.regularMarketPrice; chg = q.regularMarketChangePercent; label = "Cierre"; }
-        // No sobreescribir si IBKR ya dio el precio
-        if (!lp[keys[i]] || !lp[keys[i]].ibkr) {
-          lp[keys[i]] = {price: price, chg: chg || 0, label: label, state: st};
-        }
+        lp[keys[i]] = {price: price, chg: chg || 0, label: label, state: st};
       });
     })
     .catch(function(e) { console.warn("YF error:", e); });
-}
-
-function getCrypto() {
-  return fetchT("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true", 8000)
-    .then(function(r) { return r.json(); })
-    .catch(function() { return null; });
 }
 
 function yfHist(sym) {
@@ -365,24 +347,50 @@ function yfHist(sym) {
     .catch(function() { return null; });
 }
 
+function getCrypto() {
+  return fetchT("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true", 8000)
+    .then(function(r) { return r.json(); })
+    .catch(function() { return null; });
+}
+
+function loadIBKR() {
+  return fetchT("http://localhost:5050/positions", 3000)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.connected) return;
+      data.positions.forEach(function(p) {
+        if (p.mkt_price && p.asset_class === "STK") {
+          lp[p.ticker] = lp[p.ticker] || {};
+          lp[p.ticker].price = p.mkt_price;
+          lp[p.ticker].ibkr  = true;
+          POS.forEach(function(pos) {
+            if (pos.t === p.ticker) { pos.qty = Math.abs(p.qty); pos.avg = p.avg_cost; }
+          });
+        }
+      });
+      var pill = document.getElementById("ibkrPill");
+      if (pill) { pill.textContent = "IBKR Live"; pill.className = "ibkr-pill ibkr-on"; }
+      setEl("ibkrStatus", "IBKR Live " + new Date().toLocaleTimeString("es-CO", {hour:"2-digit",minute:"2-digit"}));
+    })
+    .catch(function() {});
+}
+
 function loadRecs() {
   return fetchT("./recommendations.json", 4000)
     .then(function(r) { return r.ok ? r.json() : null; })
     .then(function(data) {
       if (!data) return;
-      if (data.recs)  activeRecs = data.recs;
-      if (data.hyps)  activeHyps = data.hyps;
+      if (data.recs) activeRecs = data.recs;
+      if (data.hyps) activeHyps = data.hyps;
       if (data.generated) {
         var d = new Date(data.generated);
-        var label = "Generado por Claude el " + d.toLocaleDateString("es-CO", {weekday:"long", day:"numeric", month:"short"});
-        setEl("recsLabel", label);
+        setEl("recsLabel", "Generado por Claude el " + d.toLocaleDateString("es-CO", {weekday:"long",day:"numeric",month:"short"}));
       }
     })
-    .catch(function() {
-      setEl("recsLabel", "Recomendaciones de base (sin recommendations.json aun)");
-    });
+    .catch(function() { setEl("recsLabel", "Recomendaciones de base (sin recommendations.json)"); });
 }
 
+// ── SPARKLINE ─────────────────────────────────────────────────────────────────
 function spark(prices) {
   if (!prices || prices.length < 2) return "";
   var w=160, h=28, pad=2;
@@ -394,16 +402,59 @@ function spark(prices) {
   return "<svg width='" + w + "' height='" + h + "' style='display:block;margin-bottom:4px'><polyline points='" + pts + "' fill='none' stroke='" + trend + "' stroke-width='1.5' stroke-linejoin='round'/></svg>";
 }
 
+function renderCOP() {
+  var copD   = lp["IDX_COP"];
+  // Usar tasa efectiva de market_config, o Yahoo x 0.96, o fallback
+  var usdcop;
+  if (COP_EFFECTIVE) {
+    usdcop = COP_EFFECTIVE;
+  } else if (copD && copD.price) {
+    usdcop = copD.price * 0.96;
+  } else {
+    usdcop = AVG_PURCHASE_COP * 0.96;
+  }
+  var mktRate = (copD && copD.price) ? copD.price : usdcop / 0.96;
+  var copChg  = copD ? copD.chg : 0;
+
+  var totalUSD = POS.reduce(function(s,p){ return s + getP(p)*p.qty; }, 0);
+  var costUSD  = POS.reduce(function(s,p){ return s + p.avg*p.qty;   }, 0);
+  var pnlUSD   = totalUSD - costUSD;
+
+  var valueCOP   = totalUSD * usdcop;
+  var costCOP    = costUSD  * AVG_PURCHASE_COP;
+  var pnlCOP     = valueCOP - costCOP;
+  var pnlCOPpct  = costCOP > 0 ? (pnlCOP / costCOP * 100) : 0;
+  var mktEffect  = pnlUSD * usdcop;
+  var fxEffect   = costUSD * (usdcop - AVG_PURCHASE_COP);
+  var vsIBR      = pnlCOPpct - IBR_ANNUAL;
+
+  var src = COP_EFFECTIVE ? "efectiva" : "Yahoo x0.96";
+  var lbl = copD && copD.label ? " <span style='font-size:9px;opacity:.65'>" + copD.label + "</span>" : "";
+  setEl("copRate",    usdcop.toLocaleString("es-CO") + " <span style='font-size:9px;color:var(--sub)'>(" + src + ")</span>", "idx-v");
+  setEl("copRateChg", pct(copChg) + lbl + " | Mkt: " + Math.round(mktRate).toLocaleString("es-CO"), cc(copChg));
+  setEl("copValue",   "$" + (valueCOP/1e6).toFixed(1) + "M", "idx-v");
+  setEl("copPnl",     fmtCOP(pnlCOP), "idx-v " + cc(pnlCOP));
+  setEl("copPnlPct",  pct(pnlCOPpct), cc(pnlCOP));
+  setEl("copVsIBR",   (vsIBR >= 0 ? "+" : "") + vsIBR.toFixed(1) + "pts", "idx-v " + cc(vsIBR));
+  setEl("copIBRlbl",  "IBR vigente: " + IBR_ANNUAL + "% EA");
+  setEl("copMktEff",  fmtCOP(mktEffect), "idx-v " + cc(mktEffect));
+  setEl("copFxEff",   fmtCOP(fxEffect),  "idx-v " + cc(fxEffect));
+  setEl("copFxLbl",   "vs tasa avg $" + AVG_PURCHASE_COP.toLocaleString("es-CO") + " COP/USD al comprar");
+  setEl("copAvgShow", AVG_PURCHASE_COP.toLocaleString("es-CO"));
+  setEl("copIBRshow", IBR_ANNUAL);
+}
+
+// ── CHARTS ─────────────────────────────────────────────────────────────────────
 function buildCharts() {
   var colors = ["#58a6ff","#3fb950","#f85149","#bc8cff","#d29922","#79c0ff"];
   var mktVals = POS.map(function(p){ return +(getP(p)*p.qty).toFixed(2); });
-  var total = mktVals.reduce(function(a,b){return a+b;}, 0) || 1;
+  var total   = mktVals.reduce(function(a,b){return a+b;},0) || 1;
 
   if (donutC) donutC.destroy();
   donutC = new Chart(document.getElementById("donutChart"), {
     type:"doughnut",
-    data:{labels:POS.map(function(p){return p.t;}), datasets:[{data:mktVals, backgroundColor:colors, borderColor:"#161b22", borderWidth:2}]},
-    options:{plugins:{legend:{position:"right",labels:{color:"#8b949e",font:{size:10},boxWidth:10,padding:6}}}, cutout:"62%", responsive:true, maintainAspectRatio:false}
+    data:{labels:POS.map(function(p){return p.t;}),datasets:[{data:mktVals,backgroundColor:colors,borderColor:"#161b22",borderWidth:2}]},
+    options:{plugins:{legend:{position:"right",labels:{color:"#8b949e",font:{size:10},boxWidth:10,padding:6}}},cutout:"62%",responsive:true,maintainAspectRatio:false}
   });
 
   SECTORS.forEach(function(s) {
@@ -421,18 +472,18 @@ function buildCharts() {
     data:{
       labels:SECTORS.map(function(s){return s.name;}),
       datasets:[
-        {label:"Tu portafolio", data:SECTORS.map(function(s){return s.port;}), backgroundColor:"rgba(88,166,255,.7)", borderRadius:3, borderSkipped:false},
-        {label:"S&P 500",       data:SECTORS.map(function(s){return s.sp;}),   backgroundColor:"rgba(139,148,158,.25)", borderRadius:3, borderSkipped:false}
+        {label:"Tu portafolio",data:SECTORS.map(function(s){return s.port;}),backgroundColor:"rgba(88,166,255,.7)",borderRadius:3,borderSkipped:false},
+        {label:"S&P 500",      data:SECTORS.map(function(s){return s.sp;}),  backgroundColor:"rgba(139,148,158,.25)",borderRadius:3,borderSkipped:false}
       ]
     },
     options:{
       indexAxis:"y",
       plugins:{legend:{position:"bottom",labels:{color:"#8b949e",font:{size:10},boxWidth:10,padding:8}}},
       scales:{
-        x:{ticks:{color:"#8b949e",font:{size:9},callback:function(v){return v+"%";}}, grid:{color:"rgba(48,54,61,.6)"}, max:40},
-        y:{ticks:{color:"#8b949e",font:{size:9}}, grid:{display:false}}
+        x:{ticks:{color:"#8b949e",font:{size:9},callback:function(v){return v+"%";}},grid:{color:"rgba(48,54,61,.6)"},max:40},
+        y:{ticks:{color:"#8b949e",font:{size:9}},grid:{display:false}}
       },
-      responsive:true, maintainAspectRatio:false
+      responsive:true,maintainAspectRatio:false
     }
   });
 
@@ -441,11 +492,12 @@ function buildCharts() {
   if (typeC) typeC.destroy();
   typeC = new Chart(document.getElementById("typeChart"), {
     type:"pie",
-    data:{labels:Object.keys(byType), datasets:[{data:Object.values(byType), backgroundColor:["#58a6ff","#bc8cff","#3fb950"], borderColor:"#161b22", borderWidth:2}]},
-    options:{plugins:{legend:{position:"right",labels:{color:"#8b949e",font:{size:10},boxWidth:10,padding:6}}}, responsive:true, maintainAspectRatio:false}
+    data:{labels:Object.keys(byType),datasets:[{data:Object.values(byType),backgroundColor:["#58a6ff","#bc8cff","#3fb950"],borderColor:"#161b22",borderWidth:2}]},
+    options:{plugins:{legend:{position:"right",labels:{color:"#8b949e",font:{size:10},boxWidth:10,padding:6}}},responsive:true,maintainAspectRatio:false}
   });
 }
 
+// ── RENDER FUNCIONES ─────────────────────────────────────────────────────────
 function renderSidebar() {
   document.getElementById("eventsContainer").innerHTML = EVENTS.map(function(e){
     return "<div class='ev'><div class='ev-date'>"+e.date+"</div><div class='ev-title'>"+e.title+"</div><div class='ev-note'>"+e.note+"</div><div class='ev-chips'>"+e.tickers.map(function(t){return "<span class='chip'>"+t+"</span>";}).join("")+"</div></div>";
@@ -458,19 +510,35 @@ function renderSidebar() {
 
 function renderPosCards() {
   document.getElementById("posCards").innerHTML = POS.map(function(p){
-    var d = lp[p.t], pr = getP(p);
-    var pnl = (pr-p.avg)*p.qty, pp = ((pr-p.avg)/p.avg)*100;
+    var d=lp[p.t], pr=getP(p);
+    var pnl=(pr-p.avg)*p.qty, pp=((pr-p.avg)/p.avg)*100;
     var chgH = d ? "<span class='"+cc(d.chg)+"' style='font-size:10px'>"+pct(d.chg)+(d.label?"<span style='font-size:9px;opacity:.6'> "+d.label+"</span>":"")+(d.ibkr?"<span style='font-size:9px;color:var(--green)'> IBKR</span>":"")+"</span>" : "";
     var cls = p.urgency==="urgent"?"urgent":p.urgency==="watch"?"watch":p.urgency==="good"?"good":"";
-    return "<div class='pc "+cls+"'><div class='pc-top'><div><div class='pc-t'>"+p.t+"</div><div class='pc-n'>"+p.n+" - "+p.qty+" acc.</div></div><div style='text-align:right'><div class='pc-sv "+(d?cc(d.chg):"")+"' style='font-size:15px;font-weight:700'>"+fmt(pr)+"</div>"+chgH+"</div></div>"+(p.hist?spark(p.hist):"")+"<div class='pc-stats'><div class='pc-s'><div class='pc-sl'>Costo</div><div class='pc-sv'>"+fmt(p.avg)+"</div></div><div class='pc-s'><div class='pc-sl'>Valor</div><div class='pc-sv'>"+fmt(pr*p.qty)+"</div></div><div class='pc-s'><div class='pc-sl'>P&L $</div><div class='pc-sv "+cc(pnl)+"'>"+fmt(pnl)+"<div class='pc-bar'><div style='width:"+Math.min(Math.abs(pp),100)+"%;height:100%;background:"+(pnl>=0?"var(--green)":"var(--red)")+";border-radius:2px'></div></div></div></div><div class='pc-s'><div class='pc-sl'>P&L %</div><div class='pc-sv "+cc(pp)+"'>"+pct(pp)+"</div></div></div><div class='pc-note'>"+p.note+"</div></div>";
+    return "<div class='pc "+cls+"'>"+
+      "<div class='pc-top'><div><div class='pc-t'>"+p.t+"</div><div class='pc-n'>"+p.n+" - "+p.qty+" acc.</div></div>"+
+      "<div style='text-align:right'><div class='pc-sv "+(d?cc(d.chg):"")+"' style='font-size:15px;font-weight:700'>"+fmt(pr)+"</div>"+chgH+"</div></div>"+
+      (p.hist?spark(p.hist):"")+
+      "<div class='pc-stats'>"+
+        "<div class='pc-s'><div class='pc-sl'>Costo</div><div class='pc-sv'>"+fmt(p.avg)+"</div></div>"+
+        "<div class='pc-s'><div class='pc-sl'>Valor</div><div class='pc-sv'>"+fmt(pr*p.qty)+"</div></div>"+
+        "<div class='pc-s'><div class='pc-sl'>P&L $</div><div class='pc-sv "+cc(pnl)+"'>"+fmt(pnl)+"<div class='pc-bar'><div style='width:"+Math.min(Math.abs(pp),100)+"%;height:100%;background:"+(pnl>=0?"var(--green)":"var(--red)")+";border-radius:2px'></div></div></div></div>"+
+        "<div class='pc-s'><div class='pc-sl'>P&L %</div><div class='pc-sv "+cc(pp)+"'>"+pct(pp)+"</div></div>"+
+      "</div>"+
+      "<div class='pc-note'>"+p.note+"</div></div>";
   }).join("");
 }
 
 function renderOpts() {
   document.getElementById("optCards").innerHTML = OPTS.map(function(o){
-    var d = daysTo(o.exp), pnl = (o.mkt-o.avg)*o.pos*100;
-    var undP = lp[o.und], itm = undP&&(o.side==="long"?undP.price>o.strike:undP.price<o.strike);
-    return "<div class='oc'><div><div style='font-size:12px;font-weight:600;font-family:monospace;margin-bottom:3px'>"+o.desc+"</div><div style='font-size:11px;color:var(--sub);margin-bottom:5px'>"+o.note+"</div><div style='display:flex;gap:4px;flex-wrap:wrap'><span class='badge "+(d<=7?"br":d<=30?"by":"bg")+"'>"+d+" dias</span><span class='badge "+(itm?"bg":"br")+"'>"+(itm?"ITM":"OTM")+"</span><span class='badge "+(o.side==="short"?"by":"bb")+"'>"+o.side.toUpperCase()+"</span></div></div><div style='text-align:right'><div style='font-size:14px;font-weight:700' class='"+cc(pnl)+"'>"+fmt(pnl)+"</div><div style='font-size:10px;color:var(--sub);margin-top:2px'>Mkt: "+fmt(o.mkt)+" Avg: "+fmt(o.avg)+"</div><div style='font-size:10px;color:var(--sub)'>Valor: "+fmt(o.mkt*Math.abs(o.pos)*100)+"</div></div></div>";
+    var d=daysTo(o.exp), pnl=(o.mkt-o.avg)*o.pos*100;
+    var undP=lp[o.und], itm=undP&&(o.side==="long"?undP.price>o.strike:undP.price<o.strike);
+    return "<div class='oc'><div>"+
+      "<div style='font-size:12px;font-weight:600;font-family:monospace;margin-bottom:3px'>"+o.desc+"</div>"+
+      "<div style='font-size:11px;color:var(--sub);margin-bottom:5px'>"+o.note+"</div>"+
+      "<div style='display:flex;gap:4px;flex-wrap:wrap'><span class='badge "+(d<=7?"br":d<=30?"by":"bg")+"'>"+d+" dias</span><span class='badge "+(itm?"bg":"br")+"'>"+(itm?"ITM":"OTM")+"</span><span class='badge "+(o.side==="short"?"by":"bb")+"'>"+o.side.toUpperCase()+"</span></div></div>"+
+      "<div style='text-align:right'><div style='font-size:14px;font-weight:700' class='"+cc(pnl)+"'>"+fmt(pnl)+"</div>"+
+      "<div style='font-size:10px;color:var(--sub);margin-top:2px'>Mkt: "+fmt(o.mkt)+" Avg: "+fmt(o.avg)+"</div>"+
+      "<div style='font-size:10px;color:var(--sub)'>Valor: "+fmt(o.mkt*Math.abs(o.pos)*100)+"</div></div></div>";
   }).join("");
 }
 
@@ -482,69 +550,50 @@ function renderRecs() {
 
 function renderHyps() {
   document.getElementById("hypCards").innerHTML = activeHyps.map(function(h){
-    return "<div class='hyp-card "+h.cls+"' id='hc-"+h.id+"'><div class='hyp-header' onclick='toggleHyp(\""+h.id+"\")'><div class='hyp-title'><span>"+h.icon+" "+h.name+"</span><div style='display:flex;gap:4px;flex-wrap:wrap'>"+h.tickers.map(function(t){return "<span class='chip'>"+t+"</span>";}).join("")+"</div></div><div class='hyp-meta'><span style='font-size:11px;color:"+h.riskColor+";font-weight:600'>"+h.riskLbl+"</span><span style='font-size:11px;color:var(--sub)'>"+h.horizon+"</span><span id='ti-"+h.id+"' style='font-size:12px'>▼</span></div></div><div id='hb-"+h.id+"' style='display:none'><div style='padding:10px 14px 0;font-size:12px;color:#adbac7;line-height:1.55'>"+h.thesis+"</div><div style='padding:10px 14px 14px'><div class='hyp-grid'><div class='hs'><div class='hs-title'>Entrada Directa</div><div style='font-size:12px;color:#adbac7;line-height:1.6;white-space:pre-line'>"+h.directo+"</div></div><div class='hs'><div class='hs-title'>Estrategia de Opciones</div><div style='font-size:11.5px;color:#adbac7;line-height:1.65;white-space:pre-line'>"+h.opciones+"</div></div></div><div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px'><div class='hs'><div class='hs-title'>Sizing</div><div style='font-size:12px;color:#adbac7;line-height:1.5'>"+h.sizing+"</div></div><div class='hs'><div class='hs-title'>Catalizadores</div><div style='font-size:12px;color:#adbac7;line-height:1.5'>"+h.catalizadores+"</div></div></div><div style='margin-top:8px'><div style='font-size:9px;color:var(--sub);text-transform:uppercase;margin-bottom:3px'>Riesgo: <span style='color:"+h.riskColor+"'>"+h.riskLbl+"</span></div><div class='meter'><div class='meter-f' style='width:"+h.risk+"%;background:"+h.riskColor+"'></div></div></div></div></div></div>";
+    return "<div class='hyp-card "+h.cls+"' id='hc-"+h.id+"'>"+
+      "<div class='hyp-header' onclick='toggleHyp(\""+h.id+"\")'>" +
+        "<div class='hyp-title'><span>"+h.icon+" "+h.name+"</span>"+
+        "<div style='display:flex;gap:4px;flex-wrap:wrap'>"+h.tickers.map(function(t){return "<span class='chip'>"+t+"</span>";}).join("")+"</div></div>"+
+        "<div class='hyp-meta'><span style='font-size:11px;color:"+h.riskColor+";font-weight:600'>"+h.riskLbl+"</span>"+
+        "<span style='font-size:11px;color:var(--sub)'>"+h.horizon+"</span>"+
+        "<span id='ti-"+h.id+"' style='font-size:12px'>▼</span></div></div>"+
+      "<div id='hb-"+h.id+"' style='display:none'>"+
+        "<div style='padding:10px 14px 0;font-size:12px;color:#adbac7;line-height:1.55'>"+h.thesis+"</div>"+
+        "<div style='padding:10px 14px 14px'>"+
+          "<div class='hyp-grid'>"+
+            "<div class='hs'><div class='hs-title'>Entrada Directa</div><div style='font-size:12px;color:#adbac7;line-height:1.6;white-space:pre-line'>"+h.directo+"</div></div>"+
+            "<div class='hs'><div class='hs-title'>Estrategia de Opciones</div><div style='font-size:11.5px;color:#adbac7;line-height:1.65;white-space:pre-line'>"+h.opciones+"</div></div>"+
+          "</div>"+
+          "<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px'>"+
+            "<div class='hs'><div class='hs-title'>Sizing</div><div style='font-size:12px;color:#adbac7;line-height:1.5'>"+h.sizing+"</div></div>"+
+            "<div class='hs'><div class='hs-title'>Catalizadores</div><div style='font-size:12px;color:#adbac7;line-height:1.5'>"+h.catalizadores+"</div></div>"+
+          "</div>"+
+          "<div style='margin-top:8px'><div style='font-size:9px;color:var(--sub);text-transform:uppercase;margin-bottom:3px'>Riesgo: <span style='color:"+h.riskColor+"'>"+h.riskLbl+"</span></div>"+
+          "<div class='meter'><div class='meter-f' style='width:"+h.risk+"%;background:"+h.riskColor+"'></div></div></div>"+
+        "</div></div></div>";
   }).join("");
 }
 
 function toggleHyp(id) {
-  var b = document.getElementById("hb-"+id), i = document.getElementById("ti-"+id);
-  if (b) { var open = b.style.display !== "none"; b.style.display = open?"none":"block"; if(i) i.textContent = open?"▼":"▲"; }
+  var b=document.getElementById("hb-"+id), i=document.getElementById("ti-"+id);
+  if (b) { var open=b.style.display!=="none"; b.style.display=open?"none":"block"; if(i) i.textContent=open?"▼":"▲"; }
 }
 
 function renderNews() {
   document.getElementById("newsContainer").innerHTML = NEWS.map(function(n){
-    return "<div style='display:flex;gap:8px;padding:7px 0;border-bottom:1px solid rgba(48,54,61,.6)'><span style='font-size:10px;font-weight:700;font-family:monospace;background:#21262d;border:1px solid var(--border);border-radius:4px;padding:1px 5px;flex-shrink:0;margin-top:1px'>"+n.t+"</span><span style='font-size:11px;color:#adbac7;line-height:1.4;flex:1'>"+n.h+"</span><span style='font-size:10px;color:var(--sub);flex-shrink:0;margin-top:1px'>"+n.time+"</span></div>";
+    return "<div style='display:flex;gap:8px;padding:7px 0;border-bottom:1px solid rgba(48,54,61,.6)'>"+
+      "<span style='font-size:10px;font-weight:700;font-family:monospace;background:#21262d;border:1px solid var(--border);border-radius:4px;padding:1px 5px;flex-shrink:0;margin-top:1px'>"+n.t+"</span>"+
+      "<span style='font-size:11px;color:#adbac7;line-height:1.4;flex:1'>"+n.h+"</span>"+
+      "<span style='font-size:10px;color:var(--sub);flex-shrink:0;margin-top:1px'>"+n.time+"</span></div>";
   }).join("");
 }
 
-function fmtCOP(n) {
-  return "$" + Math.round(n).toLocaleString("es-CO") + " COP";
-}
-
-function renderCOP() {
-  var copData  = lp["IDX_COP"];
-  var usdcop   = copData ? copData.price : AVG_PURCHASE_COP;
-  var copChg   = copData ? copData.chg   : 0;
-
-  // Totales en USD
-  var totalUSD = POS.reduce(function(sum,p){ return sum + getP(p)*p.qty; }, 0);
-  var costUSD  = POS.reduce(function(sum,p){ return sum + p.avg*p.qty;   }, 0);
-  var pnlUSD   = totalUSD - costUSD;
-
-  // Conversiones a COP
-  var valueCOP  = totalUSD * usdcop;
-  var costCOP   = costUSD  * AVG_PURCHASE_COP;
-  var pnlCOP    = valueCOP - costCOP;
-  var pnlCOPpct = costCOP > 0 ? (pnlCOP / costCOP * 100) : 0;
-
-  // Efecto mercado: P&L en USD convertido a COP al tipo actual
-  var mktEffect = pnlUSD * usdcop;
-  // Efecto divisa: ganancia/pérdida por apreciación del dólar
-  var fxEffect  = costUSD * (usdcop - AVG_PURCHASE_COP);
-
-  // Retorno total COP vs IBR
-  var vsIBR = pnlCOPpct - IBR_ANNUAL;
-
-  // Render
-  setEl("copRate",    usdcop.toLocaleString("es-CO"), "idx-v " + cc(-copChg)); // COP sube = dolar baja
-  setEl("copRateChg", pct(copChg) + (copData && copData.label ? " <span style='font-size:9px;opacity:.65'>" + copData.label + "</span>" : ""), cc(copChg));
-  setEl("copValue",   "$" + Math.round(valueCOP/1e6).toLocaleString("es-CO") + "M", "idx-v");
-  setEl("copPnl",     fmtCOP(pnlCOP), "idx-v " + cc(pnlCOP));
-  setEl("copPnlPct",  pct(pnlCOPpct), cc(pnlCOP));
-  setEl("copMktEffect", fmtCOP(mktEffect), "idx-v " + cc(mktEffect));
-  setEl("copFxEffect",  fmtCOP(fxEffect),  "idx-v " + cc(fxEffect));
-  setEl("copVsIBR",   (vsIBR >= 0 ? "+" : "") + vsIBR.toFixed(1) + "pts", "idx-v " + cc(vsIBR));
-  setEl("copIBRLabel", "IBR ref: " + IBR_ANNUAL + "% EA");
-  setEl("copAvgDisplay", AVG_PURCHASE_COP.toLocaleString("es-CO"));
-  setEl("copAvgLabel", "");
-}
-
-
-  var map = [["spx","IDX_SPX"],["ndx","IDX_NDX"],["vix","IDX_VIX"],["gold","IDX_GLD"],["oil","IDX_OIL"]];
-  map.forEach(function(pair) {
-    var d = lp[pair[1]]; if(!d) return;
+function renderIdx() {
+  var map=[["spx","IDX_SPX"],["ndx","IDX_NDX"],["vix","IDX_VIX"],["gold","IDX_GLD"],["oil","IDX_OIL"]];
+  map.forEach(function(pair){
+    var d=lp[pair[1]]; if(!d) return;
     setEl(pair[0], d.price>1000?"$"+Math.round(d.price).toLocaleString():fmt(d.price), "idx-v "+cc(d.chg));
-    var lbl = d.label?"<span style='font-size:9px;opacity:.65'> "+d.label+"</span>":"";
+    var lbl=d.label?"<span style='font-size:9px;opacity:.65'> "+d.label+"</span>":"";
     setEl(pair[0]+"C", pct(d.chg)+lbl, cc(d.chg));
   });
   var b=lp.BTC, e=lp.ETH;
@@ -553,7 +602,7 @@ function renderCOP() {
 }
 
 function mktStatus() {
-  var st = (lp.IDX_SPX&&lp.IDX_SPX.state)||(lp.NFLX&&lp.NFLX.state);
+  var st=(lp.IDX_SPX&&lp.IDX_SPX.state)||(lp.NFLX&&lp.NFLX.state);
   if(st){var m={REGULAR:"🟢 Mercado Abierto",PRE:"🟡 Pre-mercado",POST:"🟠 Post-mercado",POSTPOST:"🟠 Post-mercado",CLOSED:"🔴 Mercado Cerrado"};setEl("mktStatus",m[st]||"🔴 Mercado Cerrado");return;}
   var ny=new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));
   var h=ny.getHours(),m=ny.getMinutes(),dw=ny.getDay(),wk=dw>0&&dw<6;
@@ -569,9 +618,11 @@ function renderAlfa() {
   setEl("sb-alpha",(al>=0?"+":"")+al.toFixed(2)+"pts","alfa-v "+cc(al));
 }
 
+// ── LOAD ALL ──────────────────────────────────────────────────────────────────
 async function loadAll() {
   renderSidebar(); renderNews();
   await loadRecs();
+  await loadMarketConfig();
   renderRecs(); renderHyps();
   await loadIBKR();
   var c = await getCrypto();
