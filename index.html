@@ -254,10 +254,12 @@ var POS = [
   {t:"NFLX",n:"Netflix",        qty:3,   avg:126.267,yf:"NFLX",   type:"Acciones",sector:"Comunicaciones", urgency:"watch",   fb:81.40, note:"Down -39% desde maximo. Consensus $114 (+40%). Esperar CPI para agregar."},
   {t:"NTR", n:"Nutrien",        qty:10,  avg:74.609, yf:"NTR",    type:"Acciones",sector:"Materiales",     urgency:"watch",   fb:66.28, note:"Ex-div $0.55 el 30 jun. NO vender antes. Iran activo. Wells Fargo Buy."}
 ];
-var OPTS = [
-  {desc:"EC Jul17 $17 CALL",    pos:-1, avg:0.699, mkt:0.740, exp:"2026-07-17", strike:17, und:"EC",   side:"short", note:"OTM. EC ~$15.76. Probablemente vence sin valor. Prima cobrada."},
-  {desc:"GBTC Jul02 $51 CALL",  pos:1,  avg:1.682, mkt:0.912, exp:"2026-07-02", strike:51, und:"GBTC", side:"long",  note:"URGENTE: OTM, 23 dias. BTC necesita +6%. Considerar cerrar hoy."}
+// OPTS: fallback hardcoded, se reemplaza con datos IBKR desde prices.json
+var OPTS_FALLBACK = [
+  {desc:"EC Jul17 $17 CALL",    pos:-1, avg:0.699, mkt:0.75,  exp:"2026-07-17", strike:17, und:"EC",   side:"short", note:"OTM. Prima cobrada: $69.9."},
+  {desc:"GBTC Jul02 $51 CALL",  pos:1,  avg:1.682, mkt:1.45,  exp:"2026-07-02", strike:51, und:"GBTC", side:"long",  note:"OTM. Revisar si cerrar."}
 ];
+var OPTS = OPTS_FALLBACK.slice(); // se sobreescribe con datos IBKR
 var EVENTS = [
   {date:"Hoy 9 jun",      title:"Premercado bajista",  note:"S&P -0.42%, BTC -5%. Mercado espera CPI.",          tickers:["GBTC","ETHE"]},
   {date:"Jue-Vie 11-12",  title:"CPI Mayo 2026",        note:"Dato caliente = presion. Dato frio = rally.",        tickers:["NFLX","GBTC","ETHE"]},
@@ -358,6 +360,24 @@ function loadPrices() {
         if (data.ibr_annual)              cop.ibr           = data.ibr_annual;
         if (data.avg_purchase_cop)        cop.avg_purchase  = data.avg_purchase_cop;
         if (data.cash_balance !== undefined) cop.cash_balance = data.cash_balance;
+
+        // Cargar opciones IBKR si vienen en prices.json
+        if (data.options && data.options.length > 0) {
+          OPTS = data.options.map(function(o) {
+            return {
+              desc:   o.desc,
+              pos:    o.pos,
+              avg:    o.avg,
+              mkt:    o.mkt,
+              exp:    o.exp,
+              strike: o.strike,
+              und:    o.und,
+              side:   o.side,
+              note:   o.side.toUpperCase() + " | Mkt: $" + o.mkt.toFixed(3) + " | Avg: $" + o.avg.toFixed(3)
+            };
+          });
+          console.log("Opciones IBKR cargadas: " + OPTS.length);
+        }
 
         // Sparklines
         if (data.hist) {
@@ -549,27 +569,33 @@ function renderRendimientos() {
     });
   });
 
-  // Opciones
-  var optPnlUSD = 0;
-  OPTS.forEach(function(o) { optPnlUSD += (o.mkt - o.avg) * o.pos * 100; });
+  // Opciones: valor de mercado actual (forma parte del Net Liq) y P&L
+  var optMktUSD = 0;   // valor mercado actual de opciones (incluido en Net Liq)
+  var optCostUSD = 0;  // costo pagado/cobrado de opciones
+  OPTS.forEach(function(o) {
+    optMktUSD  += o.mkt * o.pos * 100;   // valor actual (negativo si short)
+    optCostUSD += o.avg * o.pos * 100;   // costo original
+  });
+  var optPnlUSD = optMktUSD - optCostUSD;
   var optPnlCOP = optPnlUSD * usdcop;
 
-  // Net Liquidation = valor posiciones + cash/margen + opciones
-  var totValUSD  = totPosUSD + cashUSD;
-  var totPnlUSD  = (totValUSD - totCostUSD) + optPnlUSD;
-  var totPnlPct  = totCostUSD > 0 ? totPnlUSD / totCostUSD * 100 : 0;
+  // Net Liquidation = posiciones acciones + valor mercado opciones + cash
+  var totValUSD  = totPosUSD + optMktUSD + cashUSD;
+  var totPnlUSD  = totValUSD - (totCostUSD + optCostUSD);
+  var totCostAll = totCostUSD + optCostUSD;  // costo total incl. opciones
+  var totPnlPct  = totCostAll !== 0 ? totPnlUSD / Math.abs(totCostAll) * 100 : 0;
   var totValCOP  = totValUSD  * usdcop;
-  var totCostCOP = totCostUSD * avgPurch;
+  var totCostCOP = (totCostUSD + optCostUSD) * avgPurch;
   var totPnlCOP  = (totValCOP - totCostCOP) + optPnlCOP;
   var totPnlCOPpct = totCostCOP > 0 ? totPnlCOP / totCostCOP * 100 : 0;
   var fxTotal    = totCostUSD * (usdcop - avgPurch);
-  var mktTotal   = (totPosUSD - totCostUSD) * usdcop;  // efecto precio sobre posiciones
+  var mktTotal   = (totPosUSD + optMktUSD - totCostUSD - optCostUSD) * usdcop;  // efecto precio
   var vsIBR      = totPnlCOPpct - ibr;
 
   // ── Tarjetas resumen ─────────────────────────────────────────────────────
   var summCards = [
     { label:"Net Liquidation USD",   val: fmtUSD(totValUSD),
-      sub: "Posiciones: " + fmtUSD(totPosUSD) + (cashUSD !== 0 ? " | Cash: " + fmtUSD(cashUSD) : ""),
+      sub: "Acc/ETF: " + fmtUSD(totPosUSD) + " | Opc: " + fmtUSD(optMktUSD) + (cashUSD !== 0 ? " | Cash: " + fmtUSD(cashUSD) : ""),
       badge: (totPnlUSD>=0?"bg":"br"), badgeTxt: (totPnlUSD>=0?"+":"")+totPnlPct.toFixed(2)+"%" },
     { label:"P&L Total USD",         val: fmtUSD(totPnlUSD),
       sub: "Opciones: " + fmtUSD(optPnlUSD),
