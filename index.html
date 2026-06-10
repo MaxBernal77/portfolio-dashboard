@@ -306,7 +306,7 @@ var SECTORS = [
 ];
 
 var lp = {};
-var cop = {};          // datos COP desde prices.json
+var cop = { cash_balance: -605 };  // fallback hasta que prices.json tenga el campo
 var histData = [];     // portfolio_history.json
 var histRange = 30;    // dias visibles en graficas
 var donutC, sectorC, typeC, chartUSD, chartCOP, chartFX;
@@ -359,7 +359,7 @@ function loadPrices() {
         if (data.usdcop_effective)        cop.usdcop        = data.usdcop_effective;
         if (data.ibr_annual)              cop.ibr           = data.ibr_annual;
         if (data.avg_purchase_cop)        cop.avg_purchase  = data.avg_purchase_cop;
-        if (data.cash_balance !== undefined) cop.cash_balance = data.cash_balance;
+        cop.cash_balance = (data.cash_balance !== undefined) ? data.cash_balance : cop.cash_balance;
 
         // Cargar opciones IBKR si vienen en prices.json
         if (data.options && data.options.length > 0) {
