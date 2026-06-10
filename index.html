@@ -342,20 +342,31 @@ function fetchProxy(url,ms){
 }
 // Carga precios desde prices.json (generado cada mañana por GitHub Actions)
 function loadPrices(){
-  return fetchLocal("./prices.json", 4000)
-    .then(function(r){ return r.ok ? r.json() : null; })
+  return fetchLocal("./prices.json", 5000)
+    .then(function(r){ return r.ok ? r.json() : Promise.reject("HTTP " + r.status); })
     .then(function(d){
-      if(!d || !d.prices) return;
+      if(!d || !d.prices) return Promise.reject("sin clave prices");
+      if(d.ibr_annual)       IBR_ANNUAL       = d.ibr_annual;
+      if(d.avg_purchase_cop) AVG_PURCHASE_COP = d.avg_purchase_cop;
+      if(d.usdcop_effective) COP_EFFECTIVE    = d.usdcop_effective;
+      var count = 0;
       Object.keys(d.prices).forEach(function(key){
         var p = d.prices[key];
-        if(!lp[key] || !lp[key].ibkr){
+        if(p && p.price && (!lp[key] || !lp[key].ibkr)){
           lp[key] = {price: p.price, chg: p.chg || 0, label: p.label || "Cierre"};
+          count++;
         }
       });
       if(lp.BTC && lp.GBTC && !lp.GBTC.ibkr){ lp.GBTC.chg = lp.BTC.chg; }
       if(lp.ETH && lp.ETHE && !lp.ETHE.ibkr){ lp.ETHE.chg = lp.ETH.chg; }
-      console.log("prices.json cargado: " + Object.keys(d.prices).length + " precios");
-    }).catch(function(){});
+      var upd = d.updated ? new Date(d.updated).toLocaleString("es-CO",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) : "";
+      setEl("copUpdated", count + " precios cargados | " + upd + " | IBR: " + IBR_ANNUAL + "% | avg COP: " + (AVG_PURCHASE_COP ? Math.round(AVG_PURCHASE_COP).toLocaleString("es-CO") : "pendiente"));
+      console.log("prices.json OK: " + count + " precios | IBR=" + IBR_ANNUAL + "% | avg_cop=" + AVG_PURCHASE_COP);
+    })
+    .catch(function(err){
+      console.warn("prices.json no disponible: " + err);
+      setEl("copUpdated", "prices.json no disponible — corre el workflow en GitHub Actions");
+    });
 }
 
 
