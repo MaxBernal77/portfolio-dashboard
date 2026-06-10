@@ -124,6 +124,11 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .fx-row:last-child{border-bottom:none}
 .fx-label{font-size:11px;color:#adbac7}
 .fx-val{font-size:13px;font-weight:700}
+.hist-wrap{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px;margin-bottom:10px}
+.hist-title{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.hist-tabs{display:flex;gap:4px}
+.hist-tab{font-size:10px;font-weight:600;padding:3px 9px;border-radius:5px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--sub)}
+.hist-tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 </style>
 </head>
 <body>
@@ -194,6 +199,37 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 
   <div class="sec">Analisis de Rendimientos — USD &amp; COP</div>
   <div id="rendSection"></div>
+
+  <div class="sec">Evolucion del Portafolio — Historico</div>
+  <div id="histNoData" style="display:none;color:var(--sub);font-size:11px;padding:8px 0;margin-bottom:14px">
+    Sin historial aún — los datos se acumulan cada día hábil a las 8:30am. Vuelve mañana para ver la primera gráfica.
+  </div>
+  <div id="histCharts">
+    <div class="hist-wrap">
+      <div class="hist-title">
+        <span>Rendimiento USD &amp; P&L Acumulado</span>
+        <div class="hist-tabs">
+          <button class="hist-tab active" onclick="setHistRange(30,this)">1M</button>
+          <button class="hist-tab" onclick="setHistRange(90,this)">3M</button>
+          <button class="hist-tab" onclick="setHistRange(180,this)">6M</button>
+          <button class="hist-tab" onclick="setHistRange(365,this)">1A</button>
+        </div>
+      </div>
+      <div style="position:relative;height:220px"><canvas id="chartUSD"></canvas></div>
+    </div>
+    <div class="hist-wrap">
+      <div class="hist-title">
+        <span>Rendimiento COP — Precio vs Divisa vs IBR</span>
+      </div>
+      <div style="position:relative;height:220px"><canvas id="chartCOP"></canvas></div>
+    </div>
+    <div class="hist-wrap">
+      <div class="hist-title">
+        <span>Tasa de Cambio USD/COP &amp; S&P 500 (normalizados)</span>
+      </div>
+      <div style="position:relative;height:180px"><canvas id="chartFX"></canvas></div>
+    </div>
+  </div>
 
   <div class="sec">Acciones Sobre Posiciones Actuales</div>
   <div style="font-size:10px;color:var(--sub);margin-bottom:8px" id="recsLabel">Cargando recomendaciones...</div>
@@ -268,8 +304,10 @@ var SECTORS = [
 ];
 
 var lp = {};
-var cop = {};   // datos COP desde prices.json
-var donutC, sectorC, typeC;
+var cop = {};          // datos COP desde prices.json
+var histData = [];     // portfolio_history.json
+var histRange = 30;    // dias visibles en graficas
+var donutC, sectorC, typeC, chartUSD, chartCOP, chartFX;
 var activeRecs = RECS_DEFAULT;
 var activeHyps = HYPS_DEFAULT;
 
@@ -620,6 +658,136 @@ function renderRendimientos() {
   el.innerHTML = summHTML + tableHTML + fxHTML;
 }
 
+function setHistRange(days, btn) {
+  histRange = days;
+  document.querySelectorAll(".hist-tab").forEach(function(b){ b.classList.remove("active"); });
+  if (btn) btn.classList.add("active");
+  buildHistCharts();
+}
+
+function loadHistory() {
+  return fetch("./portfolio_history.json")
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (!data || !data.length) return;
+      histData = data;
+      console.log("portfolio_history.json: " + data.length + " entradas");
+    })
+    .catch(function(e) { console.warn("portfolio_history.json no disponible:", e.message); });
+}
+
+function buildHistCharts() {
+  if (!histData || histData.length < 2) {
+    document.getElementById("histNoData").style.display = "block";
+    document.getElementById("histCharts").style.display = "none";
+    return;
+  }
+  document.getElementById("histNoData").style.display = "none";
+  document.getElementById("histCharts").style.display = "block";
+
+  // Filtrar por rango seleccionado
+  var cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - histRange);
+  var slice  = histData.filter(function(d){ return new Date(d.date) >= cutoff; });
+  if (slice.length < 2) slice = histData.slice(-histRange);
+
+  var labels      = slice.map(function(d){ return d.date.slice(5); }); // MM-DD
+  var opts = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode:"index", intersect:false },
+    plugins: {
+      legend: { position:"bottom", labels:{ color:"#8b949e", font:{size:10}, boxWidth:10, padding:8 } },
+      tooltip: { bodyFont:{size:11}, callbacks:{} }
+    },
+    scales: {
+      x: { ticks:{ color:"#8b949e", font:{size:9}, maxRotation:0, autoSkip:true, maxTicksLimit:10 }, grid:{ color:"rgba(48,54,61,.5)" } },
+      y: { ticks:{ color:"#8b949e", font:{size:10} }, grid:{ color:"rgba(48,54,61,.5)" } }
+    }
+  };
+
+  // ── Gráfica 1: USD ────────────────────────────────────────────────────────
+  var pnlUSD   = slice.map(function(d){ return +(d.pnl_usd    || 0).toFixed(2); });
+  var pnlPctU  = slice.map(function(d){ return +(d.pnl_pct_usd|| 0).toFixed(2); });
+  var valUSD   = slice.map(function(d){ return +(d.val_usd    || 0).toFixed(2); });
+
+  if (chartUSD) chartUSD.destroy();
+  chartUSD = new Chart(document.getElementById("chartUSD"), {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [
+        { label:"Valor USD ($)",     data: valUSD,  borderColor:"#58a6ff", backgroundColor:"rgba(88,166,255,.08)", borderWidth:2, pointRadius:1, yAxisID:"yVal", tension:.3, fill:true },
+        { label:"P&L USD ($)",       data: pnlUSD,  borderColor: pnlUSD[pnlUSD.length-1]>=0?"#3fb950":"#f85149", backgroundColor:"transparent", borderWidth:1.5, pointRadius:1, yAxisID:"yPnl", tension:.3, borderDash:[4,3] },
+        { label:"P&L USD (%)",       data: pnlPctU, borderColor:"#d29922", backgroundColor:"transparent", borderWidth:1.5, pointRadius:1, yAxisID:"yPct", tension:.3, borderDash:[2,2] }
+      ]
+    },
+    options: Object.assign({}, opts, {
+      scales: Object.assign({}, opts.scales, {
+        yVal: { type:"linear", position:"left",  ticks:{ color:"#58a6ff", font:{size:9}, callback:function(v){return "$"+Math.round(v).toLocaleString();} }, grid:{ color:"rgba(48,54,61,.5)" } },
+        yPnl: { type:"linear", position:"right", ticks:{ color:"#8b949e", font:{size:9}, callback:function(v){return "$"+Math.round(v);} }, grid:{ display:false } },
+        yPct: { type:"linear", position:"right", ticks:{ color:"#d29922", font:{size:9}, callback:function(v){return v.toFixed(1)+"%";} }, grid:{ display:false } }
+      })
+    })
+  });
+
+  // ── Gráfica 2: COP — Precio vs Divisa vs IBR ─────────────────────────────
+  var pnlCOP   = slice.map(function(d){ return Math.round(d.pnl_cop    || 0); });
+  var mktEff   = slice.map(function(d){ return Math.round(d.mkt_effect || 0); });
+  var fxEff    = slice.map(function(d){ return Math.round(d.fx_effect  || 0); });
+  var pnlPctC  = slice.map(function(d){ return +(d.pnl_pct_cop || 0).toFixed(2); });
+  var ibrLine  = slice.map(function(d){ return +(d.ibr_annual  || 0).toFixed(2); });
+
+  if (chartCOP) chartCOP.destroy();
+  chartCOP = new Chart(document.getElementById("chartCOP"), {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        { label:"Efecto Precio COP",  data: mktEff, backgroundColor: mktEff.map(function(v){ return v>=0?"rgba(63,185,80,.6)":"rgba(248,81,73,.5)"; }), yAxisID:"yCOP", order:2 },
+        { label:"Efecto Divisa COP",  data: fxEff,  backgroundColor: fxEff.map(function(v){  return v>=0?"rgba(88,166,255,.5)":"rgba(188,140,255,.5)"; }), yAxisID:"yCOP", order:2 },
+        { label:"P&L Total COP (%)",  data: pnlPctC, type:"line", borderColor:"#e6edf3", backgroundColor:"transparent", borderWidth:2, pointRadius:2, yAxisID:"yPct", tension:.3, order:1 },
+        { label:"IBR (%)",            data: ibrLine, type:"line", borderColor:"#d29922",  backgroundColor:"transparent", borderWidth:1.5, borderDash:[4,3], pointRadius:0, yAxisID:"yPct", tension:0, order:1 }
+      ]
+    },
+    options: Object.assign({}, opts, {
+      scales: Object.assign({}, opts.scales, {
+        yCOP: { type:"linear", position:"left",  stacked:false, ticks:{ color:"#8b949e", font:{size:9}, callback:function(v){ var a=Math.abs(v); return (a>=1e6?"$"+(v/1e6).toFixed(1)+"M":"$"+Math.round(v/1000)+"K")+" COP"; } }, grid:{ color:"rgba(48,54,61,.5)" } },
+        yPct: { type:"linear", position:"right", ticks:{ color:"#e6edf3", font:{size:9}, callback:function(v){ return v.toFixed(1)+"%"; } }, grid:{ display:false } }
+      })
+    })
+  });
+
+  // ── Gráfica 3: USD/COP + S&P 500 normalizados ────────────────────────────
+  // Normalizar a base 100 desde primer punto del rango
+  var usdcops  = slice.map(function(d){ return d.usdcop || 0; });
+  var spxs     = slice.map(function(d){ return d.spx    || 0; });
+  var base1    = usdcops[0] || 1, base2 = spxs[0] || 1;
+  var copNorm  = usdcops.map(function(v){ return v ? +((v/base1*100).toFixed(2)) : null; });
+  var spxNorm  = spxs.map(function(v){   return v ? +((v/base2*100).toFixed(2)) : null; });
+  var vsIBRArr = slice.map(function(d){ return +(d.vs_ibr || 0).toFixed(2); });
+
+  if (chartFX) chartFX.destroy();
+  chartFX = new Chart(document.getElementById("chartFX"), {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [
+        { label:"USD/COP (base 100)", data: copNorm,  borderColor:"#bc8cff", backgroundColor:"rgba(188,140,255,.08)", borderWidth:2, pointRadius:1, yAxisID:"yNorm", tension:.3, fill:true },
+        { label:"S&P 500 (base 100)", data: spxNorm,  borderColor:"#3fb950", backgroundColor:"transparent",           borderWidth:2, pointRadius:1, yAxisID:"yNorm", tension:.3 },
+        { label:"Rend. COP vs IBR (pts)", data: vsIBRArr, borderColor:"#d29922", backgroundColor:"transparent",      borderWidth:1.5, pointRadius:1, yAxisID:"yVsIBR", tension:.3, borderDash:[3,3] }
+      ]
+    },
+    options: Object.assign({}, opts, {
+      scales: Object.assign({}, opts.scales, {
+        yNorm:  { type:"linear", position:"left",  ticks:{ color:"#8b949e", font:{size:9}, callback:function(v){ return v.toFixed(0); } }, grid:{ color:"rgba(48,54,61,.5)" } },
+        yVsIBR: { type:"linear", position:"right", ticks:{ color:"#d29922", font:{size:9}, callback:function(v){ return v.toFixed(1)+"pts"; } }, grid:{ display:false } }
+      })
+    })
+  });
+}
+
+
 function renderSidebar() {
   document.getElementById("eventsContainer").innerHTML = EVENTS.map(function(e){
     return "<div class='ev'><div class='ev-date'>"+e.date+"</div><div class='ev-title'>"+e.title+"</div><div class='ev-note'>"+e.note+"</div><div class='ev-chips'>"+e.tickers.map(function(t){return "<span class='chip'>"+t+"</span>";}).join("")+"</div></div>";
@@ -711,11 +879,12 @@ async function loadAll() {
   setEl("dataStatus", "⏳ Cargando precios...");
   renderSidebar(); renderNews();
 
-  // Leer prices.json y recommendations.json en paralelo (ambos generados por GitHub Actions)
-  await Promise.all([loadPrices(), loadRecs(), loadIBKR()]);
+  // Leer todos los JSONs en paralelo
+  await Promise.all([loadPrices(), loadRecs(), loadIBKR(), loadHistory()]);
 
   renderRecs(); renderHyps();
   mktStatus(); renderIdx(); renderPosCards(); renderOpts(); renderAlfa(); renderRendimientos(); buildCharts();
+  buildHistCharts();
 
   setEl("lastUpdate", new Date().toLocaleTimeString("es-CO",{hour:"2-digit",minute:"2-digit"})+" h Bogota");
 }
