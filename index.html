@@ -354,9 +354,10 @@ function loadPrices() {
         });
         
         // Capturar métricas COP del JSON
-        if (data.usdcop_effective) cop.usdcop     = data.usdcop_effective;
-        if (data.ibr_annual)       cop.ibr         = data.ibr_annual;
-        if (data.avg_purchase_cop) cop.avg_purchase = data.avg_purchase_cop;
+        if (data.usdcop_effective)        cop.usdcop        = data.usdcop_effective;
+        if (data.ibr_annual)              cop.ibr           = data.ibr_annual;
+        if (data.avg_purchase_cop)        cop.avg_purchase  = data.avg_purchase_cop;
+        if (data.cash_balance !== undefined) cop.cash_balance = data.cash_balance;
 
         // Sparklines
         if (data.hist) {
@@ -519,7 +520,8 @@ function renderRendimientos() {
 
   // ── Calcular por posición ────────────────────────────────────────────────
   var rows = [];
-  var totCostUSD = 0, totValUSD = 0;
+  var totCostUSD = 0, totPosUSD = 0;
+  var cashUSD    = cop.cash_balance || 0;  // negativo si hay margen usado
 
   POS.forEach(function(p) {
     var pr      = getP(p);
@@ -531,12 +533,11 @@ function renderRendimientos() {
     var costCOP = costUSD * avgPurch;
     var valCOP  = valUSD  * usdcop;
     var pnlCOP  = valCOP  - costCOP;
-    // Desglose: efecto precio vs efecto divisa
     var mktEff  = pnlUSD  * usdcop;
     var fxEff   = costUSD * (usdcop - avgPurch);
 
     totCostUSD += costUSD;
-    totValUSD  += valUSD;
+    totPosUSD  += valUSD;
 
     rows.push({
       t: p.t, n: p.n, qty: p.qty,
@@ -553,6 +554,8 @@ function renderRendimientos() {
   OPTS.forEach(function(o) { optPnlUSD += (o.mkt - o.avg) * o.pos * 100; });
   var optPnlCOP = optPnlUSD * usdcop;
 
+  // Net Liquidation = valor posiciones + cash/margen + opciones
+  var totValUSD  = totPosUSD + cashUSD;
   var totPnlUSD  = (totValUSD - totCostUSD) + optPnlUSD;
   var totPnlPct  = totCostUSD > 0 ? totPnlUSD / totCostUSD * 100 : 0;
   var totValCOP  = totValUSD  * usdcop;
@@ -560,18 +563,18 @@ function renderRendimientos() {
   var totPnlCOP  = (totValCOP - totCostCOP) + optPnlCOP;
   var totPnlCOPpct = totCostCOP > 0 ? totPnlCOP / totCostCOP * 100 : 0;
   var fxTotal    = totCostUSD * (usdcop - avgPurch);
-  var mktTotal   = totPnlUSD  * usdcop;
+  var mktTotal   = (totPosUSD - totCostUSD) * usdcop;  // efecto precio sobre posiciones
   var vsIBR      = totPnlCOPpct - ibr;
 
   // ── Tarjetas resumen ─────────────────────────────────────────────────────
   var summCards = [
-    { label:"Valor Portafolio USD",  val: fmtUSD(totValUSD),
-      sub: "Costo: " + fmtUSD(totCostUSD),
+    { label:"Net Liquidation USD",   val: fmtUSD(totValUSD),
+      sub: "Posiciones: " + fmtUSD(totPosUSD) + (cashUSD !== 0 ? " | Cash: " + fmtUSD(cashUSD) : ""),
       badge: (totPnlUSD>=0?"bg":"br"), badgeTxt: (totPnlUSD>=0?"+":"")+totPnlPct.toFixed(2)+"%" },
     { label:"P&L Total USD",         val: fmtUSD(totPnlUSD),
       sub: "Opciones: " + fmtUSD(optPnlUSD),
       badge: (totPnlUSD>=0?"bg":"br"), badgeTxt: (totPnlUSD>=0?"+":"")+totPnlPct.toFixed(2)+"%" },
-    { label:"Valor Portafolio COP",  val: fmtCOP(totValCOP),
+    { label:"Net Liquidation COP",   val: fmtCOP(totValCOP),
       sub: "Costo: " + fmtCOP(totCostCOP),
       badge: (totPnlCOP>=0?"bg":"br"), badgeTxt: (totPnlCOP>=0?"+":"")+totPnlCOPpct.toFixed(2)+"%" },
     { label:"P&L Total COP",         val: fmtCOP(totPnlCOP),
@@ -649,6 +652,8 @@ function renderRendimientos() {
       "<span class='fx-val'>" + ibr.toFixed(2) + "% anual</span></div>" +
     "<div class='fx-row'><span class='fx-label'>📊 Rendimiento portafolio COP vs IBR</span>" +
       "<span class='fx-val " + (vsIBR>=0?"pos":"neg") + "'>" + (vsIBR>=0?"+":"") + vsIBR.toFixed(2) + " pts</span></div>" +
+    "<div class='fx-row'><span class='fx-label'>💰 Cash / Margen <span style='font-size:10px;color:var(--sub)'>(incluido en Net Liq)</span></span>" +
+      "<span class='fx-val " + (cashUSD>=0?"pos":"neg") + "'>" + fmtUSD(cashUSD) + "</span></div>" +
     "<div class='fx-row'><span class='fx-label'>💵 Tasa compra promedio ponderada</span>" +
       "<span class='fx-val'>$" + Math.round(avgPurch).toLocaleString("es-CO") + " COP/USD</span></div>" +
     "<div class='fx-row' style='border-bottom:none'><span class='fx-label'>📅 Tasa efectiva actual <span style='font-size:10px;color:var(--sub)'>(spread aplicado)</span></span>" +
