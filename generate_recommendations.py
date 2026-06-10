@@ -234,13 +234,46 @@ def save_prices_json(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, avg_purch
         "avg_purchase_cop": avg_purchase,
         "usdcop_effective": round(usdcop_raw * COP_SPREAD, 2),
         "cash_balance":     round(cash_balance, 2),
-        "prices":           {}
+        "prices":           {},
+        "options":          []   # array con metadata completa de cada opcion
     }
     # Posiciones desde IBKR (fuente primaria)
     if ibkr_data and ibkr_data.get("positions"):
         for p in ibkr_data["positions"]:
             t = p["ticker"]
-            if p["mark_price"] > 0:
+            is_opt = p.get("asset_class") == "OPT" or p.get("put_call")
+            if is_opt:
+                # Opciones: guardar en array con clave unica y metadata completa
+                expiry_raw = str(p.get("expiry", ""))
+                # Formatear expiry de YYYYMMDD a YYYY-MM-DD
+                if len(expiry_raw) == 8:
+                    exp_fmt = expiry_raw[:4] + "-" + expiry_raw[4:6] + "-" + expiry_raw[6:]
+                else:
+                    exp_fmt = expiry_raw
+                strike   = p.get("strike", "")
+                put_call = p.get("put_call", "")
+                qty      = p.get("qty", 0)
+                avg      = p.get("avg_cost", 0)
+                mkt      = p.get("mark_price", 0)
+                # Clave unica: TICKER_STRIKE_PUTCALL_EXPIRY
+                key = t + "_" + str(strike) + "_" + put_call + "_" + expiry_raw
+                side = "short" if qty < 0 else "long"
+                desc = t + " " + exp_fmt[5:] + " $" + str(strike) + " " + put_call + " " + side.upper()
+                data["options"].append({
+                    "key":     key,
+                    "desc":    desc,
+                    "und":     t,
+                    "strike":  float(strike) if strike else 0,
+                    "exp":     exp_fmt,
+                    "put_call":put_call,
+                    "side":    side,
+                    "pos":     int(qty),
+                    "avg":     round(float(avg), 4) if avg else 0,
+                    "mkt":     round(float(mkt), 4) if mkt else 0,
+                    "label":   "IBKR"
+                })
+                print("  Opcion: " + desc + " | mkt=" + str(round(float(mkt),3)) + " avg=" + str(round(float(avg),3)))
+            elif p["mark_price"] > 0:
                 data["prices"][t] = {"price": round(p["mark_price"],4), "chg": 0, "label": "IBKR"}
 
     # Indices desde Yahoo Finance
@@ -296,6 +329,7 @@ def update_portfolio_history(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, a
 
     portfolio = ibkr_data["positions"] if ibkr_data else PORTFOLIO_FALLBACK
     stocks    = [p for p in portfolio if not p.get("put_call") and p.get("asset_class","STK") != "OPT"]
+    options   = [p for p in portfolio if p.get("asset_class") == "OPT" or p.get("put_call")]
 
     total_pos_usd  = 0.0
     total_cost_usd = 0.0
@@ -303,21 +337,21 @@ def update_portfolio_history(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, a
         price = p.get("mark_price") or 0
         if price <= 0:
             price = yahoo.get(p["ticker"], {}).get("price") or p.get("avg_cost", 0)
-        avg   = p.get("avg_cost", 0)
-        qty   = abs(p.get("qty", 0))
-        total_pos_usd  += price * qty
-        total_cost_usd += avg   * qty
+        total_pos_usd  += price * abs(p.get("qty", 0))
+        total_cost_usd += p.get("avg_cost", 0) * abs(p.get("qty", 0))
 
-    # Net Liquidation = valor posiciones + cash (negativo si hay margen usado)
-    net_liq_usd    = total_pos_usd + cash_balance
+    opt_mkt_usd  = sum(p.get("mark_price", 0) * p.get("qty", 0) * 100 for p in options)
+    opt_cost_usd = sum(p.get("avg_cost",   0) * p.get("qty", 0) * 100 for p in options)
+
+    net_liq_usd    = total_pos_usd + opt_mkt_usd + cash_balance
     total_val_cop  = net_liq_usd   * usdcop
-    total_cost_cop = total_cost_usd * avg_purchase
-    pnl_usd        = net_liq_usd   - total_cost_usd
+    total_cost_cop = (total_cost_usd + opt_cost_usd) * avg_purchase
+    pnl_usd        = net_liq_usd   - (total_cost_usd + opt_cost_usd)
     pnl_cop        = total_val_cop  - total_cost_cop
-    pnl_pct_usd    = round((pnl_usd / total_cost_usd  * 100) if total_cost_usd  else 0, 3)
-    pnl_pct_cop    = round((pnl_cop / total_cost_cop  * 100) if total_cost_cop  else 0, 3)
-    mkt_effect     = round(pnl_usd   * usdcop, 0)
-    fx_effect      = round(total_cost_usd * (usdcop - avg_purchase), 0)
+    pnl_pct_usd    = round((pnl_usd / abs(total_cost_usd + opt_cost_usd) * 100) if total_cost_usd else 0, 3)
+    pnl_pct_cop    = round((pnl_cop / abs(total_cost_cop) * 100) if total_cost_cop else 0, 3)
+    mkt_effect     = round((total_pos_usd + opt_mkt_usd - total_cost_usd - opt_cost_usd) * usdcop, 0)
+    fx_effect      = round((total_cost_usd + opt_cost_usd) * (usdcop - avg_purchase), 0)
     vs_ibr         = round(pnl_pct_cop - ibr_annual, 3)
     spx_price      = yahoo.get("^GSPC", {}).get("price") or 0
     btc_price      = (crypto.get("bitcoin") or {}).get("usd", 0)
@@ -326,8 +360,9 @@ def update_portfolio_history(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, a
         "date":          today_str,
         "val_usd":       round(net_liq_usd,   2),
         "pos_usd":       round(total_pos_usd, 2),
+        "opt_mkt_usd":   round(opt_mkt_usd,   2),
         "cash_balance":  round(cash_balance,  2),
-        "cost_usd":      round(total_cost_usd,2),
+        "cost_usd":      round(total_cost_usd + opt_cost_usd, 2),
         "pnl_usd":       round(pnl_usd,       2),
         "pnl_pct_usd":   pnl_pct_usd,
         "val_cop":       round(total_val_cop,  0),
@@ -345,24 +380,23 @@ def update_portfolio_history(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, a
     }
 
     history = []
-    if os.path.exists(HISTORY_FILE):
+    if os.path.exists("portfolio_history.json"):
         try:
-            with open(HISTORY_FILE) as f: history = json.load(f)
+            with open("portfolio_history.json") as f: history = json.load(f)
         except Exception as e:
-            print("Warning leyendo historial: " + str(e))
+            print("Warning historial: " + str(e))
 
     existing = [i for i, h in enumerate(history) if h.get("date") == today_str]
     if existing:
         history[existing[0]] = snapshot
-        print("Historial: actualizado " + today_str)
+        print("Historial actualizado: " + today_str)
     else:
         history.append(snapshot)
-        print("Historial: nueva entrada " + today_str + " | total: " + str(len(history)) + " dias")
+        print("Historial nueva entrada: " + today_str + " (" + str(len(history)) + " dias)")
 
     history = sorted(history, key=lambda x: x["date"])[-365:]
-    with open(HISTORY_FILE, "w") as f:
+    with open("portfolio_history.json", "w") as f:
         json.dump(history, f, indent=2)
-    print("portfolio_history.json: " + str(len(history)) + " entradas")
 
 
 def build_context(ibkr_data, yahoo, crypto, cash_balance):
@@ -539,7 +573,6 @@ if __name__ == "__main__":
     print("6. Guardando prices.json y market_config.json...")
     save_prices_json(ibkr_data, yahoo_prices, crypto, usdcop_raw, ibr_annual, avg_purchase, cash_balance)
     save_market_config(usdcop_raw, ibr_annual, avg_purchase, cash_balance)
-    update_portfolio_history(ibkr_data, yahoo_prices, crypto, usdcop_raw, ibr_annual, avg_purchase, cash_balance)
 
     print("7. Construyendo contexto...")
     context_str, net_pnl, net_pnlp, net_liq, cost_usd, spx, btc, btc_chg = build_context(
