@@ -227,12 +227,13 @@ def get_avg_purchase_cop(deposits, usdcop_raw):
     return round(usdcop_raw, 0)
 
 # ── GUARDAR ARCHIVOS JSON ─────────────────────────────────────────────────────
-def save_prices_json(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, avg_purchase):
+def save_prices_json(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, avg_purchase, cash_balance=0):
     data = {
         "updated":          datetime.now().isoformat(),
         "ibr_annual":       ibr_annual,
         "avg_purchase_cop": avg_purchase,
         "usdcop_effective": round(usdcop_raw * COP_SPREAD, 2),
+        "cash_balance":     round(cash_balance, 2),
         "prices":           {}
     }
     # Posiciones desde IBKR (fuente primaria)
@@ -287,62 +288,51 @@ def save_market_config(usdcop_raw, ibr_annual, avg_purchase, cash_balance):
     print("market_config.json: USD/COP=" + str(round(usdcop_raw*COP_SPREAD,0)) + " IBR=" + str(ibr_annual) + "%")
 
 # ── CONTEXTO PARA CLAUDE ──────────────────────────────────────────────────────
-
-def update_portfolio_history(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, avg_purchase):
-    """
-    Agrega un punto diario a portfolio_history.json.
-    Calcula valor total USD y COP, desglose por posicion, y efecto divisa.
-    Mantiene maximo 365 dias de historial.
-    """
+def update_portfolio_history(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, avg_purchase, cash_balance=0):
+    """Append snapshot diario a portfolio_history.json. Max 365 dias."""
     HISTORY_FILE = "portfolio_history.json"
     today_str    = datetime.now().strftime("%Y-%m-%d")
     usdcop       = round(usdcop_raw * COP_SPREAD, 2)
 
-    # Calcular valor portafolio
     portfolio = ibkr_data["positions"] if ibkr_data else PORTFOLIO_FALLBACK
     stocks    = [p for p in portfolio if not p.get("put_call") and p.get("asset_class","STK") != "OPT"]
 
-    total_val_usd  = 0.0
+    total_pos_usd  = 0.0
     total_cost_usd = 0.0
-    positions_snap = {}
-
     for p in stocks:
-        t     = p["ticker"]
         price = p.get("mark_price") or 0
         if price <= 0:
-            price = yahoo.get(t, {}).get("price") or p.get("avg_cost", 0)
-        avg  = p.get("avg_cost", 0)
-        qty  = abs(p.get("qty", 0))
-        val  = price * qty
-        cost = avg   * qty
-        total_val_usd  += val
-        total_cost_usd += cost
-        positions_snap[t] = {"price": round(price, 4), "val_usd": round(val, 2), "cost_usd": round(cost, 2)}
+            price = yahoo.get(p["ticker"], {}).get("price") or p.get("avg_cost", 0)
+        avg   = p.get("avg_cost", 0)
+        qty   = abs(p.get("qty", 0))
+        total_pos_usd  += price * qty
+        total_cost_usd += avg   * qty
 
-    # Crypto prices para GBTC/ETHE si no hay precio IBKR
-    btc_price = (crypto.get("bitcoin")  or {}).get("usd", 0)
-    eth_price = (crypto.get("ethereum") or {}).get("usd", 0)
-
-    total_val_cop  = total_val_usd  * usdcop
+    # Net Liquidation = valor posiciones + cash (negativo si hay margen usado)
+    net_liq_usd    = total_pos_usd + cash_balance
+    total_val_cop  = net_liq_usd   * usdcop
     total_cost_cop = total_cost_usd * avg_purchase
-    pnl_usd        = total_val_usd  - total_cost_usd
+    pnl_usd        = net_liq_usd   - total_cost_usd
     pnl_cop        = total_val_cop  - total_cost_cop
-    pnl_pct_usd    = round((pnl_usd  / total_cost_usd  * 100) if total_cost_usd  else 0, 3)
-    pnl_pct_cop    = round((pnl_cop  / total_cost_cop  * 100) if total_cost_cop  else 0, 3)
-    mkt_effect     = round(pnl_usd   * usdcop, 0)          # cuánto del P&L COP viene de precios
-    fx_effect      = round(total_cost_usd * (usdcop - avg_purchase), 0)  # cuánto del P&L COP viene de divisa
+    pnl_pct_usd    = round((pnl_usd / total_cost_usd  * 100) if total_cost_usd  else 0, 3)
+    pnl_pct_cop    = round((pnl_cop / total_cost_cop  * 100) if total_cost_cop  else 0, 3)
+    mkt_effect     = round(pnl_usd   * usdcop, 0)
+    fx_effect      = round(total_cost_usd * (usdcop - avg_purchase), 0)
     vs_ibr         = round(pnl_pct_cop - ibr_annual, 3)
     spx_price      = yahoo.get("^GSPC", {}).get("price") or 0
+    btc_price      = (crypto.get("bitcoin") or {}).get("usd", 0)
 
     snapshot = {
         "date":          today_str,
-        "val_usd":       round(total_val_usd,  2),
-        "cost_usd":      round(total_cost_usd, 2),
-        "pnl_usd":       round(pnl_usd,        2),
+        "val_usd":       round(net_liq_usd,   2),
+        "pos_usd":       round(total_pos_usd, 2),
+        "cash_balance":  round(cash_balance,  2),
+        "cost_usd":      round(total_cost_usd,2),
+        "pnl_usd":       round(pnl_usd,       2),
         "pnl_pct_usd":   pnl_pct_usd,
-        "val_cop":       round(total_val_cop,   0),
-        "cost_cop":      round(total_cost_cop,  0),
-        "pnl_cop":       round(pnl_cop,         0),
+        "val_cop":       round(total_val_cop,  0),
+        "cost_cop":      round(total_cost_cop, 0),
+        "pnl_cop":       round(pnl_cop,        0),
         "pnl_pct_cop":   pnl_pct_cop,
         "mkt_effect":    mkt_effect,
         "fx_effect":     fx_effect,
@@ -354,31 +344,25 @@ def update_portfolio_history(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, a
         "btc":           btc_price,
     }
 
-    # Leer historial existente
     history = []
     if os.path.exists(HISTORY_FILE):
         try:
-            with open(HISTORY_FILE) as f:
-                history = json.load(f)
+            with open(HISTORY_FILE) as f: history = json.load(f)
         except Exception as e:
             print("Warning leyendo historial: " + str(e))
-            history = []
 
-    # Reemplazar si ya existe entrada de hoy, sino append
     existing = [i for i, h in enumerate(history) if h.get("date") == today_str]
     if existing:
         history[existing[0]] = snapshot
-        print("Historial: actualizado entrada " + today_str)
+        print("Historial: actualizado " + today_str)
     else:
         history.append(snapshot)
         print("Historial: nueva entrada " + today_str + " | total: " + str(len(history)) + " dias")
 
-    # Mantener max 365 dias, ordenado por fecha
     history = sorted(history, key=lambda x: x["date"])[-365:]
-
     with open(HISTORY_FILE, "w") as f:
         json.dump(history, f, indent=2)
-    print("portfolio_history.json: " + str(len(history)) + " entradas guardadas")
+    print("portfolio_history.json: " + str(len(history)) + " entradas")
 
 
 def build_context(ibkr_data, yahoo, crypto, cash_balance):
@@ -552,10 +536,10 @@ if __name__ == "__main__":
     deposits     = ibkr_data.get("deposits",[]) if ibkr_data else []
     avg_purchase = get_avg_purchase_cop(deposits, usdcop_raw)
 
-    print("6. Guardando prices.json, market_config.json e historial...")
-    save_prices_json(ibkr_data, yahoo_prices, crypto, usdcop_raw, ibr_annual, avg_purchase)
+    print("6. Guardando prices.json y market_config.json...")
+    save_prices_json(ibkr_data, yahoo_prices, crypto, usdcop_raw, ibr_annual, avg_purchase, cash_balance)
     save_market_config(usdcop_raw, ibr_annual, avg_purchase, cash_balance)
-    update_portfolio_history(ibkr_data, yahoo_prices, crypto, usdcop_raw, ibr_annual, avg_purchase)
+    update_portfolio_history(ibkr_data, yahoo_prices, crypto, usdcop_raw, ibr_annual, avg_purchase, cash_balance)
 
     print("7. Construyendo contexto...")
     context_str, net_pnl, net_pnlp, net_liq, cost_usd, spx, btc, btc_chg = build_context(
