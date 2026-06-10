@@ -329,7 +329,7 @@ function loadIBKR() {
 }
 
 function loadRecs() {
-  return fetchT("./recommendations.json", 4000)
+  return fetch("./recommendations.json")
     .then(function(r) { return r.ok ? r.json() : null; })
     .then(function(data) {
       if (!data) return;
