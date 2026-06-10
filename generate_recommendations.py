@@ -5,6 +5,7 @@ Genera: prices.json, market_config.json, recommendations.json (dias estrategicos
 Envia alerta diaria por Telegram.
 """
 import json, os, re, time, requests, xml.etree.ElementTree as ET
+import yfinance as yf
 from datetime import datetime
 import anthropic
 
@@ -136,26 +137,30 @@ def get_ibkr_data():
 
 # ── PRECIOS (Yahoo Finance directo desde Python, sin proxy) ───────────────────
 def get_yahoo_prices(tickers):
-    """Yahoo Finance funciona directamente desde Python server-side sin proxy."""
+    """yfinance es mas confiable que requests directos a Yahoo Finance."""
     prices = {}
     try:
-        url     = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + ",".join(tickers)
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-        r       = requests.get(url, headers=headers, timeout=12)
-        for q in r.json()["quoteResponse"]["result"]:
-            sym = q["symbol"]
-            st  = q.get("marketState", "")
-            if st == "PRE" and q.get("preMarketPrice"):
-                price = q["preMarketPrice"]; chg = q.get("preMarketChangePercent",0); label = "Pre-mkt"
-            elif st in ("POST","POSTPOST","CLOSED") and q.get("postMarketPrice"):
-                price = q["postMarketPrice"]; chg = q.get("postMarketChangePercent",0); label = "Post-mkt"
-            else:
-                price = q.get("regularMarketPrice",0); chg = q.get("regularMarketChangePercent",0); label = "Cierre"
-            if price:
-                prices[sym] = {"price": price, "chg": chg, "label": label}
-        print("Yahoo Finance: " + str(len(prices)) + " precios")
+        # Descargar todos los tickers de una vez
+        raw = yf.download(
+            tickers, period="2d", interval="1d",
+            auto_adjust=True, progress=False, threads=True
+        )
+        # Obtener ultimo precio de cierre para cada ticker
+        close = raw["Close"] if "Close" in raw.columns else raw
+        for t in (tickers if isinstance(tickers, list) else [tickers]):
+            try:
+                ticker_obj = yf.Ticker(t)
+                info       = ticker_obj.fast_info
+                price      = float(info.last_price) if info.last_price else 0
+                prev       = float(info.previous_close) if info.previous_close else price
+                chg        = round(((price - prev) / prev * 100) if prev else 0, 2)
+                if price > 0:
+                    prices[t] = {"price": round(price, 4), "chg": chg, "label": "Cierre"}
+            except Exception as e:
+                print("yfinance error " + t + ": " + str(e))
+        print("yfinance: " + str(len(prices)) + "/" + str(len(tickers)) + " precios obtenidos")
     except Exception as e:
-        print("Yahoo Finance error: " + str(e))
+        print("yfinance error general: " + str(e))
     return prices
 
 def get_crypto():
