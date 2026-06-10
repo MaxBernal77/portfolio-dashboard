@@ -3,167 +3,170 @@
     {
       "type": "action",
       "icon": "🚨",
-      "title": "Cierra ETHE — Stop Loss Urgente",
-      "badge": "br",
-      "badgeText": "PÉRDIDA -57%",
-      "body": "ETHE cotiza a $13.41 con una pérdida del 57.3% desde tu entrada en $31.40. ETH en $1,638 muestra debilidad estructural y el ETP tiene tracking error negativo acumulado. Con solo 5 acciones el costo de salida es mínimo (~$67). Libera capital para posiciones con mejor convicción. No hay catalizador próximo que justifique mantener.",
+      "title": "Cerrar ETHE: Stop Loss Urgente",
+      "badge": "CRITICO",
+      "badgeText": "−57%",
+      "body": "ETHE cotiza a $13.41 con una pérdida del 57.3% ($90). ETH en $1,621 muestra debilidad estructural frente a BTC. Con el FOMC el 17-18 Jun, el riesgo de otro leg down es alto. Vender las 5 acciones hoy a mercado (~$67 recuperados) y reasignar a oportunidades con mejor perfil riesgo/retorno. No hay catalizador de corto plazo que justifique mantener.",
       "tags": [
         "STOP-LOSS",
-        "CRYPTO",
-        "ETHE"
+        "CRIPTO",
+        "FOMC"
       ]
     },
     {
       "type": "action",
       "icon": "⚠️",
-      "title": "Gestiona GBTC: Roll o Reducción Parcial",
-      "badge": "br",
-      "badgeText": "PÉRDIDA -32%",
-      "body": "GBTC a $48.14 vs entrada $71.38, pérdida de $209. BTC en $61,724 (-1.6%) con momentum bajista a corto plazo. Considera vender 4-5 acciones para recuperar ~$240 de capital y reducir exposición crypto concentrada. Si tienes convicción en BTC largo plazo, mantén 4 acciones como posición residual. El FOMC del 17-18 jun puede presionar activos de riesgo.",
+      "title": "Rotar GBTC → BTC más eficiente",
+      "badge": "REVISAR",
+      "badgeText": "−32%",
+      "body": "GBTC a $48.14 acumula −$209 (−32.6%). BTC en $61,213 ha caído 2.6% hoy. Si la tesis cripto se mantiene, considera rotar a IBIT (BlackRock) que tiene menor descuento NAV y mayor liquidez. Si no hay convicción cripto, liquidar y usar los ~$433 para reducir el margen negativo de $605. Decisión binaria: tesis o salida.",
       "tags": [
-        "REDUCCIÓN",
-        "CRYPTO",
-        "GBTC"
+        "GBTC",
+        "ROTACION",
+        "CRIPTO"
       ]
     },
     {
       "type": "action",
       "icon": "📋",
-      "title": "Rola EC Call $17 Jul antes del Vencimiento",
-      "badge": "br",
-      "badgeText": "36 DÍAS",
-      "body": "Tu EC Jul17 $17 CALL SHORT vence en 36 días. EC cotiza a $15.88, la call está OTM por $1.12. Con theta decay acelerando, considera cerrar la posición con ganancia y rolar a Sep17 $16 CALL para capturar prima adicional (~$0.45-0.60) bajando el strike y aumentando probabilidad de asignación favorable. Earnings Q2 de Ecopetrol esperados a mediados de agosto son catalizador clave.",
+      "title": "Gestionar EC Call Short Jul17 $17",
+      "badge": "OPCIONES",
+      "badgeText": "36 días",
+      "body": "EC cotiza a $15.88, tu CALL SHORT $17 está OTM con 36 días a vencimiento. La prima restante probablemente sea ~$0.15-0.25. Si EC sube hacia $16.50-17.00 antes del FOMC, considera recomprar para evitar asignación con pérdida. Si se mantiene por debajo, deja expirar y captura toda la prima. Coloca alerta en $16.60.",
       "tags": [
-        "OPCIONES",
-        "ROLL",
-        "EC"
+        "EC",
+        "CALL-SHORT",
+        "THETA"
       ]
     },
     {
       "type": "action",
-      "icon": "💡",
-      "title": "Despliega Capital en NFLX — Promedia a la Baja",
-      "badge": "br",
-      "badgeText": "OPORTUNIDAD",
-      "body": "NFLX a $81.41 vs entrada $126.27 (-35.5%). Con buying power de $9,116 y NFLX mostrando soporte técnico en $78-80, considera comprar 5 acciones adicionales a mercado (~$407) para bajar costo base a ~$104. Alternativamente vende un NFLX Aug $75 PUT SHORT por ~$2.50 para generar ingreso mientras defines entrada. Q2 earnings esperados en julio con guía de usuarios como catalizador alcista.",
+      "icon": "💰",
+      "title": "Reducir Margen Negativo Post-ETHE",
+      "badge": "CAPITAL",
+      "badgeText": "$−605",
+      "body": "Con $605 de margen negativo y net liq de $3,823, tu ratio de apalancamiento es preocupante (−15.8%). Después de liquidar ETHE (~$67) y potencialmente GBTC (~$433), destina $500 a reducir el saldo negativo antes del FOMC. Esto reduce el riesgo de margin call si el mercado cae. Buying power real de $9,116 es engañoso si el margen sigue negativo.",
       "tags": [
-        "PROMEDIO",
-        "NFLX",
-        "RECUPERACIÓN"
+        "MARGEN",
+        "RIESGO",
+        "LIQUIDEZ"
       ]
     }
   ],
   "hyps": [
     {
-      "id": "hyp-ec-recovery",
+      "id": "nflx-recovery",
       "cls": "semi",
-      "icon": "🛢️",
-      "name": "EC — Covered Call Ladder",
-      "riskLbl": "Moderado",
-      "risk": 42,
-      "riskColor": "#e3b341",
-      "horizon": "3 meses",
+      "icon": "🎬",
+      "name": "NFLX Recuperación Q2",
+      "riskLbl": "Medio",
+      "risk": 55,
+      "riskColor": "#d29922",
+      "horizon": "6 semanas",
       "tickers": [
-        "EC"
+        "NFLX"
       ],
-      "thesis": "Ecopetrol cotiza con descuento vs NAV con petróleo Brent sostenido sobre $72. La compañía paga dividendo ~10% yield anual y el gobierno colombiano tiene incentivo político para mantener precio. Rebote técnico hacia $17-18 si el crudo se estabiliza post-OPEC+ reunión de junio.",
-      "directo": "Mantén las 110 acciones actuales. Nivel de soporte clave en $14.80. Stop loss en $14.20. Target parcial de toma de ganancias en $17.50.",
-      "opciones": "Rola el Jul $17 CALL SHORT a Sep17 $16 CALL SHORT. Prima estimada $0.50-0.65 por acción. Ingreso adicional de ~$55-72 por contrato. Si se asigna en $16, salida con P&L positivo desde entrada $15.19.",
-      "sizing": "Posición actual $1,747. No agregar más capital. Ingreso de opciones como yield sobre posición existente.",
-      "catalizadores": "Reunión OPEC+ 1 jul, Earnings Q2 Ecopetrol ago-2026, precio crudo Brent vs USD, decisión de dividendo extraordinario Q3."
+      "thesis": "NFLX a $81.41 está en zona de soporte técnico con RSI oversold. Tienes 3 acciones con pérdida de −35.5% (−$135). Resultados Q2 esperados mediados de Julio podrían ser catalizador de recuperación hacia $90-95 dado el crecimiento de publicidad y live events. El S&P YTD +8.2% sugiere mercado aún constructivo para growth.",
+      "directo": "Mantener las 3 acciones actuales. Añadir 2 acciones más a $81.41 para bajar costo promedio a ~$103. Stop loss en $76 (−6.7% desde precio actual). Target $92 (+13%).",
+      "opciones": "Vender 1 NFLX Sep19 $75 PUT SHORT @ ~$3.50 para financiar posición. Simultáneamente comprar 1 NFLX Aug21 $85 CALL @ ~$4.00. Costo neto: ~$0.50 por spread.",
+      "sizing": "Usar $163 para las 2 acciones adicionales. Prima del PUT cubre parcialmente. Riesgo máximo adicional: $150 si cae a $76.",
+      "catalizadores": "Earnings Q2 (≈Jul 18), renovación de contratos de live sports, métricas de suscriptores ad-supported en Jun, posible buyback anunciado."
     },
     {
-      "id": "hyp-ntr-put",
+      "id": "ntr-fertilizer",
       "cls": "semi",
       "icon": "🌾",
-      "name": "NTR — Cash-Secured Put Enhancement",
-      "riskLbl": "Moderado",
-      "risk": 38,
-      "riskColor": "#e3b341",
+      "name": "NTR Ciclo Agrícola Alcista",
+      "riskLbl": "Medio",
+      "risk": 45,
+      "riskColor": "#d29922",
       "horizon": "3 meses",
       "tickers": [
         "NTR"
       ],
-      "thesis": "Nutrien se beneficia de ciclo alcista en precios de potasio y urea. La demanda agrícola global post-sequía en Sudamérica impulsa fertilizantes. Tu PUT SHORT Aug $62.5 ya está posicionado correctamente. Si NTR baja a $62.5, es excelente nivel de acumulación para posición long más grande.",
-      "directo": "Mantén 10 acciones actuales. Si NTR llega a $63.50, compra 5 acciones adicionales para promediar. Stop loss en $58.00. Target en $72.00 en 90 días.",
-      "opciones": "Mantén NTR Aug21 $62.5 PUT SHORT activo. Si NTR sube a $68+, considera rolar a Nov $65 PUT SHORT por prima adicional ~$1.80. Estrategia: sell strangle con Nov $58 PUT / $75 CALL para capturar theta en rango lateral.",
-      "sizing": "Posición actual $663. Reserva $625 adicionales para absorción si hay asignación del put. Total comprometido: $1,288.",
-      "catalizadores": "Reporte de inventarios agrícolas USDA 30 jun, Earnings NTR ago-2026, precios spot potasio, tensiones geopolíticas Rusia/Bielorrusia supply chain."
+      "thesis": "Nutrien a $66.35 con PUT Short $62.5 Aug21 ya colocado. Los precios de potasio y urea han repuntado 8% en Mayo-Junio por demanda india y brasileña. Con cosecha de verano norteamericano y guidance Q2 a finales de Julio, NTR podría recuperar hacia $72-74. Tu PUT short ya es una posición constructiva.",
+      "directo": "Mantener las 10 acciones y el PUT short. Si NTR cae a $64, comprar 5 acciones adicionales para bajar costo promedio de $74.61 a $71. Stop en $60 para las acciones. No cerrar el PUT short salvo que NTR baje de $63.",
+      "opciones": "PUT Short $62.5 Aug21 ya activo (mantener). Agregar CALL $70 Aug21 comprado @ ~$1.80 para participar en upside sin costo de acciones adicionales. Financiar con venta de CALL $77 Aug21 @ ~$0.60, creando spread $70/$77.",
+      "sizing": "Prima neta del spread: −$1.20 por contrato (1 contrato = $120). Capital en acciones actuales: $663.50. Riesgo acotado al premium pagado más acciones existentes.",
+      "catalizadores": "Reporte Q2 NTR (≈Jul 29), precio spot potasio semanal, demanda fertilizantes India (monsoon season), decisión FOMC Jun 17-18 sobre USD (USD débil = positivo commodities)."
     },
     {
-      "id": "hyp-nflx-bull",
+      "id": "ec-colombia",
       "cls": "semi",
-      "icon": "🎬",
-      "name": "NFLX — Bull Call Spread Q2 Earnings",
-      "riskLbl": "Alto",
-      "risk": 65,
-      "riskColor": "#f85149",
-      "horizon": "2 meses",
+      "icon": "🛢️",
+      "name": "EC Ecopetrol Momentum",
+      "riskLbl": "Medio-Alto",
+      "risk": 60,
+      "riskColor": "#d29922",
+      "horizon": "5 semanas",
       "tickers": [
-        "NFLX"
+        "EC"
       ],
-      "thesis": "Netflix reporta Q2 mediados de julio-2026. La compañía ha guiado crecimiento de suscriptores en LatAm y monetización de password sharing. A $81.41, el mercado descuenta demasiado pesimismo. P/E forward de ~22x es atractivo vs histórico 35-40x. Catalizador de earnings puede llevar a $95-100.",
-      "directo": "Compra 5 acciones adicionales a $81.41 (~$407). Nuevo costo promedio: ~$97 en 8 acciones totales. Stop loss en $75.00. Target $96.00 pre-earnings.",
-      "opciones": "Bull Call Spread: Compra NFLX Aug $82.50 CALL / Vende NFLX Aug $92.50 CALL. Costo neto estimado: $2.80-3.20 por spread. Máxima ganancia $7.20 si NFLX supera $92.50 al vencimiento. Riesgo máximo: $320 por contrato.",
-      "sizing": "Máximo $640 en opciones (2 spreads). Riesgo controlado al costo del spread. No usar más del 7% del buying power disponible.",
-      "catalizadores": "Earnings NFLX ~15 jul, guía de suscriptores Q3, lanzamiento contenido original verano-2026, expansión publicidad tier, FOMC 17-18 jun impacto en growth stocks."
+      "thesis": "EC a $15.88 es tu única posición en verde (+4.5%). Con el CALL short $17 Jul17 (36 días), tienes upside limitado a $17. El petróleo WTI en $72-74 soporte técnico. EC puede llegar a $16.50-16.80 antes del vencimiento generando máxima ganancia en el CALL short. Política de dividendos de Ecopetrol (~10% yield) da soporte.",
+      "directo": "Mantener las 110 acciones. No añadir antes del vencimiento del CALL. Si el CALL expira OTM el Jul17, inmediatamente vender nuevo CALL Aug21 $17 o $17.50 para continuar generando income. Target acciones: $17.50 post-vencimiento.",
+      "opciones": "CALL Short Jul17 $17 ya activo (mantener, dejar expirar si EC < $16.80). Post-Jul17: vender CALL Aug21 $17.50 @ estimado $0.35-0.45. Estrategia covered call continua para generar 2-3% mensual sobre posición.",
+      "sizing": "Las 110 acciones representan $1,747 (44% del portafolio). No incrementar exposición. Ingreso por covered call mensual estimado: $35-50.",
+      "catalizadores": "Precio WTI petróleo, decisión FOMC Jun 17-18 (USD/petróleo correlación), reporte producción Ecopetrol Q2 (≈Ago), política energética Colombia, dividendo ex-date estimado Sep."
     },
     {
-      "id": "hyp-spy-hedge",
+      "id": "sp500-hedge",
       "cls": "semi",
       "icon": "🛡️",
-      "name": "SPY Put — Cobertura FOMC",
+      "name": "Hedge FOMC con SPY Puts",
       "riskLbl": "Bajo",
-      "risk": 25,
+      "risk": 30,
       "riskColor": "#3fb950",
       "horizon": "2 semanas",
       "tickers": [
-        "SPY"
+        "SPY",
+        "QQQ"
       ],
-      "thesis": "S&P en 7,386 (+8.2% YTD) con FOMC el 17-18 jun. Mercado tiene priced-in pausa pero lenguaje hawkish podría generar corrección del 2-3%. Tu portafolio con -21.5% P&L es vulnerable a un selloff adicional. Un put de cobertura barato protege las posiciones durante el evento binario.",
-      "directo": "No tomar posición directa en SPY. La cobertura se implementa exclusivamente via opciones para minimizar uso de capital.",
-      "opciones": "Compra SPY Jun27 $730 PUT (OTM ~1.5%). Prima estimada $2.50-3.50. Si hay selloff post-FOMC del 2%+, la put puede valer $8-12. Costo total: $250-350 por contrato. Vence 9 días después del FOMC.",
-      "sizing": "Máximo $350 en una sola put (1 contrato). Es seguro de portafolio, no especulación. Representa solo 3.8% del buying power disponible.",
-      "catalizadores": "Decisión FOMC 18 jun, dot plot proyecciones de tasas, lenguaje Powell sobre inflación, datos CPI previos al FOMC, posicionamiento institucional post-decisión."
+      "thesis": "Con S&P en 7,386 (−0.3% hoy) y FOMC Jun 17-18, existe riesgo de volatilidad del 2-4% en cualquier dirección. Tu portafolio tiene −21.5% en P&L y exposición negativa a cripto. Un hedge táctico de corto plazo protege el net liq de $3,823 durante el evento macro más importante del mes.",
+      "directo": "No aplicable para hedge puro. Alternativamente, reducir exposición cripto (ETHE/GBTC) antes del 16 de Junio como hedge natural.",
+      "opciones": "Comprar 1 SPY Jun27 $735 PUT @ ~$3.50 (costo $350). Esto cubre ~$3,500 en valor nocional durante el evento FOMC. Si el mercado cae 3%, la PUT vale ~$8-10 (ganancia $450-650). Si sube, pierdes solo la prima de $350.",
+      "sizing": "Máximo $350 (menos del 10% del cash disponible en buying power). Esta es una posición de seguro, no especulativa. Cerrar el viernes 19 de Junio independientemente del resultado.",
+      "catalizadores": "Decisión FOMC Jun 17 (14:00 ET), conferencia Powell Jun 17 (14:30 ET), dot plot actualizado, CPI May (ya publicado), datos empleo semana previa."
     },
     {
-      "id": "hyp-eimi-add",
-      "cls": "semi",
-      "icon": "🌍",
-      "name": "EIMI — Acumulación Mercados Emergentes",
-      "riskLbl": "Moderado",
-      "risk": 45,
-      "riskColor": "#e3b341",
-      "horizon": "6 meses",
-      "tickers": [
-        "EIMI"
-      ],
-      "thesis": "iShares MSCI EM IMI ETF a $50.95 ofrece exposición diversificada a China, India, Brasil, Taiwan y Corea. Con USD potencialmente más débil post-pausa Fed, los mercados emergentes se aprecian. India como nuevo motor de crecimiento global y recuperación de commodities latinoamericanos favorecen el ETF.",
-      "directo": "Compra 10 acciones adicionales a $50.95 (~$510). Promedia posición y aumenta diversificación geográfica del portafolio. Stop loss conceptual en $46.50. Target en $56.00 en 6 meses.",
-      "opciones": "Vende EIMI Sep $48 PUT SHORT por prima estimada $1.20-1.50. Ingreso de $120-150 mientras defines punto óptimo de entrada. Si se asigna, costo efectivo sería $46.50-46.80 que es soporte fuerte.",
-      "sizing": "Destina $510-620 adicionales. EIMI debe representar 15-20% del portafolio total como ancla de diversificación. Es la posición más estable del portafolio actualmente.",
-      "catalizadores": "Decisión Fed jun y jul, PMI China jun, elecciones India resultados locales, rally commodities, debilitamiento DXY Dollar Index, datos de flujos a emergentes Q2."
-    },
-    {
-      "id": "hyp-btc-gbtc",
+      "id": "ibit-btc",
       "cls": "semi",
       "icon": "₿",
-      "name": "GBTC — Decisión Binaria BTC $65K",
+      "name": "IBIT vs GBTC: Rotación Cripto",
       "riskLbl": "Alto",
       "risk": 72,
       "riskColor": "#f85149",
       "horizon": "3 meses",
       "tickers": [
-        "GBTC",
-        "ETHE"
+        "IBIT",
+        "MSTR"
       ],
-      "thesis": "BTC en $61,724 está en zona de decisión crítica. Soporte clave en $58,000-60,000. Si BTC recupera $65,000, GBTC puede volver a $52-54 reduciendo tu pérdida significativamente. El halving de abril-2024 históricamente genera rally 12-18 meses posterior. Riesgo: ruptura de $58K abre camino a $52K.",
-      "directo": "Mantén máximo 4-5 acciones de GBTC. Vende 4-5 acciones NOW a $48.14 para recuperar ~$240 de capital. Stop loss en $43.00 para las acciones restantes. Cierra ETHE completamente (5 acc × $13.41 = $67). No agregar más capital crypto hasta confirmar recuperación.",
-      "opciones": "No hay opciones líquidas en GBTC/ETHE. Alternativa: Compra IBIT (BlackRock BTC ETF) Jan27 $45 CALL si quieres mantener exposición al alza de BTC con riesgo limitado al costo de la prima (~$3.50-4.00 por contrato = $350-400 máximo riesgo).",
-      "sizing": "Reducir exposición crypto de $1,096 actual a máximo $500 (solo GBTC residual). Liberar $596 para oportunidades con mejor ratio riesgo/retorno.",
-      "catalizadores": "BTC holding $60K soporte psicológico, ETF flows institucionales semana post-FOMC, regulación crypto USA Q3, halving cycle timing histórico, macro risk-off si Fed hawkish."
+      "thesis": "BTC en $61,213 está en zona de soporte (MA200 ≈ $58,000). Si la tesis cripto se mantiene, IBIT (BlackRock Bitcoin ETF) es superior a GBTC: menor fee (0.25% vs 1.5%), menor descuento NAV, mayor liquidez. MSTR como alternativa ofrece apalancamiento a BTC con opciones líquidas. Decisión: o convicción total en cripto o salida total.",
+      "directo": "Vender GBTC 9 acc @ $48.14 (~$433). Comprar 3 acciones IBIT @ ~$42 (~$126) manteniendo exposición BTC reducida y más eficiente. Los $307 restantes van a reducir margen. Stop en $36 para IBIT (−14%).",
+      "opciones": "Si se compra IBIT: vender CALL IBIT Sep19 $50 @ ~$2.00 por acción (3 contratos = $600 premium sobre 300 acciones... ajustar a 1 contrato por 100 acciones = $200). Covered call para reducir costo base a ~$40.",
+      "sizing": "Capital rotado: $433 de GBTC. Destino: $126 a IBIT (3 acc) + $307 a reducción de margen. Exposición cripto total post-rotación: ~3.3% del portafolio (vs 14% actual entre GBTC+ETHE).",
+      "catalizadores": "BTC soporte en $58,000 MA200, aprobación posibles ETH ETFs adicionales, decisión FOMC impacto USD/cripto, flujos semanales IBIT (indicador on-chain), halving effect lag Q3 2026."
+    },
+    {
+      "id": "eimi-em-opp",
+      "cls": "semi",
+      "icon": "🌏",
+      "name": "EIMI Emergentes: Incrementar o Rotar",
+      "riskLbl": "Medio",
+      "risk": 50,
+      "riskColor": "#d29922",
+      "horizon": "3 meses",
+      "tickers": [
+        "EIMI",
+        "EEM",
+        "FXI"
+      ],
+      "thesis": "EIMI (iShares MSCI EM IMI) a $50.95 está flat (0% P&L). Los mercados emergentes se benefician de USD débil post-FOMC dovish y recuperación China Q2. Con 25 acciones ($1,274), es una posición subrepresentada. Si la Fed señala pausa extendida el 17 Jun, EM puede subir 3-5% en julio. Oportunidad de doblar posición en zona de entrada actual.",
+      "directo": "Si FOMC es dovish (sin subidas proyectadas): comprar 15 acciones adicionales EIMI @ $50.95 (~$764), llevando posición a 40 acciones ($2,038). Stop en $47.50 (−6.8%). Target $56 en 3 meses (+9.9%). Si FOMC es hawkish: mantener sin cambios.",
+      "opciones": "EIMI tiene opciones limitadas. Alternativamente usar EEM (proxy líquido): Comprar EEM Sep19 $45 CALL @ ~$1.20 (1 contrato = $120) si visión alcista EM post-FOMC. O vender EEM Sep19 $40 PUT @ ~$0.80 para generar income con obligación de compra a $40.",
+      "sizing": "Compra accional: $764 para 15 acc adicionales EIMI (solo si FOMC dovish). Opción alternativa EEM CALL: $120 máximo. Total riesgo adicional: máximo $764 en escenario accional.",
+      "catalizadores": "Decisión FOMC Jun 17-18 y dot plot, PMI manufacturero China Junio, fortaleza/debilidad USD DXY, flujos ETF a emergentes, precio materias primas (correlación positiva EM), datos inflación Brasil e India."
     }
   ],
-  "generated": "2026-06-10T01:51:07.584093",
+  "generated": "2026-06-10T02:57:07.804107",
   "week": "2026-06-10"
 }

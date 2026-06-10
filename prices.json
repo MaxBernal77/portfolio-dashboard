@@ -1,8 +1,9 @@
 {
-  "updated": "2026-06-10T01:51:12.294606",
+  "updated": "2026-06-10T02:57:13.468105",
   "ibr_annual": 8.25,
   "avg_purchase_cop": 3566.0,
   "usdcop_effective": 3423.72,
+  "cash_balance": -605.34,
   "prices": {
     "IDX_SPX": {
       "price": 7386.6499,
@@ -60,14 +61,15 @@
       "label": "Cierre"
     },
     "BTC": {
-      "price": 61724,
-      "chg": -1.6362987946304635,
+      "price": 61213,
+      "chg": -2.5645703545720018,
       "label": ""
     },
     "ETH": {
-      "price": 1638.49,
-      "chg": -1.7655067890665537,
+      "price": 1621.33,
+      "chg": -2.7442885671941397,
       "label": ""
     }
-  }
+  },
+  "options": []
 }

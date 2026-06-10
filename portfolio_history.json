@@ -1,0 +1,24 @@
+[
+  {
+    "date": "2026-06-10",
+    "val_usd": 3823.2,
+    "pos_usd": 4428.54,
+    "opt_mkt_usd": 0,
+    "cash_balance": -605.34,
+    "cost_usd": 4868.91,
+    "pnl_usd": -1045.71,
+    "pnl_pct_usd": -21.477,
+    "val_cop": 13089566.0,
+    "cost_cop": 17362537.0,
+    "pnl_cop": -4272970.0,
+    "pnl_pct_cop": -24.61,
+    "mkt_effect": -1507707.0,
+    "fx_effect": -692749.0,
+    "usdcop": 3423.72,
+    "avg_purchase": 3566.0,
+    "ibr_annual": 8.25,
+    "vs_ibr": -32.86,
+    "spx": 7386.65,
+    "btc": 61213
+  }
+]
