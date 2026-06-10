@@ -173,10 +173,10 @@ def get_usdcop():
     try:
         url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=COP%3DX"
         r   = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=8)
-        raw = r.json()["quoteResponse"]["result"][0].get("regularMarketPrice", AVG_PURCHASE_COP)
+        raw = r.json()["quoteResponse"]["result"][0].get("regularMarketPrice", 4200)
         return round(raw * COP_SPREAD, 2)
     except Exception:
-        return round(AVG_PURCHASE_COP * COP_SPREAD, 2)
+        return round(4200 * COP_SPREAD, 2)  # fallback con tasa aproximada
 
 
 def get_ibr():
@@ -277,7 +277,9 @@ def build_context(prices, crypto, ibkr_data=None):
 
     for p in stocks:
         t     = p["ticker"]
-        price = p.get("mark_price") or (prices.get(t) or {}).get("price") or p["avg_cost"]
+        price = p.get("mark_price") or 0
+        if price <= 0:
+            price = (prices.get(t) or {}).get("price") or p["avg_cost"]
         chg   = (prices.get(t) or {}).get("chg_pct", 0)
         avg   = p["avg_cost"]
         qty   = abs(p["qty"])
