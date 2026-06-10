@@ -252,28 +252,52 @@ function getP(p) {
   return (lp[p.t] && lp[p.t].price) ? lp[p.t].price : p.fb;
 }
 
-// Fetch con timeout manual
-function fetchT(url, ms) {
-  return new Promise(function(resolve, reject) {
-    var controller = new AbortController();
-    var id = setTimeout(function() { controller.abort(); }, ms || 8000);
-    fetch(url, {signal: controller.signal})
-      .then(function(r) { clearTimeout(id); resolve(r); })
-      .catch(function(e) { clearTimeout(id); reject(e); });
-  });
+// ── Carga prices.json generado por GitHub Actions ────────────────────────
+function loadPrices() {
+  return fetch("./prices.json?_=" + Date.now())
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (!data || !data.prices) {
+        setEl("dataStatus", "⚠️ prices.json no encontrado");
+        return;
+      }
+      // Cargar todos los precios al objeto lp (no sobreescribir si IBKR ya los tiene)
+      Object.keys(data.prices).forEach(function(key) {
+        if (!lp[key] || !lp[key].ibkr) {
+          lp[key] = data.prices[key];
+        }
+      });
+      // Cargar historicos de sparklines si vienen en el JSON
+      if (data.hist) {
+        POS.forEach(function(p) {
+          if (data.hist[p.t]) p.hist = data.hist[p.t];
+        });
+      }
+      // Mostrar timestamp de ultima actualizacion del JSON
+      if (data.updated) {
+        var d = new Date(data.updated);
+        var ago = Math.round((Date.now() - d) / 60000);
+        var agoStr = ago < 60 ? ago + " min" : Math.round(ago/60) + " h";
+        setEl("dataStatus", "✅ Precios OK · hace " + agoStr);
+      } else {
+        setEl("dataStatus", "✅ Precios OK");
+      }
+    })
+    .catch(function(e) {
+      console.warn("prices.json error:", e);
+      setEl("dataStatus", "⚠️ Error leyendo prices.json");
+    });
 }
 
 // IBKR Bridge (corre en tu PC cuando el bridge esta activo)
 function loadIBKR() {
-  return fetchT("http://localhost:5050/positions", 3000)
+  return fetch("http://localhost:5050/positions")
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (!data.connected) return;
       data.positions.forEach(function(p) {
         if (p.mkt_price && p.asset_class === "STK") {
-          lp[p.ticker] = lp[p.ticker] || {};
-          lp[p.ticker].price = p.mkt_price;
-          lp[p.ticker].ibkr  = true;
+          lp[p.ticker] = { price: p.mkt_price, chg: 0, label: "IBKR", ibkr: true };
           POS.forEach(function(pos) {
             if (pos.t === p.ticker) {
               pos.qty = Math.abs(p.qty);
@@ -288,104 +312,7 @@ function loadIBKR() {
         setEl("ibkrStatus", "IBKR Live - " + new Date().toLocaleTimeString("es-CO", {hour:"2-digit", minute:"2-digit"}));
       }
     })
-    .catch(function() {
-      // silencioso - IBKR offline es normal
-    });
-}
-
-// ── Helpers de precio ─────────────────────────────────────────────────────
-function parseYFQuotes(quotes, keys) {
-  quotes.forEach(function(q, i) {
-    if (!q || !keys[i]) return;
-    var st = q.marketState;
-    var price, chg, label = "";
-    if (st === "PRE" && q.preMarketPrice != null) {
-      price = q.preMarketPrice; chg = q.preMarketChangePercent; label = "Pre-mkt";
-    } else if ((st === "POST" || st === "POSTPOST" || st === "CLOSED") && q.postMarketPrice != null) {
-      price = q.postMarketPrice; chg = q.postMarketChangePercent; label = "Post-mkt";
-    } else {
-      price = q.regularMarketPrice; chg = q.regularMarketChangePercent;
-    }
-    if (!price) { price = q.regularMarketPrice; chg = q.regularMarketChangePercent; label = "Cierre"; }
-    if (!price) return;
-    if (!lp[keys[i]] || !lp[keys[i]].ibkr) {
-      lp[keys[i]] = {price: price, chg: chg || 0, label: label, state: st};
-    }
-  });
-}
-
-function fetchViaProxy(yfUrl, timeoutMs) {
-  var proxies = [
-    "https://api.allorigins.win/get?url=",
-    "https://api.codetabs.com/v1/proxy?quest="
-  ];
-  function tryProxy(idx) {
-    if (idx >= proxies.length) return Promise.reject(new Error("all proxies failed"));
-    return fetchT(proxies[idx] + encodeURIComponent(yfUrl), timeoutMs || 12000)
-      .then(function(r) { return r.json(); })
-      .then(function(j) {
-        // allorigins devuelve j.contents; codetabs devuelve el JSON directo
-        var raw = j.contents !== undefined ? j.contents : JSON.stringify(j);
-        return JSON.parse(raw);
-      })
-      .catch(function(e) {
-        console.warn("Proxy " + idx + " falló:", e);
-        return tryProxy(idx + 1);
-      });
-  }
-  return tryProxy(0);
-}
-
-// Yahoo Finance batch
-function yfBatch() {
-  // EIMI.L separado porque LSE a veces no llega en el batch mixto
-  var symbols = ["EC","NFLX","NTR","GBTC","ETHE","^GSPC","^IXIC","^VIX","GLD","BNO"];
-  var keys    = ["EC","NFLX","NTR","GBTC","ETHE","IDX_SPX","IDX_NDX","IDX_VIX","IDX_GLD","IDX_OIL"];
-  var url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + symbols.join(",") +
-            "&fields=regularMarketPrice,regularMarketChangePercent,preMarketPrice,preMarketChangePercent,postMarketPrice,postMarketChangePercent,marketState";
-
-  var batch = fetchViaProxy(url, 14000)
-    .then(function(data) {
-      var quotes = data.quoteResponse && data.quoteResponse.result;
-      if (!quotes || !quotes.length) throw new Error("empty quoteResponse");
-      parseYFQuotes(quotes, keys);
-      setEl("dataStatus", "✅ Precios OK");
-    })
-    .catch(function(e) {
-      console.warn("YF batch error:", e);
-      setEl("dataStatus", "⚠️ Precios con error - usando fallback");
-    });
-
-  // EIMI.L separado
-  var eimiUrl = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=EIMI.L";
-  var eimi = fetchViaProxy(eimiUrl, 10000)
-    .then(function(data) {
-      var q = data.quoteResponse && data.quoteResponse.result && data.quoteResponse.result[0];
-      if (!q) return;
-      parseYFQuotes([q], ["EIMI"]);
-    })
-    .catch(function(e) { console.warn("EIMI.L error:", e); });
-
-  return Promise.all([batch, eimi]);
-}
-
-function getCrypto() {
-  var cgUrl = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true";
-  // Intentar directo primero (sin CORS en la mayoria de navegadores modernos), sino via proxy
-  return fetchT(cgUrl, 8000)
-    .then(function(r) { return r.json(); })
-    .catch(function() {
-      return fetchViaProxy(cgUrl, 8000).catch(function() { return null; });
-    });
-}
-
-function yfHist(sym) {
-  var url = "https://query1.finance.yahoo.com/v8/finance/chart/" + sym + "?interval=1d&range=1mo";
-  return fetchViaProxy(url, 10000)
-    .then(function(data) {
-      return data.chart.result[0].indicators.quote[0].close.filter(function(v){ return v != null; });
-    })
-    .catch(function() { return null; });
+    .catch(function() { /* IBKR offline es normal */ });
 }
 
 function loadRecs() {
@@ -554,33 +481,11 @@ async function loadAll() {
   setEl("dataStatus", "⏳ Cargando precios...");
   renderSidebar(); renderNews();
 
-  // Recomendaciones semanales de GitHub
-  await loadRecs();
+  // Leer prices.json y recommendations.json en paralelo (ambos generados por GitHub Actions)
+  await Promise.all([loadPrices(), loadRecs(), loadIBKR()]);
+
   renderRecs(); renderHyps();
-
-  // IBKR live (solo si el bridge corre localmente)
-  await loadIBKR();
-
-  // CoinGecko - crypto directo (sin proxy, no tiene CORS)
-  var c = await getCrypto();
-  if(c){
-    if(c.bitcoin)  lp.BTC={price:c.bitcoin.usd,  chg:c.bitcoin.usd_24h_change,  label:""};
-    if(c.ethereum) lp.ETH={price:c.ethereum.usd, chg:c.ethereum.usd_24h_change, label:""};
-  }
-
-  // Yahoo Finance via proxy con fallback
-  await yfBatch();
-
-  // Copiar cambio BTC/ETH a GBTC/ETHE si no vino de IBKR
-  if(lp.BTC&&lp.GBTC&&!lp.GBTC.ibkr){lp.GBTC.chg=lp.BTC.chg;lp.GBTC.label=lp.BTC.label;}
-  if(lp.ETH&&lp.ETHE&&!lp.ETHE.ibkr){lp.ETHE.chg=lp.ETH.chg;lp.ETHE.label=lp.ETH.label;}
-
   mktStatus(); renderIdx(); renderPosCards(); renderOpts(); renderAlfa(); buildCharts();
-
-  // Sparklines en segundo plano - no bloquean el render principal
-  Promise.all(POS.map(function(p){
-    return yfHist(p.yf).then(function(h){if(h)p.hist=h;});
-  })).then(function(){renderPosCards();});
 
   setEl("lastUpdate", new Date().toLocaleTimeString("es-CO",{hour:"2-digit",minute:"2-digit"})+" h Bogota");
 }
