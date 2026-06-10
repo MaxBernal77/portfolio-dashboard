@@ -1,12 +1,18 @@
 import json
 import os
+import re
 import time
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import anthropic
 
-# ── PORTAFOLIO FALLBACK (si IBKR Flex no responde) ───────────────────────────
+# Configuracion COP
+IBR_FALLBACK     = 8.25
+AVG_PURCHASE_COP = 4000
+COP_SPREAD       = 0.96
+
+# Portafolio fallback si IBKR Flex no responde
 PORTFOLIO_FALLBACK = [
     {"ticker": "EC",   "name": "Ecopetrol",      "qty": 110, "avg_cost": 15.19,   "type": "stock",  "sector": "Energia"},
     {"ticker": "EIMI", "name": "MSCI EM IMI ETF", "qty": 25,  "avg_cost": 50.948,  "type": "etf",    "sector": "Emergentes"},
@@ -21,36 +27,6 @@ OPTIONS_FALLBACK = [
     {"desc": "NTR Aug21 $62.5 PUT SHORT", "pos": -1, "avg": 2.37,  "strike": 62.5, "exp": "2026-08-21"},
 ]
 
-# ── USD/COP e IBR ─────────────────────────────────────────────────────────────
-IBR_ANNUAL       = 7.75   # IBR Colombia % anual — actualizar mensualmente
-AVG_PURCHASE_COP = 4000   # Tasa COP/USD promedio al comprar el portafolio
-
-def get_usdcop():
-    try:
-        url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=COP=X"
-        r   = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=8)
-        q   = r.json()["quoteResponse"]["result"][0]
-        return q.get("regularMarketPrice", AVG_PURCHASE_COP)
-    except Exception:
-        return AVG_PURCHASE_COP
-
-def calc_cop_metrics(total_usd_value, total_usd_cost, pnl_usd, usdcop):
-    value_cop   = total_usd_value * usdcop
-    cost_cop    = total_usd_cost  * AVG_PURCHASE_COP
-    pnl_cop     = value_cop - cost_cop
-    pnl_cop_pct = (pnl_cop / cost_cop * 100) if cost_cop else 0
-    mkt_effect  = pnl_usd * usdcop
-    fx_effect   = total_usd_cost * (usdcop - AVG_PURCHASE_COP)
-    vs_ibr      = pnl_cop_pct - IBR_ANNUAL
-    return {
-        "usdcop":      round(usdcop, 0),
-        "value_cop":   round(value_cop, 0),
-        "pnl_cop":     round(pnl_cop, 0),
-        "pnl_cop_pct": round(pnl_cop_pct, 2),
-        "mkt_effect":  round(mkt_effect, 0),
-        "fx_effect":   round(fx_effect, 0),
-        "vs_ibr":      round(vs_ibr, 2),
-    }
 
 def send_telegram(message):
     token   = os.environ.get("TELEGRAM_BOT_TOKEN")
@@ -66,7 +42,7 @@ def send_telegram(message):
     except Exception as e:
         print("Telegram error: " + str(e))
 
-# ── IBKR FLEX ─────────────────────────────────────────────────────────────────
+
 def get_ibkr_positions():
     token    = os.environ.get("IBKR_FLEX_TOKEN")
     query_id = os.environ.get("IBKR_FLEX_QUERY_ID")
@@ -74,16 +50,16 @@ def get_ibkr_positions():
         print("IBKR Flex secrets no configurados, usando fallback")
         return None
     try:
-        url1 = "https://gdcdyn.interactivebrokers.com/Universal/servlet/FlexStatementService.SendRequest"
-        r1   = requests.get(url1, params={"t": token, "q": query_id, "v": "3"}, timeout=15)
+        url1  = "https://gdcdyn.interactivebrokers.com/Universal/servlet/FlexStatementService.SendRequest"
+        r1    = requests.get(url1, params={"t": token, "q": query_id, "v": "3"}, timeout=15)
         root1 = ET.fromstring(r1.text)
         ref   = root1.findtext("ReferenceCode")
         if not ref:
-            print("IBKR Flex: sin ReferenceCode. Respuesta: " + r1.text[:200])
+            print("IBKR Flex: sin ReferenceCode")
             return None
         print("IBKR Flex ref: " + ref)
 
-        url2 = "https://gdcdyn.interactivebrokers.com/Universal/servlet/FlexStatementService.GetStatement"
+        url2  = "https://gdcdyn.interactivebrokers.com/Universal/servlet/FlexStatementService.GetStatement"
         root2 = None
         for attempt in range(6):
             time.sleep(5)
@@ -91,22 +67,19 @@ def get_ibkr_positions():
             root2 = ET.fromstring(r2.text)
             if root2.tag == "FlexQueryResponse" or root2.findtext("Status") == "Complete":
                 break
-            print("Esperando IBKR Flex... intento " + str(attempt + 1))
+            print("Esperando IBKR... intento " + str(attempt + 1))
 
         if root2 is None:
             return None
 
         positions = []
         for pos in root2.iter("OpenPosition"):
-            symbol    = pos.get("symbol", "")
-            asset     = pos.get("assetCategory", "STK")
-            qty       = float(pos.get("position", 0) or 0)
-            avg_cost  = float(pos.get("costBasisPrice", 0) or 0)
-            mark      = float(pos.get("markPrice", 0) or 0)
-            pnl       = float(pos.get("fifoPnlUnrealized", 0) or 0)
-            strike    = pos.get("strike", "")
-            expiry    = pos.get("expiry", "")
-            put_call  = pos.get("putCall", "")
+            symbol   = pos.get("symbol", "")
+            asset    = pos.get("assetCategory", "STK")
+            qty      = float(pos.get("position",        0) or 0)
+            avg_cost = float(pos.get("costBasisPrice",  0) or 0)
+            mark     = float(pos.get("markPrice",       0) or 0)
+            pnl      = float(pos.get("fifoPnlUnrealized", 0) or 0)
             if not symbol:
                 continue
             positions.append({
@@ -117,20 +90,31 @@ def get_ibkr_positions():
                 "mark_price":  mark,
                 "unrealized":  pnl,
                 "asset_class": asset,
-                "strike":      strike,
-                "expiry":      expiry,
-                "put_call":    put_call,
+                "strike":      pos.get("strike", ""),
+                "expiry":      pos.get("expiry", ""),
+                "put_call":    pos.get("putCall", ""),
                 "type":        "crypto" if symbol in ("GBTC", "ETHE") else ("etf" if asset == "ETF" else "stock"),
             })
 
-        print("IBKR Flex: " + str(len(positions)) + " posiciones")
-        return positions if positions else None
+        # Depositos para calcular tasa promedio COP
+        deposits = []
+        for tx in root2.iter("CashTransaction"):
+            tx_type = tx.get("type", "")
+            if "Deposit" in tx_type or "Wire" in tx_type or "Transfer" in tx_type:
+                date_str = tx.get("dateTime", "") or tx.get("date", "")
+                amount   = float(tx.get("amount", 0) or 0)
+                currency = tx.get("currency", "USD")
+                if amount > 0 and currency == "USD":
+                    deposits.append({"date": date_str[:8], "amount": amount})
+
+        print("IBKR Flex: " + str(len(positions)) + " posiciones, " + str(len(deposits)) + " depositos")
+        return {"positions": positions, "deposits": deposits}
 
     except Exception as e:
         print("IBKR Flex error: " + str(e))
         return None
 
-# ── PRECIOS YAHOO ─────────────────────────────────────────────────────────────
+
 def get_prices(tickers_extra=None):
     prices  = {}
     base    = [p["ticker"] for p in PORTFOLIO_FALLBACK]
@@ -146,8 +130,9 @@ def get_prices(tickers_extra=None):
                 "chg_pct": q.get("regularMarketChangePercent", 0),
             }
     except Exception as e:
-        print("Yahoo error: " + str(e))
+        print("Yahoo precios error: " + str(e))
     return prices
+
 
 def get_crypto():
     try:
@@ -156,14 +141,111 @@ def get_crypto():
     except Exception:
         return {}
 
-# ── CONTEXTO ──────────────────────────────────────────────────────────────────
-def build_context(prices, crypto, ibkr_positions=None):
+
+def get_usdcop():
+    try:
+        url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=COP%3DX"
+        r   = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=8)
+        raw = r.json()["quoteResponse"]["result"][0].get("regularMarketPrice", AVG_PURCHASE_COP)
+        return round(raw * COP_SPREAD, 2)
+    except Exception:
+        return round(AVG_PURCHASE_COP * COP_SPREAD, 2)
+
+
+def get_ibr():
+    # Intento 1: API publica BanRep Totoro
+    try:
+        url = (
+            "https://totoro.banrep.gov.co/analytics/saw.dll"
+            "?Go&NQUser=publico&NQPassword=publico"
+            "&Action=Navigate"
+            "&Path=/shared/IBR/IBR_overnight"
+            "&Options=rdf"
+        )
+        r    = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
+        text = r.text.strip()
+        for line in reversed(text.splitlines()):
+            parts = line.replace('"', '').split(',')
+            if len(parts) >= 2:
+                try:
+                    val = float(parts[-1].strip().replace('%', ''))
+                    if 0 < val < 30:
+                        print("IBR BanRep: " + str(val) + "%")
+                        return val
+                except ValueError:
+                    continue
+    except Exception as e:
+        print("IBR intento 1 fallido: " + str(e))
+
+    # Intento 2: scraping pagina BanRep
+    try:
+        url2 = "https://www.banrep.gov.co/es/estadisticas/tasas-interes-del-mercado-monetario"
+        r2   = requests.get(url2, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
+        matches = re.findall(r'IBR[^0-9]*(\d{1,2}[.,]\d{1,4})\s*%', r2.text)
+        if matches:
+            val = float(matches[0].replace(',', '.'))
+            if 0 < val < 30:
+                print("IBR scrape: " + str(val) + "%")
+                return val
+    except Exception as e:
+        print("IBR intento 2 fallido: " + str(e))
+
+    print("IBR usando fallback: " + str(IBR_FALLBACK) + "%")
+    return IBR_FALLBACK
+
+
+def calc_avg_purchase_cop(deposits):
+    if not deposits:
+        return AVG_PURCHASE_COP
+    total_usd  = 0.0
+    total_cop  = 0.0
+    headers    = {"User-Agent": "Mozilla/5.0"}
+    for dep in deposits:
+        date_str = dep["date"]
+        amount   = dep["amount"]
+        try:
+            dt       = datetime.strptime(date_str, "%Y%m%d")
+            # Buscar precio historico USD/COP en esa fecha
+            ts_start = int(dt.timestamp())
+            ts_end   = ts_start + 86400
+            url      = "https://query1.finance.yahoo.com/v8/finance/chart/COP%3DX?interval=1d&period1=" + str(ts_start) + "&period2=" + str(ts_end)
+            r        = requests.get(url, headers=headers, timeout=8)
+            close    = r.json()["chart"]["result"][0]["indicators"]["quote"][0]["close"][0]
+            if close and close > 0:
+                total_usd += amount
+                total_cop += amount * close
+                print("Deposito " + date_str + ": $" + str(round(amount,0)) + " USD @ " + str(round(close,0)) + " COP")
+        except Exception as e:
+            print("No se pudo obtener tasa para deposito " + date_str + ": " + str(e))
+
+    if total_usd > 0:
+        avg = round(total_cop / total_usd, 2)
+        print("Tasa promedio ponderada COP/USD: " + str(avg))
+        return avg
+    return AVG_PURCHASE_COP
+
+
+def save_market_config(usdcop, ibr, avg_purchase):
+    config = {
+        "usdcop_effective": usdcop,
+        "usdcop_spread":    COP_SPREAD,
+        "ibr_annual":       ibr,
+        "avg_purchase_cop": avg_purchase,
+        "updated":          datetime.now().isoformat()
+    }
+    with open("market_config.json", "w") as f:
+        json.dump(config, f, indent=2)
+    print("market_config.json: USD/COP=" + str(usdcop) + " IBR=" + str(ibr) + "% avg_cop=" + str(avg_purchase))
+
+
+def build_context(prices, crypto, ibkr_data=None):
     lines       = ["PORTAFOLIO:\n"]
     total_value = 0
     total_cost  = 0
 
+    ibkr_positions = ibkr_data.get("positions") if ibkr_data else None
     portfolio = ibkr_positions if ibkr_positions else PORTFOLIO_FALLBACK
-    stocks    = [p for p in portfolio if p.get("asset_class", "STK") not in ("OPT",) and not p.get("put_call")]
+    stocks    = [p for p in portfolio if p.get("asset_class") != "OPT" and not p.get("put_call")]
     options   = [p for p in portfolio if p.get("asset_class") == "OPT" or p.get("put_call")]
 
     for p in stocks:
@@ -206,12 +288,15 @@ def build_context(prices, crypto, ibkr_positions=None):
     btc     = (crypto.get("bitcoin")  or {}).get("usd", "N/A")
     eth     = (crypto.get("ethereum") or {}).get("usd", "N/A")
     btc_chg = (crypto.get("bitcoin")  or {}).get("usd_24h_change", 0)
-    lines.append("\nMERCADO: S&P " + str(spx.get("price","?")) + " (" + str(round(spx.get("chg_pct",0),1)) + "%) | BTC $" + str(btc) + " (" + str(round(btc_chg,1)) + "%) | ETH $" + str(eth))
-    lines.append("Fuente: " + ("IBKR Flex" if ibkr_positions else "fallback hardcodeado"))
+    lines.append(
+        "\nMERCADO: S&P " + str(spx.get("price","?")) + " (" + str(round(spx.get("chg_pct",0),1)) + "%)" +
+        " | BTC $" + str(btc) + " (" + str(round(btc_chg,1)) + "%) | ETH $" + str(eth)
+    )
+    lines.append("Fuente: " + ("IBKR Flex" if ibkr_positions else "fallback"))
 
-    return "\n".join(lines), total_pnl, total_pnlp, spx, btc, btc_chg
+    return "\n".join(lines), total_pnl, total_pnlp, spx, btc, btc_chg, total_value, total_cost
 
-# ── DIAS ESTRATEGICOS ─────────────────────────────────────────────────────────
+
 STRATEGIC_PROMPT = (
     "Eres un analista financiero senior. Decide cuales son los 3 dias mas estrategicos "
     "para regenerar recomendaciones del portafolio esta semana segun el calendario macro. "
@@ -221,6 +306,7 @@ STRATEGIC_PROMPT = (
 )
 
 STRATEGIC_FILE = "strategic_days.json"
+
 
 def load_or_compute_strategic_days(today, context_str):
     is_monday = today.weekday() == 0
@@ -251,34 +337,38 @@ def load_or_compute_strategic_days(today, context_str):
         print("Dias esta semana: " + str(cache["strategic_days"]) + " - " + cache["reasoning"])
         return cache["strategic_days"]
 
-# ── ALERTA DIARIA ─────────────────────────────────────────────────────────────
+
 ALERT_PROMPT = (
     "Eres un asesor financiero senior. Genera una alerta diaria concisa para Telegram en espanol. "
     "Maximo 30 lineas usando solo emojis y saltos de linea. Estructura: "
     "ALERTA PREMERCADO [fecha] | "
-    "MERCADO (indices y BTC) | "
+    "MERCADO (S&P Nasdaq BTC con variacion) | "
     "PORTAFOLIO HOY (P&L USD y movimientos clave) | "
-    "PORTAFOLIO EN COP (valor COP, P&L COP, efecto divisa, comparacion vs IBR) | "
+    "PORTAFOLIO EN COP (valor, P&L, efecto divisa, vs IBR) | "
     "OPCIONES (estado) | "
-    "ACCION DEL DIA (una sola, con EJECUTAR/ESPERAR/NO EJECUTAR si hay decision pendiente) | "
+    "ACCION DEL DIA (una sola, EJECUTAR/ESPERAR/NO EJECUTAR si hay decision pendiente) | "
     "EVENTO CLAVE HOY"
 )
 
-def generate_daily_alert(context_str, btc, btc_chg):
+
+def generate_daily_alert(context_str, btc, btc_chg, cop_info):
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
     msg    = client.messages.create(
         model      = "claude-sonnet-4-6",
-        max_tokens = 600,
+        max_tokens = 700,
         system     = ALERT_PROMPT,
         messages   = [{"role": "user", "content":
             "Hoy es " + datetime.now().strftime("%A %d de %B de %Y") + ".\n\n" + context_str +
-            "\nDecision pendiente: Vender NFLX $72.5 PUT Ago 2026 (~$210 prima). " +
-            "CPI Mayo publicado hoy o ayer. FOMC 17-18 jun. BTC $" + str(btc) + " (" + str(round(btc_chg,1)) + "%)."
+            "\nCOP: USD/COP=" + str(cop_info["usdcop"]) +
+            " | Portafolio=" + "${:,.0f}".format(cop_info["value_cop"]) + " COP" +
+            " | P&L=" + "${:,.0f}".format(cop_info["pnl_cop"]) + " COP (" + str(cop_info["pnl_pct"]) + "%)" +
+            " | vs IBR " + str(cop_info["ibr"]) + "%: " + str(cop_info["vs_ibr"]) + "pts" +
+            "\nFOMC 17-18 jun. BTC $" + str(btc) + " (" + str(round(btc_chg,1)) + "%)."
         }]
     )
     return msg.content[0].text
 
-# ── RECOMENDACIONES COMPLETAS ─────────────────────────────────────────────────
+
 WEEKLY_PROMPT = (
     "Eres un asesor financiero senior con 20 anos de experiencia. "
     "Genera recomendaciones en JSON valido sin texto adicional ni backticks. "
@@ -294,6 +384,7 @@ WEEKLY_PROMPT = (
     '"catalizadores": "eventos clave separados por guion"}]} '
     "Se muy especifico con tickers reales, precios de entrada y estrategias de opciones viables."
 )
+
 
 def generate_weekly_recs(context_str):
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
@@ -313,34 +404,41 @@ def generate_weekly_recs(context_str):
             raw = raw[4:]
     return json.loads(raw)
 
-# ── MAIN ──────────────────────────────────────────────────────────────────────
+
 if __name__ == "__main__":
     today = datetime.now()
 
     print("Obteniendo posiciones IBKR Flex...")
-    ibkr_positions = get_ibkr_positions()
+    ibkr_data = get_ibkr_positions()
 
     print("Obteniendo precios de mercado...")
-    ibkr_tickers = [p["ticker"] for p in ibkr_positions] if ibkr_positions else []
+    ibkr_tickers = [p["ticker"] for p in ibkr_data["positions"]] if ibkr_data else []
     prices       = get_prices(ibkr_tickers)
     crypto       = get_crypto()
 
     print("Construyendo contexto...")
-    context_str, total_pnl, total_pnlp, spx, btc, btc_chg = build_context(prices, crypto, ibkr_positions)
+    context_str, total_pnl, total_pnlp, spx, btc, btc_chg, total_usd, cost_usd = build_context(prices, crypto, ibkr_data)
     print(context_str)
 
-    print("Obteniendo USD/COP...")
-    usdcop = get_usdcop()
-    print("USD/COP: " + str(usdcop))
+    print("\nObteniendo USD/COP e IBR...")
+    usdcop     = get_usdcop()
+    ibr_annual = get_ibr()
 
-    # Calcular métricas COP
-    total_usd = sum((p.get("mark_price") or p["avg_cost"]) * abs(p["qty"]) for p in (ibkr_positions or PORTFOLIO_FALLBACK))
-    cost_usd  = sum(p["avg_cost"] * abs(p["qty"]) for p in (ibkr_positions or PORTFOLIO_FALLBACK))
-    cop_metrics = calc_cop_metrics(total_usd, cost_usd, total_usd - cost_usd, usdcop)
-    print("P&L COP: ${:,.0f} ({:.1f}%) | vs IBR: {:.2f}pts".format(cop_metrics["pnl_cop"], cop_metrics["pnl_cop_pct"], cop_metrics["vs_ibr"]))
+    # Calcular tasa promedio COP real desde depositos IBKR
+    deposits     = ibkr_data.get("deposits", []) if ibkr_data else []
+    avg_purchase = calc_avg_purchase_cop(deposits) if deposits else AVG_PURCHASE_COP
+    save_market_config(usdcop, ibr_annual, avg_purchase)
+
+    # Metricas COP
+    value_cop  = total_usd * usdcop
+    cost_cop   = cost_usd  * avg_purchase
+    pnl_cop    = value_cop - cost_cop
+    pnl_pct    = round((pnl_cop / cost_cop * 100) if cost_cop else 0, 2)
+    vs_ibr     = round(pnl_pct - ibr_annual, 2)
+    cop_info   = {"usdcop": usdcop, "value_cop": value_cop, "pnl_cop": pnl_cop, "pnl_pct": pnl_pct, "ibr": ibr_annual, "vs_ibr": vs_ibr}
 
     print("\nGenerando alerta diaria...")
-    alert = generate_daily_alert(context_str, btc, btc_chg, cop_metrics)
+    alert = generate_daily_alert(context_str, btc, btc_chg, cop_info)
     print(alert)
     send_telegram(alert)
 
