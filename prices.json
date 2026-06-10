@@ -1,33 +1,73 @@
 {
-  "updated": "2026-06-10T01:33:40.662485",
+  "updated": "2026-06-10T01:51:12.294606",
   "ibr_annual": 8.25,
-  "avg_purchase_cop": 4200,
-  "usdcop_effective": 4032.0,
+  "avg_purchase_cop": 3566.0,
+  "usdcop_effective": 3423.72,
   "prices": {
+    "IDX_SPX": {
+      "price": 7386.6499,
+      "chg": -0.26,
+      "label": "Cierre"
+    },
+    "IDX_NDX": {
+      "price": 25678.8223,
+      "chg": -0.97,
+      "label": "Cierre"
+    },
+    "IDX_VIX": {
+      "price": 19.87,
+      "chg": 5.02,
+      "label": "Cierre"
+    },
+    "IDX_GLD": {
+      "price": 390.78,
+      "chg": -1.35,
+      "label": "Cierre"
+    },
+    "IDX_OIL": {
+      "price": 50.46,
+      "chg": -2.53,
+      "label": "Cierre"
+    },
     "IDX_COP": {
-      "price": 4032.0,
-      "chg": 0,
+      "price": 3423.72,
+      "chg": -0.0,
+      "label": "Cierre"
+    },
+    "EC": {
+      "price": 15.88,
+      "chg": 2.52,
+      "label": "Cierre"
+    },
+    "ETHE": {
+      "price": 13.41,
+      "chg": -2.12,
+      "label": "Cierre"
+    },
+    "GBTC": {
+      "price": 48.14,
+      "chg": -1.45,
+      "label": "Cierre"
+    },
+    "NFLX": {
+      "price": 81.41,
+      "chg": -1.32,
+      "label": "Cierre"
+    },
+    "NTR": {
+      "price": 66.35,
+      "chg": -1.43,
       "label": "Cierre"
     },
     "BTC": {
-      "price": 61760,
-      "chg": -1.6394015536564732,
+      "price": 61724,
+      "chg": -1.6362987946304635,
       "label": ""
-    },
-    "GBTC": {
-      "price": 47.56,
-      "chg": -1.6394015536564732,
-      "label": "BTC-ratio"
     },
     "ETH": {
-      "price": 1639.78,
-      "chg": -1.8176930903904869,
+      "price": 1638.49,
+      "chg": -1.7655067890665537,
       "label": ""
-    },
-    "ETHE": {
-      "price": 13.94,
-      "chg": -1.8176930903904869,
-      "label": "ETH-ratio"
     }
   }
 }
