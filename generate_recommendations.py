@@ -142,22 +142,28 @@ def get_ibkr_positions():
         return None
 
 
-def get_prices(tickers_extra=None):
-    prices  = {}
-    base    = [p["ticker"] for p in PORTFOLIO_FALLBACK]
-    indices = ["^GSPC", "^IXIC", "^VIX", "GLD"]
-    all_t   = list(set(base + (tickers_extra or []) + indices))
+def get_prices_python(tickers):
+    """Llama Yahoo Finance directamente desde Python (sin proxy, funciona server-side)."""
+    prices = {}
     try:
-        url     = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + ",".join(all_t)
-        headers = {"User-Agent": "Mozilla/5.0"}
-        r       = requests.get(url, headers=headers, timeout=10)
+        url     = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + ",".join(tickers)
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        r       = requests.get(url, headers=headers, timeout=12)
         for q in r.json()["quoteResponse"]["result"]:
-            prices[q["symbol"]] = {
-                "price":   q.get("regularMarketPrice", 0),
-                "chg_pct": q.get("regularMarketChangePercent", 0),
-            }
+            sym = q["symbol"]
+            # Pre/post market si disponible, sino regular
+            st = q.get("marketState","")
+            if st == "PRE" and q.get("preMarketPrice"):
+                price = q["preMarketPrice"]; chg = q.get("preMarketChangePercent", 0); label = "Pre-mkt"
+            elif st in ("POST","POSTPOST","CLOSED") and q.get("postMarketPrice"):
+                price = q["postMarketPrice"]; chg = q.get("postMarketChangePercent", 0); label = "Post-mkt"
+            else:
+                price = q.get("regularMarketPrice", 0); chg = q.get("regularMarketChangePercent", 0); label = "Cierre"
+            if price:
+                prices[sym] = {"price": price, "chg": chg, "label": label}
+        print("Yahoo Finance Python: " + str(len(prices)) + " precios obtenidos")
     except Exception as e:
-        print("Yahoo precios error: " + str(e))
+        print("Yahoo Finance Python error: " + str(e))
     return prices
 
 
@@ -252,29 +258,61 @@ def calc_avg_purchase_cop(deposits):
     return AVG_PURCHASE_COP
 
 
-def save_prices(prices, crypto, usdcop):
-    data = {"updated": datetime.now().isoformat(), "prices": {}}
-    # Indices
-    map_keys = {"^GSPC":"IDX_SPX","^IXIC":"IDX_NDX","^VIX":"IDX_VIX","GLD":"IDX_GLD","BNO":"IDX_OIL"}
-    for yf_sym, key in map_keys.items():
-        if yf_sym in prices:
-            data["prices"][key] = {"price": prices[yf_sym]["price"], "chg": prices[yf_sym]["chg_pct"], "label": "Cierre"}
-    # Posiciones
-    for p in PORTFOLIO_FALLBACK:
-        t = p["ticker"]
-        if t in prices:
-            data["prices"][t] = {"price": prices[t]["price"], "chg": prices[t]["chg_pct"], "label": "Cierre"}
-    # Cripto
+def save_prices(ibkr_data, crypto, usdcop, ibr_annual, avg_purchase):
+    data = {
+        "updated":          datetime.now().isoformat(),
+        "ibr_annual":       ibr_annual,
+        "avg_purchase_cop": avg_purchase,
+        "usdcop_effective": usdcop,
+        "prices":           {}
+    }
+
+    # 1. Posiciones desde IBKR Flex (mark price o market_value/qty)
+    if ibkr_data and ibkr_data.get("positions"):
+        for p in ibkr_data["positions"]:
+            t     = p["ticker"]
+            price = p.get("mark_price") or 0
+            if price <= 0 and p.get("market_value") and p.get("qty"):
+                try: price = abs(float(p["market_value"]) / float(p["qty"]))
+                except: price = 0
+            if price > 0:
+                data["prices"][t] = {"price": round(price, 4), "chg": 0, "label": "IBKR"}
+
+    # 2. Indices + posiciones sin precio desde Yahoo Finance (Python directo, sin proxy)
+    indices   = ["^GSPC","^IXIC","^VIX","GLD","BNO","COP=X"]
+    sin_precio = [p["ticker"] for p in PORTFOLIO_FALLBACK if p["ticker"] not in data["prices"]]
+    yf_prices = get_prices_python(indices + sin_precio)
+
+    index_map = {"^GSPC":"IDX_SPX","^IXIC":"IDX_NDX","^VIX":"IDX_VIX","GLD":"IDX_GLD","BNO":"IDX_OIL","COP=X":"IDX_COP_RAW"}
+    for sym, key in index_map.items():
+        if sym in yf_prices:
+            data["prices"][key] = yf_prices[sym]
+    for t in sin_precio:
+        if t in yf_prices:
+            data["prices"][t] = yf_prices[t]
+
+    # Tasa COP efectiva con spread
+    cop_raw = yf_prices.get("COP=X", {}).get("price") or (usdcop / COP_SPREAD)
+    data["prices"]["IDX_COP"] = {"price": round(cop_raw * COP_SPREAD, 2), "chg": yf_prices.get("COP=X",{}).get("chg",0), "label": "Cierre"}
+
+    # 3. Cripto desde CoinGecko (siempre disponible)
     if crypto.get("bitcoin"):
-        data["prices"]["BTC"] = {"price": crypto["bitcoin"]["usd"], "chg": crypto["bitcoin"].get("usd_24h_change", 0), "label": ""}
+        btc_price = crypto["bitcoin"]["usd"]
+        btc_chg   = crypto["bitcoin"].get("usd_24h_change", 0)
+        data["prices"]["BTC"]  = {"price": btc_price, "chg": btc_chg, "label": ""}
+        if "GBTC" not in data["prices"]:
+            # GBTC ratio vs BTC aproximado — usar precio IBKR si está disponible
+            data["prices"]["GBTC"] = {"price": round(btc_price * 0.00077, 2), "chg": btc_chg, "label": "BTC-ratio"}
     if crypto.get("ethereum"):
-        data["prices"]["ETH"] = {"price": crypto["ethereum"]["usd"], "chg": crypto["ethereum"].get("usd_24h_change", 0), "label": ""}
-    # COP
-    data["prices"]["IDX_COP"] = {"price": round(usdcop / COP_SPREAD, 2), "chg": 0, "label": "Cierre"}
+        eth_price = crypto["ethereum"]["usd"]
+        eth_chg   = crypto["ethereum"].get("usd_24h_change", 0)
+        data["prices"]["ETH"]  = {"price": eth_price, "chg": eth_chg, "label": ""}
+        if "ETHE" not in data["prices"]:
+            data["prices"]["ETHE"] = {"price": round(eth_price * 0.0085, 2), "chg": eth_chg, "label": "ETH-ratio"}
 
     with open("prices.json", "w") as f:
         json.dump(data, f, indent=2)
-    print("prices.json guardado con " + str(len(data["prices"])) + " precios")
+    print("prices.json: " + str(len(data["prices"])) + " precios | fuentes: IBKR+" + str(len(yf_prices)) + " Yahoo+CoinGecko")
     config = {
         "usdcop_effective": usdcop,
         "usdcop_spread":    COP_SPREAD,
@@ -513,7 +551,7 @@ if __name__ == "__main__":
         # Sin depositos aun — usar tasa actual como aproximacion
         avg_purchase = round(usdcop / COP_SPREAD, 0)
         print("Sin depositos IBKR — usando tasa actual como avg_purchase: " + str(avg_purchase))
-    save_prices(prices, crypto, usdcop)
+    save_prices(ibkr_data, crypto, usdcop, ibr_annual, avg_purchase)
     save_market_config(usdcop, ibr_annual, avg_purchase)
 
     # Metricas COP usando NET LIQUIDATION (no valor bruto)
