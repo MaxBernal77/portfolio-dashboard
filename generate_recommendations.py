@@ -340,6 +340,24 @@ def save_market_config(usdcop_raw, ibr_annual, avg_purchase, cash_balance):
         json.dump(config, f, indent=2)
     print("market_config.json: USD/COP=" + str(round(usdcop_raw*COP_SPREAD,0)) + " IBR=" + str(ibr_annual) + "%")
 
+def save_portfolio_history(entry):
+    """Upsert de la fila diaria en portfolio_history.json (clave: date)."""
+    path = "portfolio_history.json"
+    hist = []
+    if os.path.exists(path):
+        try:
+            with open(path, encoding="utf-8") as f:
+                hist = json.load(f)
+            if not isinstance(hist, list): hist = []
+        except Exception:
+            hist = []
+    hist = [h for h in hist if h.get("date") != entry["date"]]
+    hist.append(entry)
+    hist.sort(key=lambda h: h.get("date", ""))
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(hist, f, indent=2)
+    print("portfolio_history.json: " + str(len(hist)) + " registros (hoy " + entry["date"] + ")")
+
 # ── CONTEXTO PARA CLAUDE ──────────────────────────────────────────────────────
 def build_context(ibkr_data, yahoo, crypto, cash_balance):
     lines       = ["PORTAFOLIO:\n"]
@@ -534,6 +552,30 @@ if __name__ == "__main__":
     cop_info   = {"usdcop":usdcop,"net_liq_cop":net_liq_c,"pnl_cop":pnl_cop,
                   "pnl_pct":pnl_pct,"mkt_eff":mkt_eff,"fx_eff":fx_eff,
                   "ibr":ibr_annual,"vs_ibr":vs_ibr}
+
+    print("8b. Guardando portfolio_history.json...")
+    save_portfolio_history({
+        "date":         today.strftime("%Y-%m-%d"),
+        "val_usd":      round(net_liq, 2),
+        "pos_usd":      round(net_liq - cash_balance, 2),
+        "opt_mkt_usd":  0,
+        "cash_balance": round(cash_balance, 2),
+        "cost_usd":     round(cost_usd, 2),
+        "pnl_usd":      round(net_pnl, 2),
+        "pnl_pct_usd":  round(net_pnlp, 3),
+        "val_cop":      round(net_liq_c, 0),
+        "cost_cop":     round(cost_cop, 0),
+        "pnl_cop":      round(pnl_cop, 0),
+        "pnl_pct_cop":  round(pnl_pct, 3),
+        "mkt_effect":   round(mkt_eff, 0),
+        "fx_effect":    round(fx_eff, 0),
+        "usdcop":       round(usdcop, 2),
+        "avg_purchase": round(avg_purchase, 2),
+        "ibr_annual":   ibr_annual,
+        "vs_ibr":       round(vs_ibr, 3),
+        "spx":          spx.get("price"),
+        "btc":          btc,
+    })
 
     print("9. Generando y enviando alerta Telegram...")
     alert = generate_daily_alert(context_str, spx, btc, btc_chg, cop_info)
