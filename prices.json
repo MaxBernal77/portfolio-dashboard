@@ -1,73 +1,83 @@
 {
-  "updated": "2026-06-12T16:31:51.817554",
+  "updated": "2026-06-14T17:06:50.618607",
   "ibr_annual": 8.25,
-  "avg_purchase_cop": 3469.0,
-  "usdcop_effective": 3329.91,
+  "avg_purchase_cop": 3454.0,
+  "usdcop_effective": 3316.27,
   "prices": {
+    "EC": {
+      "price": 16.58,
+      "chg": 0,
+      "label": "IBKR"
+    },
+    "EIMI": {
+      "price": 55.42,
+      "chg": 0,
+      "label": "IBKR"
+    },
+    "NFLX": {
+      "price": 80.34,
+      "chg": 0,
+      "label": "IBKR"
+    },
+    "NTR": {
+      "price": 67.62,
+      "chg": 0,
+      "label": "IBKR"
+    },
+    "NTR   260821P00062500": {
+      "price": 1.825,
+      "chg": 0,
+      "label": "IBKR"
+    },
     "IDX_SPX": {
-      "price": 7419.3501,
-      "chg": 0.36,
+      "price": 7431.46,
+      "chg": 0.5,
       "label": "Cierre"
     },
     "IDX_NDX": {
-      "price": 25842.0,
-      "chg": 0.13,
+      "price": 25888.8398,
+      "chg": 0.31,
       "label": "Cierre"
     },
     "IDX_VIX": {
-      "price": 18.71,
-      "chg": -3.8,
+      "price": 17.68,
+      "chg": -9.1,
       "label": "Cierre"
     },
     "IDX_GLD": {
-      "price": 387.04,
-      "chg": -0.08,
+      "price": 386.54,
+      "chg": -0.21,
       "label": "Cierre"
     },
     "IDX_OIL": {
-      "price": 48.07,
-      "chg": -2.67,
+      "price": 47.82,
+      "chg": -3.18,
       "label": "Cierre"
     },
     "IDX_COP": {
-      "price": 3329.91,
-      "chg": -0.42,
-      "label": "Cierre"
-    },
-    "EC": {
-      "price": 16.47,
-      "chg": 1.29,
-      "label": "Cierre"
-    },
-    "ETHE": {
-      "price": 13.5024,
-      "chg": -0.57,
-      "label": "Cierre"
-    },
-    "GBTC": {
-      "price": 49.58,
-      "chg": 0.38,
-      "label": "Cierre"
-    },
-    "NFLX": {
-      "price": 80.725,
-      "chg": -1.1,
-      "label": "Cierre"
-    },
-    "NTR": {
-      "price": 67.3742,
-      "chg": 3.26,
+      "price": 3316.27,
+      "chg": -0.83,
       "label": "Cierre"
     },
     "BTC": {
-      "price": 63859,
-      "chg": 2.0211404969628934,
+      "price": 63974,
+      "chg": -0.0029931533049108085,
       "label": ""
     },
+    "GBTC": {
+      "price": 49.26,
+      "chg": -0.0029931533049108085,
+      "label": "BTC-ratio"
+    },
     "ETH": {
-      "price": 1669.24,
-      "chg": 1.7406209434198376,
+      "price": 1663.15,
+      "chg": -0.7253751908576656,
       "label": ""
+    },
+    "ETHE": {
+      "price": 14.14,
+      "chg": -0.7253751908576656,
+      "label": "ETH-ratio"
     }
   }
 }
