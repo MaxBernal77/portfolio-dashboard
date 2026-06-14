@@ -660,7 +660,27 @@ function renderRendimientos() {
       "<td class='" + (r.fxEff>=0?"pos":"neg") + "' style='font-size:10px'>" + fmtCOP(r.fxEff) + "</td>" +
       "</tr>";
   }).join("") +
-  // Fila totales
+  // Fila opciones (su valor de mercado forma parte del Net Liq)
+  "<tr>" +
+    "<td><div class='rend-ticker'>OPCIONES</div><div class='rend-name'>Valor de mercado opciones</div></td>" +
+    "<td>-</td>" +
+    "<td>" + fmtUSD(optMktUSD) + "</td>" +
+    "<td class='" + (optPnlUSD>=0?"pos":"neg") + "'>" + fmtUSD(optPnlUSD) + "</td>" +
+    "<td>-</td>" +
+    "<td>" + fmtCOP(optMktUSD*usdcop) + "</td>" +
+    "<td class='" + (optPnlCOP>=0?"pos":"neg") + "'>" + fmtCOP(optPnlCOP) + "</td>" +
+    "<td>-</td><td>-</td>" +
+  "</tr>" +
+  // Fila cash
+  "<tr>" +
+    "<td><div class='rend-ticker'>CASH</div><div class='rend-name'>Efectivo / margen</div></td>" +
+    "<td>-</td>" +
+    "<td>" + fmtUSD(cashUSD) + "</td>" +
+    "<td>-</td><td>-</td>" +
+    "<td>" + fmtCOP(cashUSD*usdcop) + "</td>" +
+    "<td>-</td><td>-</td><td>-</td>" +
+  "</tr>" +
+  // Fila totales (Valor USD = acciones + opciones + cash = Net Liq)
   "<tr>" +
     "<td><strong>TOTAL</strong></td>" +
     "<td>-</td>" +
