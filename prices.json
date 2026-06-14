@@ -1,34 +1,9 @@
 {
-  "updated": "2026-06-14T17:06:50.618607",
+  "updated": "2026-06-14T17:25:02.409941",
   "ibr_annual": 8.25,
   "avg_purchase_cop": 3454.0,
   "usdcop_effective": 3316.27,
   "prices": {
-    "EC": {
-      "price": 16.58,
-      "chg": 0,
-      "label": "IBKR"
-    },
-    "EIMI": {
-      "price": 55.42,
-      "chg": 0,
-      "label": "IBKR"
-    },
-    "NFLX": {
-      "price": 80.34,
-      "chg": 0,
-      "label": "IBKR"
-    },
-    "NTR": {
-      "price": 67.62,
-      "chg": 0,
-      "label": "IBKR"
-    },
-    "NTR   260821P00062500": {
-      "price": 1.825,
-      "chg": 0,
-      "label": "IBKR"
-    },
     "IDX_SPX": {
       "price": 7431.46,
       "chg": 0.5,
@@ -59,24 +34,39 @@
       "chg": -0.83,
       "label": "Cierre"
     },
+    "EC": {
+      "price": 16.58,
+      "chg": 1.97,
+      "label": "Cierre"
+    },
+    "NFLX": {
+      "price": 80.34,
+      "chg": -1.57,
+      "label": "Cierre"
+    },
+    "NTR": {
+      "price": 67.62,
+      "chg": 3.63,
+      "label": "Cierre"
+    },
     "BTC": {
-      "price": 63974,
-      "chg": -0.0029931533049108085,
+      "price": 63906,
+      "chg": -0.15159509558326853,
       "label": ""
     },
     "GBTC": {
-      "price": 49.26,
-      "chg": -0.0029931533049108085,
+      "price": 49.21,
+      "chg": -0.15159509558326853,
       "label": "BTC-ratio"
     },
     "ETH": {
-      "price": 1663.15,
-      "chg": -0.7253751908576656,
+      "price": 1664.62,
+      "chg": -0.6543701357545032,
       "label": ""
     },
     "ETHE": {
-      "price": 14.14,
-      "chg": -0.7253751908576656,
+      "price": 14.15,
+      "chg": -0.6543701357545032,
       "label": "ETH-ratio"
     }
   }
