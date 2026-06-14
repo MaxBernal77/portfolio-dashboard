@@ -521,7 +521,12 @@ if __name__ == "__main__":
 
     print("1. Obteniendo posiciones IBKR Flex...")
     ibkr_data = get_ibkr_data()
-    cash_balance = ibkr_data["cash_balance"] if ibkr_data else CASH_BALANCE_FALLBACK
+    if ibkr_data is None:
+        # IBKR Flex no respondio (rate-limit/timeout). NO sobrescribir datos buenos con fallback.
+        print("IBKR Flex no disponible: se conservan los ultimos datos validos (no se actualiza).")
+        send_telegram("\u26a0\ufe0f Portafolio: IBKR Flex no respondio (rate-limit). El tablero conserva los ultimos datos validos; hoy no se actualizo.")
+        raise SystemExit(0)
+    cash_balance = ibkr_data["cash_balance"]
 
     print("2. Obteniendo precios Yahoo Finance (directo Python)...")
     idx_tickers  = ["^GSPC","^IXIC","^VIX","GLD","BNO","COP=X"]
