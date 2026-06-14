@@ -382,12 +382,25 @@ def build_context(ibkr_data, yahoo, crypto, cash_balance):
                      " | $" + str(round(price,2)) + " (" + str(round(chg,1)) + "%)" +
                      " | P&L $" + str(round(pnl,0)) + " (" + str(round(pnlp,1)) + "%)")
 
-    net_liq  = total_value + cash_balance
+    # Opciones IBKR: valor de mercado (negativo si corto) y prima recibida
+    opt_value   = 0.0
+    opt_premium = 0.0
+    for o in options_ib:
+        oqty = o.get("qty", 0) or 0
+        ov   = o.get("pos_value")
+        if ov in (None, 0):
+            ov = (o.get("mark_price", 0) or 0) * oqty * 100
+        opt_value   += ov
+        opt_premium += (o.get("avg_cost", 0) or 0) * abs(oqty) * 100 * (1 if oqty < 0 else -1)
+    total_cost -= opt_premium   # los cortos reducen el costo base (credito recibido)
+
+    net_liq  = total_value + opt_value + cash_balance
     net_pnl  = net_liq - total_cost
     net_pnlp = (net_pnl / total_cost * 100) if total_cost else 0
 
     lines.append("\nRESUMEN USD:" +
                  "\n  Valor bruto: $" + str(round(total_value,0)) +
+                 "\n  Opciones (mkt): $" + str(round(opt_value,0)) +
                  "\n  Cash/Margen: $" + str(round(cash_balance,0)) +
                  "\n  NET LIQUIDATION: $" + str(round(net_liq,0)) +
                  " | P&L: $" + str(round(net_pnl,0)) + " (" + str(round(net_pnlp,1)) + "%)")
@@ -413,7 +426,7 @@ def build_context(ibkr_data, yahoo, crypto, cash_balance):
                  " | BTC $" + str(btc) + " (" + str(round(btc_chg,1)) + "%) | ETH $" + str(eth))
     lines.append("Fuente posiciones: " + ("IBKR Flex" if ibkr_data else "fallback"))
 
-    return "\n".join(lines), net_pnl, net_pnlp, net_liq, total_cost, spx, btc, btc_chg
+    return "\n".join(lines), net_pnl, net_pnlp, net_liq, total_cost, spx, btc, btc_chg, opt_value
 
 # ── DIAS ESTRATEGICOS ─────────────────────────────────────────────────────────
 STRATEGIC_PROMPT = (
@@ -535,7 +548,7 @@ if __name__ == "__main__":
     save_market_config(usdcop_raw, ibr_annual, avg_purchase, cash_balance)
 
     print("7. Construyendo contexto...")
-    context_str, net_pnl, net_pnlp, net_liq, cost_usd, spx, btc, btc_chg = build_context(
+    context_str, net_pnl, net_pnlp, net_liq, cost_usd, spx, btc, btc_chg, opt_value = build_context(
         ibkr_data, yahoo_prices, crypto, cash_balance
     )
     print(context_str)
@@ -557,8 +570,8 @@ if __name__ == "__main__":
     save_portfolio_history({
         "date":         today.strftime("%Y-%m-%d"),
         "val_usd":      round(net_liq, 2),
-        "pos_usd":      round(net_liq - cash_balance, 2),
-        "opt_mkt_usd":  0,
+        "pos_usd":      round(net_liq - cash_balance - opt_value, 2),
+        "opt_mkt_usd":  round(opt_value, 2),
         "cash_balance": round(cash_balance, 2),
         "cost_usd":     round(cost_usd, 2),
         "pnl_usd":      round(net_pnl, 2),
