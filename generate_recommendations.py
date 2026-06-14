@@ -21,20 +21,17 @@ COP_SPREAD = 0.96   # spread entre tasa interbancaria y tasa real en Colombia
 
 # ── FALLBACKS (usados solo si las fuentes automaticas fallan) ─────────────────
 IBR_FALLBACK          = 8.25
-CASH_BALANCE_FALLBACK = -605.34
+CASH_BALANCE_FALLBACK = 138.38
 
 # ── PORTAFOLIO FALLBACK ───────────────────────────────────────────────────────
 PORTFOLIO_FALLBACK = [
     {"ticker":"EC",  "name":"Ecopetrol",      "qty":110,"avg_cost":15.19,  "type":"stock", "sector":"Energia"},
     {"ticker":"EIMI","name":"MSCI EM IMI ETF", "qty":25, "avg_cost":50.948,"type":"etf",   "sector":"Emergentes"},
-    {"ticker":"ETHE","name":"Ethereum Trust",  "qty":5,  "avg_cost":31.40, "type":"crypto","sector":"Crypto"},
-    {"ticker":"GBTC","name":"Bitcoin Trust",   "qty":9,  "avg_cost":71.38, "type":"crypto","sector":"Crypto"},
     {"ticker":"NFLX","name":"Netflix",         "qty":3,  "avg_cost":126.267,"type":"stock","sector":"Comunicaciones"},
     {"ticker":"NTR", "name":"Nutrien",         "qty":10, "avg_cost":74.609,"type":"stock", "sector":"Materiales"},
 ]
 OPTIONS_FALLBACK = [
-    {"desc":"EC Jul17 $17 CALL SHORT",   "pos":-1,"avg":0.699,"strike":17,  "exp":"2026-07-17"},
-    {"desc":"NTR Aug21 $62.5 PUT SHORT", "pos":-1,"avg":2.37, "strike":62.5,"exp":"2026-08-21"},
+    {"desc":"NTR Aug21 $62.5 PUT SHORT", "pos":-1,"avg":2.53, "strike":62.5,"exp":"2026-08-21"},
 ]
 
 # ── TELEGRAM ──────────────────────────────────────────────────────────────────

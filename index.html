@@ -247,17 +247,14 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 
 <script>
 var POS = [
-  {t:"EC",  n:"Ecopetrol",      qty:110, avg:15.19,  yf:"EC",    type:"Acciones", sector:"Energia",        urgency:"good",   fb:15.76, note:"Short call $17 jul cubierta. Brent bajo presiona. Catalizador: produccion Q2 y COP/USD."},
-  {t:"EIMI",n:"MSCI EM IMI",   qty:25,  avg:50.948, yf:"EIMI.L", type:"ETFs",    sector:"Emergentes",     urgency:"neutral", fb:53.24, note:"ETF emergentes LSE. Dolar fuerte en contra. Posicion estructural largo plazo."},
-  {t:"ETHE",n:"Ethereum Trust", qty:5,   avg:31.40,  yf:"ETHE",   type:"Crypto",  sector:"Crypto",         urgency:"urgent",  fb:13.32, note:"Perdida -57%. ETH minimo 1+ ano. Evaluar rotacion hacia GBTC antes del FOMC."},
-  {t:"GBTC",n:"Bitcoin Trust",  qty:9,   avg:71.38,  yf:"GBTC",   type:"Crypto",  sector:"Crypto",         urgency:"urgent",  fb:47.89, note:"BTC busca soporte $60K. Call Jul2 $51 OTM. Institucionales comprando el dip."},
-  {t:"NFLX",n:"Netflix",        qty:3,   avg:126.267,yf:"NFLX",   type:"Acciones",sector:"Comunicaciones", urgency:"watch",   fb:81.40, note:"Down -39% desde maximo. Consensus $114 (+40%). Esperar CPI para agregar."},
-  {t:"NTR", n:"Nutrien",        qty:10,  avg:74.609, yf:"NTR",    type:"Acciones",sector:"Materiales",     urgency:"watch",   fb:66.28, note:"Ex-div $0.55 el 30 jun. NO vender antes. Iran activo. Wells Fargo Buy."}
+  {t:"EC",  n:"Ecopetrol",      qty:110, avg:15.19,  yf:"EC",    type:"Acciones", sector:"Energia",        urgency:"good",   fb:16.58, note:"110 acc, P&L +9%. Brent presiona pero descuento politico crea suelo. Ex-div trimestral."},
+  {t:"EIMI",n:"MSCI EM IMI",   qty:25,  avg:50.948, yf:"EIMI.L", type:"ETFs",    sector:"Emergentes",     urgency:"neutral", fb:55.42, note:"ETF emergentes LSE. P&L +9%. USD debil post-FOMC favorece EM. Posicion estructural."},
+  {t:"NFLX",n:"Netflix",        qty:3,   avg:126.267,yf:"NFLX",   type:"Acciones",sector:"Comunicaciones", urgency:"watch",   fb:80.38, note:"P&L -36% desde $126.27. Posicion mas debil. Evaluar bull put spread o tax-loss."},
+  {t:"NTR", n:"Nutrien",        qty:10,  avg:74.609, yf:"NTR",    type:"Acciones",sector:"Materiales",     urgency:"watch",   fb:67.62, note:"P&L -9%. Put corto $62.5 Ago a favor. Tension agricola sostiene potasio/urea."}
 ];
 // OPTS: fallback hardcoded, se reemplaza con datos IBKR desde prices.json
 var OPTS_FALLBACK = [
-  {desc:"EC Jul17 $17 CALL",    pos:-1, avg:0.699, mkt:0.75,  exp:"2026-07-17", strike:17, und:"EC",   side:"short", note:"OTM. Prima cobrada: $69.9."},
-  {desc:"GBTC Jul02 $51 CALL",  pos:1,  avg:1.682, mkt:1.45,  exp:"2026-07-02", strike:51, und:"GBTC", side:"long",  note:"OTM. Revisar si cerrar."}
+  {desc:"NTR Aug21 $62.5 PUT",  pos:-1, avg:2.53,  mkt:1.81,  exp:"2026-08-21", strike:62.5, und:"NTR", side:"short", note:"Cash-secured put. NTR ~$67.6, OTM. Prima cobrada, theta a favor."}
 ];
 var OPTS = OPTS_FALLBACK.slice(); // se sobreescribe con datos IBKR
 var EVENTS = [
