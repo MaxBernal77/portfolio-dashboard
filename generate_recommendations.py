@@ -67,7 +67,7 @@ def get_ibkr_data():
         print("IBKR Flex ref: " + ref)
 
         root2 = None
-        for attempt in range(6):
+        for attempt in range(10):
             time.sleep(5)
             r2    = requests.get(
                 "https://gdcdyn.interactivebrokers.com/Universal/servlet/FlexStatementService.GetStatement",
@@ -383,19 +383,18 @@ def build_context(ibkr_data, yahoo, crypto, cash_balance):
                      " | P&L $" + str(round(pnl,0)) + " (" + str(round(pnlp,1)) + "%)")
 
     # Opciones IBKR: valor de mercado (negativo si corto) y prima recibida
-    opt_value   = 0.0
-    opt_premium = 0.0
+    opt_value = 0.0
+    opt_cost  = 0.0
     for o in options_ib:
         oqty = o.get("qty", 0) or 0
         ov   = o.get("pos_value")
         if ov in (None, 0):
             ov = (o.get("mark_price", 0) or 0) * oqty * 100
-        opt_value   += ov
-        opt_premium += (o.get("avg_cost", 0) or 0) * abs(oqty) * 100 * (1 if oqty < 0 else -1)
-    total_cost -= opt_premium   # los cortos reducen el costo base (credito recibido)
+        opt_value += ov
+        opt_cost  += (o.get("avg_cost", 0) or 0) * oqty * 100
 
     net_liq  = total_value + opt_value + cash_balance
-    net_pnl  = net_liq - total_cost
+    net_pnl  = (total_value - total_cost) + (opt_value - opt_cost)   # P&L NO realizado (excluye cash)
     net_pnlp = (net_pnl / total_cost * 100) if total_cost else 0
 
     lines.append("\nRESUMEN USD:" +
@@ -562,10 +561,10 @@ if __name__ == "__main__":
     usdcop     = round(usdcop_raw * COP_SPREAD, 2)
     net_liq_c  = net_liq  * usdcop
     cost_cop   = cost_usd * avg_purchase
-    pnl_cop    = net_liq_c - cost_cop
-    pnl_pct    = round((pnl_cop / cost_cop * 100) if cost_cop else 0, 2)
     mkt_eff    = net_pnl  * usdcop
     fx_eff     = cost_usd * (usdcop - avg_purchase)
+    pnl_cop    = mkt_eff + fx_eff
+    pnl_pct    = round((pnl_cop / cost_cop * 100) if cost_cop else 0, 2)
     vs_ibr     = round(pnl_pct - ibr_annual, 2)
     cop_info   = {"usdcop":usdcop,"net_liq_cop":net_liq_c,"pnl_cop":pnl_cop,
                   "pnl_pct":pnl_pct,"mkt_eff":mkt_eff,"fx_eff":fx_eff,

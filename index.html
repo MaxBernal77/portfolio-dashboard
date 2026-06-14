@@ -592,12 +592,12 @@ function renderRendimientos() {
 
   // Net Liquidation = posiciones acciones + valor mercado opciones + cash
   var totValUSD  = totPosUSD + optMktUSD + cashUSD;
-  var totPnlUSD  = totValUSD - (totCostUSD + optCostUSD);
-  var totCostAll = totCostUSD + optCostUSD;  // costo total incl. opciones
+  var totPnlUSD  = (totPosUSD - totCostUSD) + optPnlUSD;   // P&L NO realizado (excluye cash)
+  var totCostAll = totCostUSD;                              // base de costo (acciones/ETF)
   var totPnlPct  = totCostAll !== 0 ? totPnlUSD / Math.abs(totCostAll) * 100 : 0;
   var totValCOP  = totValUSD  * usdcop;
-  var totCostCOP = (totCostUSD + optCostUSD) * avgPurch;
-  var totPnlCOP  = (totValCOP - totCostCOP) + optPnlCOP;
+  var totCostCOP = totCostUSD * avgPurch;
+  var totPnlCOP  = (totPnlUSD * usdcop) + (totCostUSD * (usdcop - avgPurch));  // efecto mercado + divisa
   var totPnlCOPpct = totCostCOP > 0 ? totPnlCOP / totCostCOP * 100 : 0;
   var fxTotal    = totCostUSD * (usdcop - avgPurch);
   var mktTotal   = (totPosUSD + optMktUSD - totCostUSD - optCostUSD) * usdcop;  // efecto precio
