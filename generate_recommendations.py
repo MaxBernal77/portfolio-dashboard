@@ -281,12 +281,13 @@ def get_avg_purchase_cop(deposits, usdcop_raw):
     return round(usdcop_raw, 0)
 
 # ── GUARDAR ARCHIVOS JSON ─────────────────────────────────────────────────────
-def save_prices_json(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, avg_purchase):
+def save_prices_json(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, avg_purchase, cash_balance):
     data = {
         "updated":          datetime.now().isoformat(),
         "ibr_annual":       ibr_annual,
         "avg_purchase_cop": avg_purchase,
         "usdcop_effective": round(usdcop_raw * COP_SPREAD, 2),
+        "cash_balance":     cash_balance,
         "prices":           {}
     }
     # Posiciones desde IBKR (fuente primaria)
@@ -548,7 +549,7 @@ if __name__ == "__main__":
     avg_purchase = get_avg_purchase_cop(deposits, usdcop_raw)
 
     print("6. Guardando prices.json y market_config.json...")
-    save_prices_json(ibkr_data, yahoo_prices, crypto, usdcop_raw, ibr_annual, avg_purchase)
+    save_prices_json(ibkr_data, yahoo_prices, crypto, usdcop_raw, ibr_annual, avg_purchase, cash_balance)
     save_market_config(usdcop_raw, ibr_annual, avg_purchase, cash_balance)
 
     print("7. Construyendo contexto...")
