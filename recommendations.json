@@ -144,5 +144,82 @@
     }
   ],
   "generated": "2026-06-14T08:30:00",
-  "week": "2026-06-14"
+  "week": "2026-06-14",
+  "events": [
+    {
+      "date": "Lun 15 jun",
+      "title": "Apertura pre-FOMC",
+      "note": "Posicionamiento; petroleo (Iran/Ormuz) mueve EC.",
+      "tickers": [
+        "EC",
+        "NTR"
+      ]
+    },
+    {
+      "date": "Mar-Jue 16-18",
+      "title": "FOMC + nuevo presidente Fed",
+      "note": "Decision y dot plot; usar el sleeve de opciones.",
+      "tickers": [
+        "JEPQ",
+        "VEEV",
+        "GOOGL"
+      ]
+    },
+    {
+      "date": "Dom 21 jun",
+      "title": "Colombia: 2a vuelta",
+      "note": "de la Espriella vs Cepeda; mueve EC y el COP.",
+      "tickers": [
+        "EC"
+      ]
+    },
+    {
+      "date": "Post 21 jun",
+      "title": "EC: covered call",
+      "note": "Tras la eleccion, vender call sobre EC para ingreso.",
+      "tickers": [
+        "EC"
+      ]
+    },
+    {
+      "date": "Mensual",
+      "title": "Covered call AFYA",
+      "note": "Vender call ~30-45 dias sobre el lote de 100.",
+      "tickers": [
+        "AFYA"
+      ]
+    }
+  ],
+  "news": [
+    {
+      "t": "VEEV",
+      "h": "Consenso compra; PT ~$262-320; crece ~16%. Riesgo: competencia Salesforce/IA.",
+      "time": "Jun"
+    },
+    {
+      "t": "AFYA",
+      "h": "Barata (fwd ~7x) y paga dividendo; vigilar margenes (downgrades recientes).",
+      "time": "Jun"
+    },
+    {
+      "t": "NU",
+      "h": "Consenso compra pero degradaciones: margenes -760pb y cambio de CFO.",
+      "time": "Jun"
+    },
+    {
+      "t": "NVO",
+      "h": "Dividendo ~4%; 2026 dificil por competencia GLP-1 (Lilly).",
+      "time": "Jun"
+    },
+    {
+      "t": "EC",
+      "h": "Sensible al petroleo y a la 2a vuelta del 21-jun.",
+      "time": "Jun"
+    },
+    {
+      "t": "EIMI",
+      "h": "Tesis de ciclo emergente; el USD post-FOMC es la clave.",
+      "time": "Jun"
+    }
+  ]
 }

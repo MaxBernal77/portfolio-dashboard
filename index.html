@@ -435,6 +435,8 @@ function loadRecs() {
       if (!data) return;
       if (data.recs)  activeRecs = data.recs;
       if (data.hyps)  activeHyps = data.hyps;
+      if (data.events) EVENTS = data.events;
+      if (data.news)   NEWS   = data.news;
       if (data.generated) {
         var d = new Date(data.generated);
         var label = "Generado por Claude el " + d.toLocaleDateString("es-CO", {weekday:"long", day:"numeric", month:"short"});
@@ -928,7 +930,7 @@ async function loadAll() {
   // Leer todos los JSONs en paralelo
   await Promise.all([loadPrices(), loadRecs(), loadIBKR(), loadHistory()]);
 
-  renderRecs(); renderHyps();
+  renderRecs(); renderHyps(); renderSidebar(); renderNews();
   mktStatus(); renderIdx(); renderPosCards(); renderOpts(); renderAlfa(); renderRendimientos(); buildCharts();
   buildHistCharts();
 

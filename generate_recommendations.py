@@ -470,16 +470,18 @@ ALERT_PROMPT = (
     "EVENTO CLAVE HOY"
 )
 WEEKLY_PROMPT = (
-    "Eres un asesor financiero senior. Genera recomendaciones en JSON valido sin backticks. "
-    "Exactamente 4 recs y 6 hyps. "
+    "Eres un asesor financiero senior. Genera SOLO JSON valido sin backticks. "
+    "Incluye: 4 recs, 6 hyps, 5 events (calendario macro/earnings/eventos relevantes a las posiciones) y 6 news (notas breves por posicion). "
     '{"recs":[{"type":"action","icon":"emoji","title":"titulo","badge":"br",'
     '"badgeText":"texto","body":"explicacion","tags":["TAG"]}],'
     '"hyps":[{"id":"id","cls":"semi","icon":"emoji","name":"nombre",'
     '"riskLbl":"Alto","risk":70,"riskColor":"#f85149","horizon":"3 meses",'
     '"tickers":["T"],"thesis":"tesis","directo":"entrada con precio y stop",'
     '"opciones":"estrategia con strikes","sizing":"capital a usar",'
-    '"catalizadores":"eventos clave"}]} '
-    "Se especifico con tickers, precios y estrategias de opciones."
+    '"catalizadores":"eventos clave"}],'
+    '"events":[{"date":"fecha corta","title":"titulo","note":"nota breve","tickers":["T"]}],'
+    '"news":[{"t":"TICKER","h":"nota cualitativa breve","time":"fecha"}]} '
+    "Las news son notas CUALITATIVAS (no inventes cifras ni titulares exactos). Se especifico con tickers, precios y estrategias de opciones."
 )
 
 def generate_daily_alert(context_str, spx, btc, btc_chg, cop_info):
