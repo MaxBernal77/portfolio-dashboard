@@ -502,7 +502,14 @@ def generate_daily_alert(context_str, spx, btc, btc_chg, cop_info):
 def generate_weekly_recs(context_str):
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
     content = ("Hoy es " + datetime.now().strftime("%A %d de %B de %Y") + ".\n\n" + context_str +
-               "\nS&P YTD +8.2%, objetivo alfa S&P+1pt, buying power ~$9,116, FOMC 17-18 jun.")
+               "\nS&P YTD +8.2%, objetivo alfa S&P+1pt, FOMC esta semana." +
+               "\n\nMARCO DEL INVERSOR (usalo para generar recs/hyps coherentes):" +
+               "\n- Cuenta IBKR ~US$10k. Objetivos: ingreso mensual (covered calls en lotes baratos + JEPQ + dividendos) y valor con alfa>1%." +
+               "\n- Estructura objetivo 75% acciones / 15% caja / 10% sleeve de opciones de riesgo definido (iron condors / credit spreads en eventos)." +
+               "\n- Topes de riesgo: nombre <=15%, sector <=30%, emergentes <=55%." +
+               "\n- Tesis de VALOR cruzadas con consenso independiente; NO perseguir momentum/ganadores pasados." +
+               "\n- EC: cubrir con calls SOLO despues de la 2a vuelta de Colombia (21-jun)." +
+               "\n- Genera ideas accionables sobre las posiciones reales y candidatos vetados (VEEV, AFYA, NU, NVO, EIMI, EC, GOOGL, JEPQ); evita nombres ya cerrados.")
     for attempt in range(2):
         msg = client.messages.create(model="claude-sonnet-4-6", max_tokens=6000,
                   system=WEEKLY_PROMPT, messages=[{"role":"user","content":content}])

@@ -260,35 +260,20 @@ var OPTS_FALLBACK = [
 ];
 var OPTS = OPTS_FALLBACK.slice(); // se sobreescribe con datos IBKR
 var EVENTS = [
-  {date:"Hoy 9 jun",      title:"Premercado bajista",  note:"S&P -0.42%, BTC -5%. Mercado espera CPI.",          tickers:["GBTC","ETHE"]},
-  {date:"Jue-Vie 11-12",  title:"CPI Mayo 2026",        note:"Dato caliente = presion. Dato frio = rally.",        tickers:["NFLX","GBTC","ETHE"]},
-  {date:"Mie-Jue 17-18",  title:"FOMC Junio",           note:"Sin recorte esperado. Dot plot mueve expectativas.", tickers:["GBTC","NFLX","EC"]},
-  {date:"Mar 30 jun",     title:"NTR Ex-Dividendo",     note:"$0.55/acc. Mantener antes del 30 jun.",             tickers:["NTR"]},
-  {date:"Mie 2 jul",      title:"GBTC Call Vence",      note:"Long call $51 OTM. Actuar esta semana.",            tickers:["GBTC"]}
-];
+  {date:"Lun 15 jun",   title:"Apertura pre-FOMC",            note:"Posicionamiento; vigilar petroleo (Iran/Ormuz) que mueve EC.", tickers:["EC","NTR"]},
+  {date:"Mar-Jue 16-18",title:"FOMC + nuevo presidente Fed",  note:"Decision y dot plot. Volatilidad: usar sleeve de opciones.",    tickers:["JEPQ","VEEV","GOOGL"]},
+  {date:"Dom 21 jun",   title:"Colombia: 2a vuelta",          note:"de la Espriella vs Cepeda. Mueve EC y el COP.",                tickers:["EC"]},
+  {date:"Post 21 jun",  title:"EC: covered call",             note:"Tras la eleccion, vender call sobre EC para ingreso.",         tickers:["EC"]},
+  {date:"Mensual",      title:"Covered call AFYA",            note:"Vender call ~30-45 dias sobre el lote de 100 para prima.",     tickers:["AFYA"]}
+]
 var RECS_DEFAULT = [
-  {type:"action", icon:"🚨", title:"Cerrar GBTC Call Jul2 $51", badge:"br", badgeText:"Hoy",        body:"Vale ~$91. BTC cae -5%, 23 dias. Sin rally a $53+ pierdes todo. Cierra hoy.", tags:["GBTC","Opciones"]},
-  {type:"rotate", icon:"🔄", title:"Rotar ETHE hacia GBTC",     badge:"by", badgeText:"Esta semana", body:"ETHE -57%. ETH pierde traccion. Vender 5 ETHE libera ~$67 para agregar GBTC.", tags:["ETHE","GBTC"]},
-  {type:"add",    icon:"📈", title:"Promediar NFLX post-CPI",   badge:"bb", badgeText:"Condicional", body:"Si CPI < 3.5%, agregar 2-3 acc baja avg hacia ~$100. Target analistas $114.", tags:["NFLX"]},
-  {type:"hold",   icon:"📌", title:"Mantener NTR hasta ex-div", badge:"bg", badgeText:"30 jun",      body:"No vender antes del 30 jun. Ex-div $0.55/acc = $5.50. Iran activo. WF Buy.", tags:["NTR","Dividendo"]}
+  {type:"hold", icon:"\uD83D\uDD04", title:"Ideas en actualizacion", badge:"bg", badgeText:"Auto", body:"Las recomendaciones se generan automaticamente cada dia estrategico desde tu portafolio real y tu estrategia. Si ves esto, recommendations.json aun no cargo.", tags:["Auto"]}
 ];
 var HYPS_DEFAULT = [
-  {id:"semi",  cls:"semi",   icon:"🤖", name:"IA y Semiconductores",            riskLbl:"Alto",    risk:72, riskColor:"#f85149", horizon:"3-6 meses",  tickers:["SMH","NVDA","AMD"],   thesis:"0% exposicion al sector de mayor alpha del año. Applied Digital +11%. Ciclo capex IA no terminado.", directo:"Comprar 3-5 acc SMH en $235-240. Stop $215. Target $275 (+17%).", opciones:"Bull Call Spread SMH:\n- Comprar $240 CALL Sep 2026\n- Vender $260 CALL Sep 2026\nPrima ~$350-450. Ganancia max ~$1,550.", sizing:"5-8% del buying power (~$500-800).", catalizadores:"Resultados NVDA Q2 - Contratos datacenter - Jensen Huang visita Samsung"},
-  {id:"agri",  cls:"agri",   icon:"🌾", name:"Ampliar Fertilizantes - CF",      riskLbl:"Medio",   risk:42, riskColor:"#d29922", horizon:"2-4 meses",  tickers:["CF","MOS","NTR"],     thesis:"CF Industries: mayor upside que NTR. P/E 8.5x vs 13.7x. Mas exposicion a nitrogeno afectado por Iran.", directo:"Comprar 5-7 acc CF en $68-72. Stop $62. Target $90 (+28%).", opciones:"Cash-Secured Put NTR:\n- Vender NTR $62 PUT Ago 2026\nPrima ~$150/contrato. Si cae compras mas barato.", sizing:"3-5% buying power para CF.", catalizadores:"Tension Iran - Precios urea - Cosecha maiz/soya Q3"},
-  {id:"hedge", cls:"hedge",  icon:"🛡", name:"Cobertura Pre-FOMC - Oro",        riskLbl:"Bajo",    risk:22, riskColor:"#3fb950", horizon:"2-6 semanas", tickers:["GLD","TLT"],          thesis:"FOMC 17-18 jun. Tono hawkish = growth y cripto caen. GLD en maximos. Cobertura barata con momentum.", directo:"Comprar 2-3 acc GLD (~$440). Stop $415. Cobertura si mercado cae.", opciones:"Call GLD:\n- Comprar GLD $445 CALL Jul 2026\nPrima ~$200-280\n\nO Put proteccion:\n- Comprar SPY $520 PUT Jul 2026 (~$150)", sizing:"2-4% portafolio. No es posicion core.", catalizadores:"FOMC 17-18 jun - CPI Mayo - DXY"},
-  {id:"stream",cls:"stream", icon:"📺", name:"NFLX - Potenciar con Opciones",   riskLbl:"Medio",   risk:50, riskColor:"#d29922", horizon:"2-4 meses",  tickers:["NFLX","WBD"],         thesis:"Ya tienes 3 acc a $126. Opciones capturan el rebote con riesgo definido y menos capital inmovilizado.", directo:"Agregar 2-3 acc en $80-83 si CPI favorable. Nuevo avg ~$100.", opciones:"Bull Call Spread NFLX:\n- Comprar $85 CALL Sep 2026\n- Vender $105 CALL Sep 2026\nPrima ~$400-500. Ganancia max ~$1,500\n\nAlternativa: Vender $75 PUT Ago (~$250)", sizing:"El spread usa ~$450 vs comprar 4 acc (~$320). 3x upside.", catalizadores:"CPI benigno - Q2 earnings NFLX mid-jul - Ad-tier"},
-  {id:"btc",   cls:"btc",    icon:"₿",  name:"BTC Ciclo Post-Halving",          riskLbl:"Muy alto",risk:85, riskColor:"#f85149", horizon:"3-9 meses",  tickers:["GBTC","IBIT","MSTR"], thesis:"Halving abril 2024. Pico historico 12-18 meses despues. Fear & Greed en 12 (extremo miedo) = compra historica.", directo:"Cerrar call Jul y comprar 10 acc GBTC adicionales en $45-48. Stop $40.", opciones:"Reemplazar call vencida:\n- Comprar GBTC $52 CALL Sep 2026\nPrima ~$150. Breakeven GBTC $53.50 (BTC ~$66K)", sizing:"Max 10% adicional en crypto. Ya tienes exposicion.", catalizadores:"CPI benigno - FOMC dovish - Compras Strategy/institucionales"},
-  {id:"ec",    cls:"ec",     icon:"🇨🇴","name":"EC - Rolling Covered Calls",    riskLbl:"Bajo",    risk:28, riskColor:"#3fb950", horizon:"Post 17 jul", tickers:["EC","BNO"],           thesis:"Short call $17 jul cap el upside. Post-vencimiento hacer rolling a strikes mas altos para generar ingreso.", directo:"Mantener 110 acc. Dejar vencer call $17. Post-julio vender $18-19 Oct.", opciones:"Rolling post-julio:\n- Vender EC $18 CALL Oct 2026\nPrima ~$40-50/contrato\n\nSi Brent > $105: no vender call, dejar correr.", sizing:"Ya tienes la posicion. Rolling = ingreso sin capital nuevo.", catalizadores:"Precio Brent - Produccion Q2 Ecopetrol - OPEC+"}
+  {id:"auto", cls:"semi", icon:"\uD83D\uDD04", name:"Ideas en actualizacion", riskLbl:"-", risk:0, riskColor:"#8b949e", horizon:"-", tickers:[], thesis:"Las ideas se generan automaticamente cada dia estrategico (motor + analisis). Cargando recommendations.json...", directo:"-", opciones:"-", sizing:"-", catalizadores:"-"}
 ];
 var NEWS = [
-  {t:"NFLX", h:"Analistas ven oportunidad en Netflix - consensus target $114.56 (+40%)", time:"Jun 6"},
-  {t:"NFLX", h:"Netflix nombra a Jay Hoag nuevo Chairman of the Board", time:"Jun 5"},
-  {t:"NTR",  h:"Nutrien beneficiario de tensiones Iran - fertilizantes al alza", time:"Jun 9"},
-  {t:"NTR",  h:"Wells Fargo mantiene Buy en Nutrien - P/E forward 11.68x", time:"Jun 5"},
-  {t:"GBTC", h:"Bitcoin estabiliza en $60K con indicadores de agotamiento vendedor", time:"Jun 9"},
-  {t:"GBTC", h:"Bernstein: BTC diversificado soporta tesis store-of-value", time:"Jun 8"},
-  {t:"ETHE", h:"Ethereum bajo $1,700 - minimo de mas de 1 ano. DeFi bajo presion", time:"Jun 8"},
-  {t:"EC",   h:"Brent -0.6%. Dolar fuerte presiona emergentes y commodities COP", time:"Jun 9"}
+  {t:"INFO", h:"Las noticias por posicion se actualizan con el analisis diario.", time:"Auto"}
 ];
 var SECTORS = [
   {name:"Tecnologia",    port:0, sp:29},
