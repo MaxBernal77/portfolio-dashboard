@@ -297,6 +297,40 @@ def save_prices_json(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, avg_purch
             if p["mark_price"] > 0:
                 data["prices"][t] = {"price": round(p["mark_price"],4), "chg": 0, "label": "IBKR"}
 
+    # Array de POSICIONES dinamicas: el front construye su lista (POS) desde aqui.
+    positions_out, options_out = [], []
+    if ibkr_data and ibkr_data.get("positions"):
+        for p in ibkr_data["positions"]:
+            is_opt = p.get("asset_class") == "OPT" or p.get("put_call")
+            if is_opt:
+                if abs(p.get("qty",0)) > 0:
+                    exp = str(p.get("expiry","") or "")
+                    exp_iso = (exp[:4] + "-" + exp[4:6] + "-" + exp[6:8]) if len(exp) == 8 else exp
+                    pc = str(p.get("put_call","") or "").upper()
+                    pc_lbl = "PUT" if pc.startswith("P") else ("CALL" if pc.startswith("C") else pc)
+                    options_out.append({
+                        "desc":   p["ticker"] + " " + (exp_iso or "") + " $" + str(p.get("strike","")) + " " + pc_lbl,
+                        "pos":    int(p.get("qty",0)),
+                        "avg":    round(p.get("avg_cost",0),4),
+                        "mkt":    round(p.get("mark_price",0),4),
+                        "exp":    exp_iso,
+                        "strike": float(p.get("strike",0) or 0),
+                        "und":    p["ticker"],
+                        "side":   "short" if p.get("qty",0) < 0 else "long",
+                    })
+            else:
+                if abs(p.get("qty",0)) > 0:
+                    positions_out.append({
+                        "t":   p["ticker"],
+                        "qty": abs(p.get("qty",0)),
+                        "avg": round(p.get("avg_cost",0),4),
+                        "mkt": round(p.get("mark_price",0),4),
+                    })
+    if positions_out:
+        data["positions"] = positions_out
+    if options_out:
+        data["options"] = options_out
+
     # Indices desde Yahoo Finance
     idx_map = {"^GSPC":"IDX_SPX","^IXIC":"IDX_NDX","^VIX":"IDX_VIX","GLD":"IDX_GLD","BNO":"IDX_OIL","DX-Y.NYB":"IDX_DXY"}
     for sym, key in idx_map.items():

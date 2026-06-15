@@ -266,7 +266,19 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 </div>
 
 <script>
-var POS = [
+// POS_CATALOG: fichas detalladas conocidas. POS se RECONSTRUYE dinamicamente
+// desde las posiciones reales de IBKR (prices.json -> data.positions) en loadPrices().
+// Si un ticker no esta en el catalogo, se arma una ficha minima con META.
+var POS_CATALOG = [
+  {t:"AFYA",n:"Afya",            qty:100, avg:14.16,  yf:"AFYA",  type:"Acciones", sector:"Salud",          urgency:"good",   fb:14.16, note:"100 acc (lote covered-call #2). Edtech/salud Brasil. Vender call ~$16, 30-45 dias.",
+   tesis:"Lote de 100 acciones comprado para INGRESO: es la base del covered call #2. La tesis es edtech/salud en Brasil con caja sana; el objetivo no es upside agresivo sino cobrar prima vendiendo calls OTM (~$16) cada 30-45 dias y, si te asignan arriba, salir con ganancia. Barata (~$14) = encaja en una cuenta de $10k para 100 acc.",
+   earnings:{label:"Q2 2026", date:"2026-08-13", est:true},
+   catalizador:"Venta de covered call ~$16 (30-45 dias) - reporte Q2 - real brasileno (BRL)",
+   scen:[
+     {k:"Alcista", move:12,  why:"Sube hacia $16: te asignan en el call, sales con prima + ganancia."},
+     {k:"Base",    move:2,   why:"Lateral: el call expira sin valor, cobras la prima y repites."},
+     {k:"Bajista", move:-10, why:"Cae: la prima cobrada amortigua; mantienes para el siguiente ciclo."}
+   ]},
   {t:"EC",  n:"Ecopetrol",      qty:110, avg:15.19,  yf:"EC",    type:"Acciones", sector:"Energia",        urgency:"good",   fb:16.58, note:"110 acc, P&L +9%. Brent presiona pero descuento politico crea suelo. Ex-div trimestral.",
    tesis:"Posicion mas fuerte del portafolio. El descuento por riesgo politico (2a vuelta 21-jun) crea un suelo y el dividendo trimestral te paga mientras esperas. Brent es el swing factor: cada ~US$5 de Brent mueve la caja. Tesis = mantener para INGRESO (covered call post-eleccion), no para upside agresivo.",
    earnings:{label:"Q2 2026", date:"2026-08-12", est:true},
@@ -304,6 +316,22 @@ var POS = [
      {k:"Bajista", move:-12, why:"Miss: te acercas al strike $62.5, riesgo de asignacion."}
    ]}
 ];
+// META: metadatos minimos (nombre/sector/tipo/yahoo) para tickers que aparezcan
+// en IBKR sin ficha en POS_CATALOG (ej. JEPQ, GOOGL, VEEV cuando entre el Step 2).
+var META = {
+  EC:   {n:"Ecopetrol",            sector:"Energia",       type:"Acciones", yf:"EC"},
+  EIMI: {n:"MSCI EM IMI",          sector:"Emergentes",    type:"ETFs",     yf:"EIMI.L"},
+  AFYA: {n:"Afya",                 sector:"Salud",         type:"Acciones", yf:"AFYA"},
+  NTR:  {n:"Nutrien",              sector:"Materiales",    type:"Acciones", yf:"NTR"},
+  NFLX: {n:"Netflix",              sector:"Comunicaciones",type:"Acciones", yf:"NFLX"},
+  JEPQ: {n:"JPM Nasdaq Eq Premium",sector:"Tecnologia",    type:"ETFs",     yf:"JEPQ"},
+  GOOGL:{n:"Alphabet",             sector:"Comunicaciones",type:"Acciones", yf:"GOOGL"},
+  VEEV: {n:"Veeva Systems",        sector:"Salud",         type:"Acciones", yf:"VEEV"},
+  NVO:  {n:"Novo Nordisk",         sector:"Salud",         type:"Acciones", yf:"NVO"},
+  NU:   {n:"Nu Holdings",          sector:"Financieras",   type:"Acciones", yf:"NU"}
+};
+// POS arranca como copia del catalogo (fallback) y se reconstruye desde IBKR.
+var POS = POS_CATALOG.slice();
 // OPTS: fallback hardcoded, se reemplaza con datos IBKR desde prices.json
 var OPTS_FALLBACK = [
   {desc:"NTR Aug21 $62.5 PUT",  pos:-1, avg:2.53,  mkt:1.81,  exp:"2026-08-21", strike:62.5, und:"NTR", side:"short", note:"Cash-secured put. NTR ~$67.6, OTM. Prima cobrada, theta a favor."}
@@ -395,18 +423,35 @@ function loadPrices() {
         if (data.avg_purchase_cop)        cop.avg_purchase  = data.avg_purchase_cop;
         cop.cash_balance = (data.cash_balance !== undefined) ? data.cash_balance : cop.cash_balance;
 
-        // Sincronizar posiciones acciones/ETF desde IBKR
+        // RECONSTRUIR POS dinamicamente desde las posiciones reales de IBKR.
+        // Cada holding se mapea a su ficha del catalogo (tesis/escenarios) o,
+        // si no existe, a una ficha minima via META. Asi AFYA aparece, NFLX
+        // (qty 0, excluida por el motor) desaparece, y JEPQ/GOOGL/VEEV entran solas.
         if (data.positions && data.positions.length > 0) {
-          data.positions.forEach(function(ibkrPos) {
-            var match = POS.filter(function(p){ return p.t === ibkrPos.t; })[0];
-            if (match) {
-              match.qty = ibkrPos.qty;
-              match.avg = ibkrPos.avg;
-              // Actualizar lp con precio IBKR
-              lp[ibkrPos.t] = { price: ibkrPos.mkt, chg: 0, label:"IBKR", ibkr:true };
+          POS = data.positions.map(function(ip) {
+            var cat = POS_CATALOG.filter(function(p){ return p.t === ip.t; })[0];
+            var base;
+            if (cat) {
+              base = JSON.parse(JSON.stringify(cat)); // clonar ficha rica
+            } else {
+              var m = META[ip.t] || {n:ip.t, sector:"Otros", type:"Acciones", yf:ip.t};
+              base = {
+                t:ip.t, n:m.n, yf:m.yf, type:m.type, sector:m.sector, urgency:"neutral",
+                note:"Posicion IBKR. Ficha detallada pendiente de la proxima revision.",
+                tesis:"Posicion tomada directamente de tu cuenta IBKR. La ficha detallada (tesis, escenarios, earnings) se completara en la proxima revision estrategica.",
+                earnings:{label:"-", date:null, est:false},
+                catalizador:"-",
+                scen:[{k:"Alcista",move:0,why:"-"},{k:"Base",move:0,why:"-"},{k:"Bajista",move:0,why:"-"}]
+              };
             }
+            base.qty = Math.abs(ip.qty);
+            base.avg = ip.avg;
+            base.fb  = ip.mkt || base.fb || ip.avg;
+            lp[ip.t] = { price: ip.mkt, chg: 0, label:"IBKR", ibkr:true };
+            return base;
           });
-          console.log("Posiciones IBKR sincronizadas: " + data.positions.length);
+          console.log("POS reconstruido desde IBKR: " + POS.length + " posiciones (" +
+                      POS.map(function(p){return p.t;}).join(", ") + ")");
         }
 
         // Cargar opciones IBKR si vienen en prices.json
