@@ -129,6 +129,16 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .hist-tabs{display:flex;gap:4px}
 .hist-tab{font-size:10px;font-weight:600;padding:3px 9px;border-radius:5px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--sub)}
 .hist-tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+/* ── Tesis + escenarios por posicion ─────────────────────────── */
+.pc-toggle{font-size:11px;color:var(--sub);margin-left:6px}
+.pc-earn{display:inline-block;margin-top:6px}
+.scen-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:2px}
+.scen-table th{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--sub);padding:4px 6px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
+.scen-table th:first-child,.scen-table th:last-child{text-align:left}
+.scen-table td{padding:5px 6px;border-bottom:1px solid rgba(48,54,61,.5);text-align:right;vertical-align:top;white-space:nowrap}
+.scen-table td:first-child{text-align:left}
+.scen-table tr:last-child td{border-bottom:none}
+.chart-hint{font-size:10px;color:var(--sub);font-weight:400;line-height:1.45;margin-bottom:8px;text-transform:none;letter-spacing:0}
 </style>
 </head>
 <body>
@@ -180,7 +190,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
   <div id="histCharts">
     <div class="hist-wrap">
       <div class="hist-title">
-        <span>Rendimiento USD &amp; P&L Acumulado</span>
+        <span>💵 Rendimiento en Dólares (USD)</span>
         <div class="hist-tabs">
           <button class="hist-tab active" onclick="setHistRange(30,this)">1M</button>
           <button class="hist-tab" onclick="setHistRange(90,this)">3M</button>
@@ -188,19 +198,22 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
           <button class="hist-tab" onclick="setHistRange(365,this)">1A</button>
         </div>
       </div>
+      <div class="chart-hint">Área = valor de tu portafolio en USD (eje izq.). Línea blanca = rendimiento % (eje der.).</div>
       <div style="position:relative;height:220px"><canvas id="chartUSD"></canvas></div>
     </div>
     <div class="hist-wrap">
       <div class="hist-title">
-        <span>Rendimiento COP — Precio vs Divisa vs IBR</span>
+        <span>🇨🇴 Rendimiento en Pesos (COP)</span>
       </div>
+      <div class="chart-hint">Misma lectura que la gráfica en dólares, pero en pesos. La línea punteada amarilla es el IBR (tasa libre de riesgo): tu rendimiento % debería ir por encima de ella.</div>
       <div style="position:relative;height:220px"><canvas id="chartCOP"></canvas></div>
     </div>
     <div class="hist-wrap">
       <div class="hist-title">
-        <span>Tasa de Cambio USD/COP &amp; S&P 500 (normalizados)</span>
+        <span>🏁 ¿Le gano al dólar y al S&P 500?</span>
       </div>
-      <div style="position:relative;height:180px"><canvas id="chartFX"></canvas></div>
+      <div class="chart-hint">Carrera en base 100: todo arranca en 100 el primer día. La línea que va <strong>más arriba</strong> es la que más ha subido. Si <strong>Mi portafolio</strong> (azul) va por encima del <strong>S&P 500</strong> (verde) y del <strong>dólar/COP</strong> (morado), les estás ganando.</div>
+      <div style="position:relative;height:200px"><canvas id="chartFX"></canvas></div>
     </div>
   </div>
 
@@ -228,6 +241,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
   </div>
 
   <div class="sec">Posiciones</div>
+  <div style="font-size:11px;color:var(--sub);margin-bottom:8px;line-height:1.5">Clic en cada posicion para ver su <strong style="color:var(--text)">tesis</strong>, el <strong style="color:var(--text)">proximo earnings</strong> y los <strong style="color:var(--text)">escenarios post-reporte</strong> (alcista / base / bajista).</div>
   <div class="pg" id="posCards"></div>
 
   <div class="sec">Opciones Activas</div>
@@ -249,10 +263,42 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 
 <script>
 var POS = [
-  {t:"EC",  n:"Ecopetrol",      qty:110, avg:15.19,  yf:"EC",    type:"Acciones", sector:"Energia",        urgency:"good",   fb:16.58, note:"110 acc, P&L +9%. Brent presiona pero descuento politico crea suelo. Ex-div trimestral."},
-  {t:"EIMI",n:"MSCI EM IMI",   qty:25,  avg:50.948, yf:"EIMI.L", type:"ETFs",    sector:"Emergentes",     urgency:"neutral", fb:55.42, note:"ETF emergentes LSE. P&L +9%. USD debil post-FOMC favorece EM. Posicion estructural."},
-  {t:"NFLX",n:"Netflix",        qty:3,   avg:126.267,yf:"NFLX",   type:"Acciones",sector:"Comunicaciones", urgency:"watch",   fb:80.38, note:"P&L -36% desde $126.27. Posicion mas debil. Evaluar bull put spread o tax-loss."},
-  {t:"NTR", n:"Nutrien",        qty:10,  avg:74.609, yf:"NTR",    type:"Acciones",sector:"Materiales",     urgency:"watch",   fb:67.62, note:"P&L -9%. Put corto $62.5 Ago a favor. Tension agricola sostiene potasio/urea."}
+  {t:"EC",  n:"Ecopetrol",      qty:110, avg:15.19,  yf:"EC",    type:"Acciones", sector:"Energia",        urgency:"good",   fb:16.58, note:"110 acc, P&L +9%. Brent presiona pero descuento politico crea suelo. Ex-div trimestral.",
+   tesis:"Posicion mas fuerte del portafolio. El descuento por riesgo politico (2a vuelta 21-jun) crea un suelo y el dividendo trimestral te paga mientras esperas. Brent es el swing factor: cada ~US$5 de Brent mueve la caja. Tesis = mantener para INGRESO (covered call post-eleccion), no para upside agresivo.",
+   earnings:{label:"Q2 2026", date:"2026-08-12", est:true},
+   catalizador:"2a vuelta Colombia (21-jun) - Brent/OPEP+ - produccion Q2 - dividendo",
+   scen:[
+     {k:"Alcista", move:12,  why:"Resultado pro-mercado + Brent >US$70: se cierra el descuento politico."},
+     {k:"Base",    move:3,   why:"Sin sorpresas; cobras dividendo y vendes covered call $18 Oct."},
+     {k:"Bajista", move:-15, why:"Resultado adverso o Brent <US$55: regresa la prima de riesgo."}
+   ]},
+  {t:"EIMI",n:"MSCI EM IMI",   qty:25,  avg:50.948, yf:"EIMI.L", type:"ETFs",    sector:"Emergentes",     urgency:"neutral", fb:55.42, note:"ETF emergentes LSE. P&L +9%. USD debil post-FOMC favorece EM. Posicion estructural.",
+   tesis:"Es un ETF: NO tiene earnings, se mueve por el ciclo macro, no por un reporte. El driver es el dolar (DXY) y los flujos a emergentes. USD debil post-FOMC = viento de cola. Posicion estructural diversificadora; no la tradees por trimestre.",
+   earnings:{label:"N/A - ETF (sin reporte)", date:null, est:false},
+   catalizador:"FOMC 16-18 jun / sesgo del USD - China - flujos EM",
+   scen:[
+     {k:"Alcista", move:8,   why:"FOMC dovish, DXY cae: rotacion hacia emergentes."},
+     {k:"Base",    move:2,   why:"USD lateral; EM acompana el beta global."},
+     {k:"Bajista", move:-10, why:"FOMC hawkish o riesgo China: salida de flujos EM."}
+   ]},
+  {t:"NFLX",n:"Netflix",        qty:3,   avg:126.267,yf:"NFLX",   type:"Acciones",sector:"Comunicaciones", urgency:"watch",   fb:80.38, note:"P&L -36% desde $126.27. Posicion mas debil. Evaluar bull put spread o tax-loss.",
+   tesis:"La posicion mas debil (-36%). El proximo reporte es el catalizador que define si hay re-rating o si toca cortar la perdida. Claves: crecimiento de suscriptores, traccion del ad-tier y guia de margen. Es la unica posicion donde el earnings cambia la tesis de raiz; el tamano pequeno (3 acc) limita el dano.",
+   earnings:{label:"Q2 2026", date:"2026-07-16", est:true},
+   catalizador:"Reporte Q2 (~16-jul) - suscriptores - ad-tier - guia de margen",
+   scen:[
+     {k:"Alcista", move:18,  why:"Beat en subs + margen: arranca la recuperacion del -36%."},
+     {k:"Base",    move:0,   why:"En linea: sigue lateral, evaluas bull put spread."},
+     {k:"Bajista", move:-15, why:"Miss o guia floja: ejecutar tax-loss y reasignar."}
+   ]},
+  {t:"NTR", n:"Nutrien",        qty:10,  avg:74.609, yf:"NTR",    type:"Acciones",sector:"Materiales",     urgency:"watch",   fb:67.62, note:"P&L -9%. Put corto $62.5 Ago a favor. Tension agricola sostiene potasio/urea.",
+   tesis:"P&L -9% pero la tesis de ciclo agricola sigue: tension en potasio/urea sostiene precios. Tu put corto $62.5 vence el 21-ago, DESPUES del earnings Q2 (~ppios ago): el reporte decide si el put expira sin valor (cobras prima) o si te asignan a $62.5. Vigila el earnings como gatillo del put.",
+   earnings:{label:"Q2 2026", date:"2026-08-06", est:true},
+   catalizador:"Reporte Q2 (~6-ago, antes del put 21-ago) - precios potasio/urea - clima",
+   scen:[
+     {k:"Alcista", move:10,  why:"Beat por precios de nutrientes: put $62.5 expira sin valor."},
+     {k:"Base",    move:2,   why:"En linea: NTR sobre $62.5, cobras la prima del put."},
+     {k:"Bajista", move:-12, why:"Miss: te acercas al strike $62.5, riesgo de asignacion."}
+   ]}
 ];
 // OPTS: fallback hardcoded, se reemplaza con datos IBKR desde prices.json
 var OPTS_FALLBACK = [
@@ -754,8 +800,8 @@ function buildHistCharts() {
     }
   };
 
-  // ── Gráfica 1: USD ────────────────────────────────────────────────────────
-  var pnlUSD   = slice.map(function(d){ return +(d.pnl_usd    || 0).toFixed(2); });
+  // ── Gráfica 1: USD — Valor (área) + Rendimiento % ─────────────────────────
+  // Mismo formato que la grafica COP para comparacion directa.
   var pnlPctU  = slice.map(function(d){ return +(d.pnl_pct_usd|| 0).toFixed(2); });
   var valUSD   = slice.map(function(d){ return +(d.val_usd    || 0).toFixed(2); });
 
@@ -765,55 +811,53 @@ function buildHistCharts() {
     data: {
       labels: labels,
       datasets: [
-        { label:"Valor USD ($)",     data: valUSD,  borderColor:"#58a6ff", backgroundColor:"rgba(88,166,255,.08)", borderWidth:2, pointRadius:1, yAxisID:"yVal", tension:.3, fill:true },
-        { label:"P&L USD ($)",       data: pnlUSD,  borderColor: pnlUSD[pnlUSD.length-1]>=0?"#3fb950":"#f85149", backgroundColor:"transparent", borderWidth:1.5, pointRadius:1, yAxisID:"yPnl", tension:.3, borderDash:[4,3] },
-        { label:"P&L USD (%)",       data: pnlPctU, borderColor:"#d29922", backgroundColor:"transparent", borderWidth:1.5, pointRadius:1, yAxisID:"yPct", tension:.3, borderDash:[2,2] }
+        { label:"Valor USD ($)",     data: valUSD,  borderColor:"#58a6ff", backgroundColor:"rgba(88,166,255,.10)", borderWidth:2, pointRadius:1, yAxisID:"yVal", tension:.3, fill:true },
+        { label:"Rendimiento (%)",   data: pnlPctU, borderColor:"#e6edf3", backgroundColor:"transparent", borderWidth:2, pointRadius:1, yAxisID:"yPct", tension:.3 }
       ]
     },
     options: Object.assign({}, opts, {
       scales: Object.assign({}, opts.scales, {
         yVal: { type:"linear", position:"left",  ticks:{ color:"#58a6ff", font:{size:9}, callback:function(v){return "$"+Math.round(v).toLocaleString();} }, grid:{ color:"rgba(48,54,61,.5)" } },
-        yPnl: { type:"linear", position:"right", ticks:{ color:"#8b949e", font:{size:9}, callback:function(v){return "$"+Math.round(v);} }, grid:{ display:false } },
-        yPct: { type:"linear", position:"right", ticks:{ color:"#d29922", font:{size:9}, callback:function(v){return v.toFixed(1)+"%";} }, grid:{ display:false } }
+        yPct: { type:"linear", position:"right", ticks:{ color:"#e6edf3", font:{size:9}, callback:function(v){return v.toFixed(1)+"%";} }, grid:{ display:false } }
       })
     })
   });
 
-  // ── Gráfica 2: COP — Precio vs Divisa vs IBR ─────────────────────────────
-  var pnlCOP   = slice.map(function(d){ return Math.round(d.pnl_cop    || 0); });
-  var mktEff   = slice.map(function(d){ return Math.round(d.mkt_effect || 0); });
-  var fxEff    = slice.map(function(d){ return Math.round(d.fx_effect  || 0); });
+  // ── Gráfica 2: COP — Valor (área) + Rendimiento % + IBR ───────────────────
+  // Mismo formato que la grafica USD; se agrega el IBR como tasa de referencia.
+  var valCOP   = slice.map(function(d){ return Math.round(d.val_cop     || 0); });
   var pnlPctC  = slice.map(function(d){ return +(d.pnl_pct_cop || 0).toFixed(2); });
   var ibrLine  = slice.map(function(d){ return +(d.ibr_annual  || 0).toFixed(2); });
 
   if (chartCOP) chartCOP.destroy();
   chartCOP = new Chart(document.getElementById("chartCOP"), {
-    type: "bar",
+    type: "line",
     data: {
       labels: labels,
       datasets: [
-        { label:"Efecto Precio COP",  data: mktEff, backgroundColor: mktEff.map(function(v){ return v>=0?"rgba(63,185,80,.6)":"rgba(248,81,73,.5)"; }), yAxisID:"yCOP", order:2 },
-        { label:"Efecto Divisa COP",  data: fxEff,  backgroundColor: fxEff.map(function(v){  return v>=0?"rgba(88,166,255,.5)":"rgba(188,140,255,.5)"; }), yAxisID:"yCOP", order:2 },
-        { label:"P&L Total COP (%)",  data: pnlPctC, type:"line", borderColor:"#e6edf3", backgroundColor:"transparent", borderWidth:2, pointRadius:2, yAxisID:"yPct", tension:.3, order:1 },
-        { label:"IBR (%)",            data: ibrLine, type:"line", borderColor:"#d29922",  backgroundColor:"transparent", borderWidth:1.5, borderDash:[4,3], pointRadius:0, yAxisID:"yPct", tension:0, order:1 }
+        { label:"Valor COP ($)",     data: valCOP,  borderColor:"#bc8cff", backgroundColor:"rgba(188,140,255,.10)", borderWidth:2, pointRadius:1, yAxisID:"yVal", tension:.3, fill:true },
+        { label:"Rendimiento (%)",   data: pnlPctC, borderColor:"#e6edf3", backgroundColor:"transparent", borderWidth:2, pointRadius:1, yAxisID:"yPct", tension:.3 },
+        { label:"IBR libre de riesgo (%)", data: ibrLine, borderColor:"#d29922", backgroundColor:"transparent", borderWidth:1.5, borderDash:[4,3], pointRadius:0, yAxisID:"yPct", tension:0 }
       ]
     },
     options: Object.assign({}, opts, {
       scales: Object.assign({}, opts.scales, {
-        yCOP: { type:"linear", position:"left",  stacked:false, ticks:{ color:"#8b949e", font:{size:9}, callback:function(v){ var a=Math.abs(v); return (a>=1e6?"$"+(v/1e6).toFixed(1)+"M":"$"+Math.round(v/1000)+"K")+" COP"; } }, grid:{ color:"rgba(48,54,61,.5)" } },
+        yVal: { type:"linear", position:"left",  ticks:{ color:"#bc8cff", font:{size:9}, callback:function(v){ var a=Math.abs(v); return a>=1e6?"$"+(v/1e6).toFixed(1)+"M":"$"+Math.round(v/1000)+"K"; } }, grid:{ color:"rgba(48,54,61,.5)" } },
         yPct: { type:"linear", position:"right", ticks:{ color:"#e6edf3", font:{size:9}, callback:function(v){ return v.toFixed(1)+"%"; } }, grid:{ display:false } }
       })
     })
   });
 
-  // ── Gráfica 3: USD/COP + S&P 500 normalizados ────────────────────────────
-  // Normalizar a base 100 desde primer punto del rango
+  // ── Gráfica 3: Carrera base 100 — Mi portafolio vs S&P 500 vs Dólar ───────
+  // Todo arranca en 100; la linea mas alta es la que mas ha subido. Un solo eje.
   var usdcops  = slice.map(function(d){ return d.usdcop || 0; });
   var spxs     = slice.map(function(d){ return d.spx    || 0; });
-  var base1    = usdcops[0] || 1, base2 = spxs[0] || 1;
-  var copNorm  = usdcops.map(function(v){ return v ? +((v/base1*100).toFixed(2)) : null; });
-  var spxNorm  = spxs.map(function(v){   return v ? +((v/base2*100).toFixed(2)) : null; });
-  var vsIBRArr = slice.map(function(d){ return +(d.vs_ibr || 0).toFixed(2); });
+  var ports    = slice.map(function(d){ return d.val_usd|| 0; });
+  var b0 = ports[0] || 1, b1 = usdcops[0] || 1, b2 = spxs[0] || 1;
+  var portNorm = ports.map(function(v){   return v ? +((v/b0*100).toFixed(2)) : null; });
+  var copNorm  = usdcops.map(function(v){ return v ? +((v/b1*100).toFixed(2)) : null; });
+  var spxNorm  = spxs.map(function(v){    return v ? +((v/b2*100).toFixed(2)) : null; });
+  var baseLine = labels.map(function(){ return 100; });
 
   if (chartFX) chartFX.destroy();
   chartFX = new Chart(document.getElementById("chartFX"), {
@@ -821,15 +865,15 @@ function buildHistCharts() {
     data: {
       labels: labels,
       datasets: [
-        { label:"USD/COP (base 100)", data: copNorm,  borderColor:"#bc8cff", backgroundColor:"rgba(188,140,255,.08)", borderWidth:2, pointRadius:1, yAxisID:"yNorm", tension:.3, fill:true },
-        { label:"S&P 500 (base 100)", data: spxNorm,  borderColor:"#3fb950", backgroundColor:"transparent",           borderWidth:2, pointRadius:1, yAxisID:"yNorm", tension:.3 },
-        { label:"Rend. COP vs IBR (pts)", data: vsIBRArr, borderColor:"#d29922", backgroundColor:"transparent",      borderWidth:1.5, pointRadius:1, yAxisID:"yVsIBR", tension:.3, borderDash:[3,3] }
+        { label:"Mi portafolio",    data: portNorm, borderColor:"#58a6ff", backgroundColor:"rgba(88,166,255,.10)", borderWidth:2.5, pointRadius:1, yAxisID:"yNorm", tension:.3, fill:true },
+        { label:"S&P 500",          data: spxNorm,  borderColor:"#3fb950", backgroundColor:"transparent", borderWidth:2, pointRadius:1, yAxisID:"yNorm", tension:.3 },
+        { label:"Dólar (USD/COP)",  data: copNorm,  borderColor:"#bc8cff", backgroundColor:"transparent", borderWidth:2, pointRadius:1, yAxisID:"yNorm", tension:.3 },
+        { label:"Partida (100)",    data: baseLine, borderColor:"rgba(139,148,158,.55)", backgroundColor:"transparent", borderWidth:1, borderDash:[3,3], pointRadius:0, yAxisID:"yNorm", tension:0 }
       ]
     },
     options: Object.assign({}, opts, {
       scales: Object.assign({}, opts.scales, {
-        yNorm:  { type:"linear", position:"left",  ticks:{ color:"#8b949e", font:{size:9}, callback:function(v){ return v.toFixed(0); } }, grid:{ color:"rgba(48,54,61,.5)" } },
-        yVsIBR: { type:"linear", position:"right", ticks:{ color:"#d29922", font:{size:9}, callback:function(v){ return v.toFixed(1)+"pts"; } }, grid:{ display:false } }
+        yNorm: { type:"linear", position:"left", ticks:{ color:"#8b949e", font:{size:9}, callback:function(v){ return v.toFixed(0); } }, grid:{ color:"rgba(48,54,61,.5)" } }
       })
     })
   });
@@ -852,8 +896,54 @@ function renderPosCards() {
     var pnl = (pr-p.avg)*p.qty, pp = ((pr-p.avg)/p.avg)*100;
     var chgH = d ? "<span class='"+cc(d.chg)+"' style='font-size:10px'>"+pct(d.chg)+(d.label?"<span style='font-size:9px;opacity:.6'> "+d.label+"</span>":"")+(d.ibkr?"<span style='font-size:9px;color:var(--green)'> IBKR</span>":"")+"</span>" : "";
     var cls = p.urgency==="urgent"?"urgent":p.urgency==="watch"?"watch":p.urgency==="good"?"good":"";
-    return "<div class='pc "+cls+"'><div class='pc-top'><div><div class='pc-t'>"+p.t+"</div><div class='pc-n'>"+p.n+" - "+p.qty+" acc.</div></div><div style='text-align:right'><div class='pc-sv "+(d?cc(d.chg):"")+"' style='font-size:15px;font-weight:700'>"+fmt(pr)+"</div>"+chgH+"</div></div>"+(p.hist?spark(p.hist):"")+"<div class='pc-stats'><div class='pc-s'><div class='pc-sl'>Costo</div><div class='pc-sv'>"+fmt(p.avg)+"</div></div><div class='pc-s'><div class='pc-sl'>Valor</div><div class='pc-sv'>"+fmt(pr*p.qty)+"</div></div><div class='pc-s'><div class='pc-sl'>P&L $</div><div class='pc-sv "+cc(pnl)+"'>"+fmt(pnl)+"<div class='pc-bar'><div style='width:"+Math.min(Math.abs(pp),100)+"%;height:100%;background:"+(pnl>=0?"var(--green)":"var(--red)")+";border-radius:2px'></div></div></div></div><div class='pc-s'><div class='pc-sl'>P&L %</div><div class='pc-sv "+cc(pp)+"'>"+pct(pp)+"</div></div></div><div class='pc-note'>"+p.note+"</div></div>";
+
+    // ── Chip de proximo earnings ──────────────────────────────
+    var earnChip = "";
+    if (p.earnings) {
+      if (p.earnings.date) {
+        var de = daysTo(p.earnings.date);
+        var ecls = de<=14 ? "by" : "bb";
+        earnChip = "<span class='badge "+ecls+" pc-earn' style='font-size:9px'>📅 "+p.earnings.label+" · "+(de>0?"en "+de+"d":"hoy")+(p.earnings.est?" (est.)":"")+"</span>";
+      } else {
+        earnChip = "<span class='badge bb pc-earn' style='font-size:9px'>📅 "+p.earnings.label+"</span>";
+      }
+    }
+
+    // ── Bloque detalle: tesis + escenarios post-earnings ──────
+    var detail = "";
+    if (p.tesis || (p.scen && p.scen.length)) {
+      var scenRows = (p.scen||[]).map(function(s){
+        var tgt = pr*(1+s.move/100), pnlT = (tgt-p.avg)*p.qty;
+        var col = s.k==="Alcista" ? "var(--green)" : s.k==="Bajista" ? "var(--red)" : "var(--yellow)";
+        return "<tr>"+
+          "<td><span style='color:"+col+";font-weight:700'>"+s.k+"</span> <span style='font-size:9px;color:var(--sub)'>"+(s.move>=0?"+":"")+s.move+"%</span></td>"+
+          "<td>"+fmt(tgt)+"</td>"+
+          "<td class='"+cc(pnlT)+"'>"+(pnlT>=0?"+":"")+fmt(pnlT)+"</td>"+
+          "<td style='font-size:10px;color:var(--sub);text-align:left;white-space:normal'>"+s.why+"</td>"+
+        "</tr>";
+      }).join("");
+      detail = "<div id='pd-"+p.t+"' style='display:none;border-top:1px solid var(--border);margin-top:8px;padding-top:8px'>"+
+        (p.tesis ? "<div class='pc-sl' style='margin-bottom:4px'>Tesis</div><div style='font-size:11.5px;color:#adbac7;line-height:1.5;margin-bottom:8px'>"+p.tesis+"</div>" : "")+
+        (p.catalizador ? "<div style='font-size:10px;color:var(--sub);margin-bottom:8px'><strong style='color:var(--text)'>Catalizadores:</strong> "+p.catalizador+"</div>" : "")+
+        (scenRows ? "<div class='pc-sl' style='margin-bottom:2px'>Proyeccion post-earnings (precio objetivo y P&L sobre tus "+p.qty+" acc.)</div>"+
+          "<table class='scen-table'><thead><tr><th>Escenario</th><th>Precio obj.</th><th>P&L pos.</th><th>Por que</th></tr></thead><tbody>"+scenRows+"</tbody></table>" : "")+
+      "</div>";
+    }
+    var arrow = detail ? "<span class='pc-toggle' id='pi-"+p.t+"'>▼</span>" : "";
+
+    return "<div class='pc "+cls+"'"+(detail?" style='cursor:pointer' onclick='togglePos(\""+p.t+"\")'":"")+">"+
+      "<div class='pc-top'><div><div class='pc-t'>"+p.t+arrow+"</div><div class='pc-n'>"+p.n+" - "+p.qty+" acc.</div></div>"+
+      "<div style='text-align:right'><div class='pc-sv "+(d?cc(d.chg):"")+"' style='font-size:15px;font-weight:700'>"+fmt(pr)+"</div>"+chgH+"</div></div>"+
+      (p.hist?spark(p.hist):"")+
+      "<div class='pc-stats'><div class='pc-s'><div class='pc-sl'>Costo</div><div class='pc-sv'>"+fmt(p.avg)+"</div></div><div class='pc-s'><div class='pc-sl'>Valor</div><div class='pc-sv'>"+fmt(pr*p.qty)+"</div></div><div class='pc-s'><div class='pc-sl'>P&L $</div><div class='pc-sv "+cc(pnl)+"'>"+fmt(pnl)+"<div class='pc-bar'><div style='width:"+Math.min(Math.abs(pp),100)+"%;height:100%;background:"+(pnl>=0?"var(--green)":"var(--red)")+";border-radius:2px'></div></div></div></div><div class='pc-s'><div class='pc-sl'>P&L %</div><div class='pc-sv "+cc(pp)+"'>"+pct(pp)+"</div></div></div>"+
+      "<div class='pc-note'>"+p.note+earnChip+"</div>"+
+      detail+
+    "</div>";
   }).join("");
+}
+function togglePos(t) {
+  var b = document.getElementById("pd-"+t), i = document.getElementById("pi-"+t);
+  if (b) { var open = b.style.display !== "none"; b.style.display = open?"none":"block"; if(i) i.textContent = open?"▼":"▲"; }
 }
 
 function renderOpts() {
@@ -871,7 +961,11 @@ function renderRecs() {
 }
 
 function renderHyps() {
-  document.getElementById("hypCards").innerHTML = activeHyps.map(function(h){
+  var held = POS.map(function(p){ return p.t; });
+  var ideas = activeHyps.filter(function(h){
+    return !(h.tickers||[]).some(function(t){ return held.indexOf(t) !== -1; });
+  });
+  document.getElementById("hypCards").innerHTML = ideas.map(function(h){
     return "<div class='hyp-card "+h.cls+"' id='hc-"+h.id+"'><div class='hyp-header' onclick='toggleHyp(\""+h.id+"\")'><div class='hyp-title'><span>"+h.icon+" "+h.name+"</span><div style='display:flex;gap:4px;flex-wrap:wrap'>"+h.tickers.map(function(t){return "<span class='chip'>"+t+"</span>";}).join("")+"</div></div><div class='hyp-meta'><span style='font-size:11px;color:"+h.riskColor+";font-weight:600'>"+h.riskLbl+"</span><span style='font-size:11px;color:var(--sub)'>"+h.horizon+"</span><span id='ti-"+h.id+"' style='font-size:12px'>▼</span></div></div><div id='hb-"+h.id+"' style='display:none'><div style='padding:10px 14px 0;font-size:12px;color:#adbac7;line-height:1.55'>"+h.thesis+"</div><div style='padding:10px 14px 14px'><div class='hyp-grid'><div class='hs'><div class='hs-title'>Entrada Directa</div><div style='font-size:12px;color:#adbac7;line-height:1.6;white-space:pre-line'>"+h.directo+"</div></div><div class='hs'><div class='hs-title'>Estrategia de Opciones</div><div style='font-size:11.5px;color:#adbac7;line-height:1.65;white-space:pre-line'>"+h.opciones+"</div></div></div><div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px'><div class='hs'><div class='hs-title'>Sizing</div><div style='font-size:12px;color:#adbac7;line-height:1.5'>"+h.sizing+"</div></div><div class='hs'><div class='hs-title'>Catalizadores</div><div style='font-size:12px;color:#adbac7;line-height:1.5'>"+h.catalizadores+"</div></div></div><div style='margin-top:8px'><div style='font-size:9px;color:var(--sub);text-transform:uppercase;margin-bottom:3px'>Riesgo: <span style='color:"+h.riskColor+"'>"+h.riskLbl+"</span></div><div class='meter'><div class='meter-f' style='width:"+h.risk+"%;background:"+h.riskColor+"'></div></div></div></div></div></div>";
   }).join("");
 }
