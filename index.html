@@ -561,12 +561,7 @@ function buildCharts() {
 
 function fmtCOP(n) {
   if (!n && n !== 0) return "-";
-  var abs = Math.abs(n);
-  var str;
-  if (abs >= 1e9)      str = "$" + (n/1e9).toFixed(1) + "B";
-  else if (abs >= 1e6) str = "$" + Math.round(n/1e6) + "M";
-  else                 str = "$" + Math.round(n).toLocaleString("es-CO");
-  return str + " COP";
+  return (n < 0 ? "-$" : "$") + Math.round(Math.abs(n)).toLocaleString("es-CO") + " COP";
 }
 function fmtUSD(n) {
   if (!n && n !== 0) return "-";
