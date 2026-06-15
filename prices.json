@@ -78,6 +78,11 @@
       "price": 14.14,
       "chg": 0,
       "label": "ETH-ratio"
+    },
+    "IDX_DXY": {
+      "price": 99.81,
+      "chg": 0,
+      "label": "Cierre"
     }
   },
   "cash_balance": 138.38

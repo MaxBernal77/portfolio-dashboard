@@ -170,34 +170,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
     <button class="btn" onclick="loadAll()">Actualizar</button>
   </div>
 
-  <div class="sec" style="margin-top:0">Mercado en Vivo</div>
-  <div class="g4">
-    <div class="idx"><div class="idx-l">S&P 500</div><div class="idx-v" id="spx">-</div><div class="idx-c" id="spxC">-</div></div>
-    <div class="idx"><div class="idx-l">Nasdaq</div><div class="idx-v" id="ndx">-</div><div class="idx-c" id="ndxC">-</div></div>
-    <div class="idx"><div class="idx-l">Bitcoin</div><div class="idx-v" id="btc">-</div><div class="idx-c" id="btcC">-</div></div>
-    <div class="idx"><div class="idx-l">Ethereum</div><div class="idx-v" id="eth">-</div><div class="idx-c" id="ethC">-</div></div>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px">
-    <div class="idx"><div class="idx-l">VIX</div><div class="idx-v" id="vix">-</div><div class="idx-c" id="vixC"></div></div>
-    <div class="idx"><div class="idx-l">Oro (GLD)</div><div class="idx-v" id="gold">-</div><div class="idx-c" id="goldC"></div></div>
-    <div class="idx"><div class="idx-l">Petroleo (BNO)</div><div class="idx-v" id="oil">-</div><div class="idx-c" id="oilC"></div></div>
-    <div class="idx"><div class="idx-l">USD / COP</div><div class="idx-v" id="copr">-</div><div class="idx-c" id="copC"></div></div>
-  </div>
-
-  <div class="sec">Analisis Grafico</div>
-  <div class="charts-row">
-    <div class="cc"><div class="ct">Distribucion del Portafolio</div><div style="position:relative;height:190px"><canvas id="donutChart"></canvas></div></div>
-    <div class="cc"><div class="ct">Exposicion Sectorial vs S&P 500</div><div style="position:relative;height:190px"><canvas id="sectorChart"></canvas></div></div>
-    <div class="cc"><div class="ct">Tipo de Activo</div><div style="position:relative;height:190px"><canvas id="typeChart"></canvas></div></div>
-  </div>
-
-  <div class="sec">Posiciones</div>
-  <div class="pg" id="posCards"></div>
-
-  <div class="sec">Opciones Activas</div>
-  <div id="optCards"></div>
-
-  <div class="sec">Analisis de Rendimientos — USD &amp; COP</div>
+  <div class="sec" style="margin-top:0">Analisis de Rendimientos — USD &amp; COP</div>
   <div id="rendSection"></div>
 
   <div class="sec">Evolucion del Portafolio — Historico</div>
@@ -230,6 +203,35 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
       <div style="position:relative;height:180px"><canvas id="chartFX"></canvas></div>
     </div>
   </div>
+
+
+  <div class="sec">Mercado en Vivo</div>
+  <div class="g4">
+    <div class="idx"><div class="idx-l">S&P 500</div><div class="idx-v" id="spx">-</div><div class="idx-c" id="spxC">-</div></div>
+    <div class="idx"><div class="idx-l">Nasdaq</div><div class="idx-v" id="ndx">-</div><div class="idx-c" id="ndxC">-</div></div>
+    <div class="idx"><div class="idx-l">Bitcoin</div><div class="idx-v" id="btc">-</div><div class="idx-c" id="btcC">-</div></div>
+    <div class="idx"><div class="idx-l">Ethereum</div><div class="idx-v" id="eth">-</div><div class="idx-c" id="ethC">-</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px">
+    <div class="idx"><div class="idx-l">VIX</div><div class="idx-v" id="vix">-</div><div class="idx-c" id="vixC"></div></div>
+    <div class="idx"><div class="idx-l">Oro (GLD)</div><div class="idx-v" id="gold">-</div><div class="idx-c" id="goldC"></div></div>
+    <div class="idx"><div class="idx-l">Petroleo (BNO)</div><div class="idx-v" id="oil">-</div><div class="idx-c" id="oilC"></div></div>
+    <div class="idx"><div class="idx-l">USD / COP</div><div class="idx-v" id="copr">-</div><div class="idx-c" id="copC"></div></div>
+    <div class="idx"><div class="idx-l">DXY</div><div class="idx-v" id="dxy">-</div><div class="idx-c" id="dxyC"></div></div>
+  </div>
+
+  <div class="sec">Analisis Grafico</div>
+  <div class="charts-row">
+    <div class="cc"><div class="ct">Distribucion del Portafolio</div><div style="position:relative;height:190px"><canvas id="donutChart"></canvas></div></div>
+    <div class="cc"><div class="ct">Exposicion Sectorial vs S&P 500</div><div style="position:relative;height:190px"><canvas id="sectorChart"></canvas></div></div>
+    <div class="cc"><div class="ct">Tipo de Activo</div><div style="position:relative;height:190px"><canvas id="typeChart"></canvas></div></div>
+  </div>
+
+  <div class="sec">Posiciones</div>
+  <div class="pg" id="posCards"></div>
+
+  <div class="sec">Opciones Activas</div>
+  <div id="optCards"></div>
 
   <div class="sec">Acciones Sobre Posiciones Actuales</div>
   <div style="font-size:10px;color:var(--sub);margin-bottom:8px" id="recsLabel">Cargando recomendaciones...</div>
@@ -483,12 +485,9 @@ function buildCharts() {
   });
 
   SECTORS.forEach(function(s) {
-    s.port = 0;
-    if (s.name === "Energia")        s.port = +((getP(POS[0])*110/total)*100).toFixed(1);
-    if (s.name === "Emergentes")     s.port = +((getP(POS[1])*25/total)*100).toFixed(1);
-    if (s.name === "Crypto")         s.port = +(((getP(POS[2])*5+getP(POS[3])*9)/total)*100).toFixed(1);
-    if (s.name === "Comunicaciones") s.port = +((getP(POS[4])*3/total)*100).toFixed(1);
-    if (s.name === "Materiales")     s.port = +((getP(POS[5])*10/total)*100).toFixed(1);
+    var v = 0;
+    POS.forEach(function(p,i){ if (p.sector === s.name) v += mktVals[i]; });
+    s.port = +((v/total)*100).toFixed(1);
   });
 
   if (sectorC) sectorC.destroy();
@@ -902,7 +901,7 @@ function renderNews() {
 }
 
 function renderIdx() {
-  var map = [["spx","IDX_SPX"],["ndx","IDX_NDX"],["vix","IDX_VIX"],["gold","IDX_GLD"],["oil","IDX_OIL"]];
+  var map = [["spx","IDX_SPX"],["ndx","IDX_NDX"],["vix","IDX_VIX"],["gold","IDX_GLD"],["oil","IDX_OIL"],["dxy","IDX_DXY"]];
   map.forEach(function(pair) {
     var d = lp[pair[1]]; if(!d) return;
     setEl(pair[0], d.price>1000?"$"+Math.round(d.price).toLocaleString():fmt(d.price), "idx-v "+cc(d.chg));

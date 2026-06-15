@@ -298,7 +298,7 @@ def save_prices_json(ibkr_data, yahoo, crypto, usdcop_raw, ibr_annual, avg_purch
                 data["prices"][t] = {"price": round(p["mark_price"],4), "chg": 0, "label": "IBKR"}
 
     # Indices desde Yahoo Finance
-    idx_map = {"^GSPC":"IDX_SPX","^IXIC":"IDX_NDX","^VIX":"IDX_VIX","GLD":"IDX_GLD","BNO":"IDX_OIL"}
+    idx_map = {"^GSPC":"IDX_SPX","^IXIC":"IDX_NDX","^VIX":"IDX_VIX","GLD":"IDX_GLD","BNO":"IDX_OIL","DX-Y.NYB":"IDX_DXY"}
     for sym, key in idx_map.items():
         if sym in yahoo:
             data["prices"][key] = yahoo[sym]
@@ -529,7 +529,7 @@ if __name__ == "__main__":
     cash_balance = ibkr_data["cash_balance"]
 
     print("2. Obteniendo precios Yahoo Finance (directo Python)...")
-    idx_tickers  = ["^GSPC","^IXIC","^VIX","GLD","BNO","COP=X"]
+    idx_tickers  = ["^GSPC","^IXIC","^VIX","GLD","BNO","COP=X","DX-Y.NYB"]
     pos_tickers  = [p["ticker"] for p in PORTFOLIO_FALLBACK]
     yahoo_prices = get_yahoo_prices(idx_tickers + pos_tickers)
 
