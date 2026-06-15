@@ -180,7 +180,11 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
     <button class="btn" onclick="loadAll()">Actualizar</button>
   </div>
 
-  <div class="sec" style="margin-top:0">Analisis de Rendimientos — USD &amp; COP</div>
+  <div class="sec" style="margin-top:0">Resultado Real de la Cuenta (IBKR)</div>
+  <div id="accountBanner"></div>
+
+  <div class="sec">Posiciones Abiertas — P&amp;L No Realizado (USD &amp; COP)</div>
+  <div style="font-size:10px;color:var(--sub);margin-bottom:8px;line-height:1.5">Esto mide <strong style="color:var(--text)">solo lo que tienes hoy</strong> contra su costo. <strong style="color:var(--text)">No incluye lo que ya vendiste</strong> (p. ej. cripto cerrada). Para el resultado total de la cuenta, mira el recuadro de arriba.</div>
   <div id="rendSection"></div>
 
   <div class="sec">Evolucion del Portafolio — Historico</div>
@@ -466,6 +470,7 @@ function loadIBKR() {
         }
       });
       if (data.summary && data.summary.net_liquidation) {
+        window.__netLiqLive = data.summary.net_liquidation;
         var pill = document.getElementById("ibkrPill");
         if (pill) { pill.textContent = "IBKR Live"; pill.className = "ibkr-pill ibkr-on"; }
         setEl("ibkrStatus", "IBKR Live - " + new Date().toLocaleTimeString("es-CO", {hour:"2-digit", minute:"2-digit"}));
@@ -568,6 +573,74 @@ function fmtUSD(n) {
   return (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
+var acct = null;
+function loadAccount() {
+  var urls = ["./account_summary.json", "/portfolio-dashboard/account_summary.json"];
+  function tryUrl(i) {
+    if (i >= urls.length) { acct = null; return Promise.resolve(); }
+    return fetch(urls[i]).then(function(r){ return r.ok ? r.json() : Promise.reject(); })
+      .then(function(j){ acct = j; })
+      .catch(function(){ return tryUrl(i+1); });
+  }
+  return tryUrl(0);
+}
+
+function renderAccount() {
+  var el = document.getElementById("accountBanner");
+  if (!el) return;
+  if (!acct) {
+    el.innerHTML = "<div style='background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:11px;color:var(--sub);margin-bottom:14px'>Sin <code>account_summary.json</code> aun. Este recuadro mostrara el rendimiento real de la cuenta (incluye lo ya vendido) en cuanto exista el archivo.</div>";
+    return;
+  }
+  var twr = acct.ibkr_reported_twr_pct;
+  var dep = acct.net_deposits_usd;
+  var depCop = acct.net_deposits_cop;
+  var usdcop = (cop && cop.usdcop) ? cop.usdcop : 0;
+  var netLiq = (window.__netLiqLive != null) ? window.__netLiqLive
+             : (window.__netLiqCalc != null) ? window.__netLiqCalc : null;
+
+  var cards = "";
+  if (twr != null) {
+    var tc = twr >= 0 ? "pos" : "neg";
+    cards += "<div class='rs-card' style='border-color:" + (twr>=0?"rgba(63,185,80,.4)":"rgba(248,81,73,.45)") + "'>" +
+      "<div class='rs-label'>Rendimiento de cuenta — IBKR (desde apertura)</div>" +
+      "<div class='rs-val " + tc + "' style='font-size:26px'>" + (twr>=0?"+":"") + twr.toFixed(2) + "%</div>" +
+      "<div class='rs-sub'>Oficial IBKR (time-weighted). Incluye lo vendido, comisiones y dividendos." + (acct.as_of?" · al "+acct.as_of:"") + "</div>" +
+      "</div>";
+  }
+
+  if (dep != null && netLiq != null) {
+    var pnlUsd = netLiq - dep, pctUsd = dep !== 0 ? pnlUsd/dep*100 : 0;
+    var uc = pnlUsd >= 0 ? "pos" : "neg";
+    cards += "<div class='rs-card'>" +
+      "<div class='rs-label'>Resultado en dinero — USD</div>" +
+      "<div class='rs-val " + uc + "'>" + (pnlUsd>=0?"+":"") + fmtUSD(pnlUsd) + "</div>" +
+      "<div class='rs-sub'>Depositado " + fmtUSD(dep) + " → hoy " + fmtUSD(netLiq) + "</div>" +
+      "<span class='rs-badge " + (pnlUsd>=0?"bg":"br") + "'>" + (pctUsd>=0?"+":"") + pctUsd.toFixed(2) + "%</span>" +
+      "</div>";
+  }
+  if (depCop != null && netLiq != null && usdcop) {
+    var netLiqCop = netLiq * usdcop;
+    var pnlCop = netLiqCop - depCop, pctCop = depCop !== 0 ? pnlCop/depCop*100 : 0;
+    var cc2 = pnlCop >= 0 ? "pos" : "neg";
+    cards += "<div class='rs-card'>" +
+      "<div class='rs-label'>Resultado en dinero — COP</div>" +
+      "<div class='rs-val " + cc2 + "'>" + (pnlCop>=0?"+":"") + fmtCOP(pnlCop) + "</div>" +
+      "<div class='rs-sub'>Aportado " + fmtCOP(depCop) + " → hoy " + fmtCOP(netLiqCop) + "</div>" +
+      "<span class='rs-badge " + (pnlCop>=0?"bg":"br") + "'>" + (pctCop>=0?"+":"") + pctCop.toFixed(2) + "%</span>" +
+      "</div>";
+  }
+
+  var pend = "";
+  if (dep == null || depCop == null) {
+    pend = "<div style='font-size:10px;color:var(--yellow);margin-bottom:14px;line-height:1.5'>⚠️ Falta " +
+      (dep==null?"<code>net_deposits_usd</code>":"") + (dep==null&&depCop==null?" y ":"") + (depCop==null?"<code>net_deposits_cop</code>":"") +
+      " en account_summary.json para calcular el resultado en dinero" + (depCop==null?" (USD y COP)":"") + ".</div>";
+  }
+
+  el.innerHTML = "<div class='rend-summary'>" + cards + "</div>" + pend;
+}
+
 function renderRendimientos() {
   var el = document.getElementById("rendSection");
   if (!el) return;
@@ -624,6 +697,7 @@ function renderRendimientos() {
 
   // Net Liquidation = posiciones acciones + valor mercado opciones + cash
   var totValUSD  = totPosUSD + optMktUSD + cashUSD;
+  window.__netLiqCalc = totValUSD;
   var totPnlUSD  = (totPosUSD - totCostUSD) + optPnlUSD;   // P&L NO realizado (excluye cash)
   var totCostAll = totCostUSD;                              // base de costo (acciones/ETF)
   var totPnlPct  = totCostAll !== 0 ? totPnlUSD / Math.abs(totCostAll) * 100 : 0;
@@ -1022,10 +1096,10 @@ async function loadAll() {
   renderSidebar(); renderNews();
 
   // Leer todos los JSONs en paralelo
-  await Promise.all([loadPrices(), loadRecs(), loadIBKR(), loadHistory()]);
+  await Promise.all([loadPrices(), loadRecs(), loadIBKR(), loadHistory(), loadAccount()]);
 
   renderRecs(); renderHyps(); renderSidebar(); renderNews();
-  mktStatus(); renderIdx(); renderPosCards(); renderOpts(); renderAlfa(); renderRendimientos(); buildCharts();
+  mktStatus(); renderIdx(); renderPosCards(); renderOpts(); renderAlfa(); renderRendimientos(); renderAccount(); buildCharts();
   buildHistCharts();
 
   setEl("lastUpdate", new Date().toLocaleTimeString("es-CO",{hour:"2-digit",minute:"2-digit"})+" h Bogota");
