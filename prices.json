@@ -1,115 +1,164 @@
 {
-  "updated": "2026-06-15T18:10:01.201646",
+  "updated": "2026-06-16T18:18:12.429745",
   "ibr_annual": 8.25,
-  "avg_purchase_cop": 3490.0,
-  "usdcop_effective": 3350.54,
+  "avg_purchase_cop": 3414.0,
+  "usdcop_effective": 3277.12,
   "cash_balance": 138.38,
   "prices": {
+    "AFYA": {
+      "price": 13.95,
+      "chg": 0,
+      "label": "IBKR"
+    },
     "EC": {
-      "price": 16.58,
+      "price": 15.69,
       "chg": 0,
       "label": "IBKR"
     },
     "EIMI": {
-      "price": 55.42,
+      "price": 56.99,
       "chg": 0,
       "label": "IBKR"
     },
-    "NFLX": {
-      "price": 80.34,
+    "JEPQ": {
+      "price": 61.18,
+      "chg": 0,
+      "label": "IBKR"
+    },
+    "KRMN": {
+      "price": 48.27,
       "chg": 0,
       "label": "IBKR"
     },
     "NTR": {
-      "price": 67.62,
+      "price": 66.13,
+      "chg": 0,
+      "label": "IBKR"
+    },
+    "NVO": {
+      "price": 43.92,
+      "chg": 0,
+      "label": "IBKR"
+    },
+    "VEEV": {
+      "price": 162.17,
       "chg": 0,
       "label": "IBKR"
     },
     "NTR   260821P00062500": {
-      "price": 1.825,
+      "price": 2.1251,
       "chg": 0,
       "label": "IBKR"
     },
     "IDX_SPX": {
-      "price": 7561.0698,
-      "chg": 1.75,
+      "price": 7530.6699,
+      "chg": -0.33,
       "label": "Cierre"
     },
     "IDX_NDX": {
-      "price": 26643.2305,
-      "chg": 2.91,
+      "price": 26540.2305,
+      "chg": -0.54,
       "label": "Cierre"
     },
     "IDX_VIX": {
-      "price": 16.18,
-      "chg": -8.54,
+      "price": 15.86,
+      "chg": -2.1,
       "label": "Cierre"
     },
     "IDX_GLD": {
-      "price": 396.49,
-      "chg": 2.39,
+      "price": 398.38,
+      "chg": 0.52,
       "label": "Cierre"
     },
     "IDX_OIL": {
-      "price": 45.825,
-      "chg": -3.93,
+      "price": 43.41,
+      "chg": -6.24,
       "label": "Cierre"
     },
     "IDX_DXY": {
-      "price": 99.587,
-      "chg": 0.08,
+      "price": 99.532,
+      "chg": -0.17,
       "label": "Cierre"
     },
     "IDX_COP": {
-      "price": 3350.54,
-      "chg": 0.01,
+      "price": 3277.12,
+      "chg": -2.17,
+      "label": "Cierre"
+    },
+    "NFLX": {
+      "price": 77.9,
+      "chg": -4.6,
       "label": "Cierre"
     },
     "BTC": {
-      "price": 66804,
-      "chg": 4.8856984329657,
+      "price": 66010,
+      "chg": -1.1670712634935267,
       "label": ""
     },
     "GBTC": {
-      "price": 51.44,
-      "chg": 4.8856984329657,
+      "price": 50.83,
+      "chg": -1.1670712634935267,
       "label": "BTC-ratio"
     },
     "ETH": {
-      "price": 1829.22,
-      "chg": 10.14108374169272,
+      "price": 1800.16,
+      "chg": -1.562070297591553,
       "label": ""
     },
     "ETHE": {
-      "price": 15.55,
-      "chg": 10.14108374169272,
+      "price": 15.3,
+      "chg": -1.562070297591553,
       "label": "ETH-ratio"
     }
   },
   "positions": [
     {
+      "t": "AFYA",
+      "qty": 100.0,
+      "avg": 14.16,
+      "mkt": 13.95
+    },
+    {
       "t": "EC",
       "qty": 110.0,
       "avg": 15.1948,
-      "mkt": 16.58
+      "mkt": 15.69
     },
     {
       "t": "EIMI",
       "qty": 25.0,
       "avg": 50.948,
-      "mkt": 55.42
+      "mkt": 56.99
     },
     {
-      "t": "NFLX",
-      "qty": 3.0,
-      "avg": 126.267,
-      "mkt": 80.34
+      "t": "JEPQ",
+      "qty": 23.0,
+      "avg": 61.1635,
+      "mkt": 61.18
+    },
+    {
+      "t": "KRMN",
+      "qty": 2.0,
+      "avg": 48.3689,
+      "mkt": 48.27
     },
     {
       "t": "NTR",
       "qty": 10.0,
       "avg": 74.6088,
-      "mkt": 67.62
+      "mkt": 66.13
+    },
+    {
+      "t": "NVO",
+      "qty": 10.0,
+      "avg": 44.04,
+      "mkt": 43.92
+    },
+    {
+      "t": "VEEV",
+      "qty": 2.0,
+      "avg": 162.75,
+      "mkt": 162.17
     }
   ],
   "options": [
@@ -117,7 +166,7 @@
       "desc": "NTR   260821P00062500 2026-08-21 $62.5 PUT",
       "pos": -1,
       "avg": 2.5309,
-      "mkt": 1.825,
+      "mkt": 2.1251,
       "exp": "2026-08-21",
       "strike": 62.5,
       "und": "NTR   260821P00062500",
