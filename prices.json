@@ -1,113 +1,128 @@
 {
-  "updated": "2026-06-16T18:18:12.429745",
+  "updated": "2026-06-17T16:47:02.946766",
   "ibr_annual": 8.25,
-  "avg_purchase_cop": 3414.0,
-  "usdcop_effective": 3277.12,
+  "avg_purchase_cop": 3448.0,
+  "usdcop_effective": 3310.31,
   "cash_balance": 138.38,
   "prices": {
     "AFYA": {
-      "price": 13.95,
+      "price": 14.02,
       "chg": 0,
       "label": "IBKR"
     },
     "EC": {
-      "price": 15.69,
+      "price": 15.79,
       "chg": 0,
       "label": "IBKR"
     },
     "EIMI": {
-      "price": 56.99,
+      "price": 56.4,
       "chg": 0,
       "label": "IBKR"
     },
     "JEPQ": {
-      "price": 61.18,
+      "price": 60.78,
       "chg": 0,
       "label": "IBKR"
     },
     "KRMN": {
-      "price": 48.27,
+      "price": 51.7,
       "chg": 0,
       "label": "IBKR"
     },
     "NTR": {
-      "price": 66.13,
+      "price": 65.48,
+      "chg": 0,
+      "label": "IBKR"
+    },
+    "NU": {
+      "price": 12.72,
       "chg": 0,
       "label": "IBKR"
     },
     "NVO": {
-      "price": 43.92,
+      "price": 43.55,
       "chg": 0,
       "label": "IBKR"
     },
     "VEEV": {
-      "price": 162.17,
+      "price": 163.38,
+      "chg": 0,
+      "label": "IBKR"
+    },
+    "EC    260717C00016000": {
+      "price": 1.0,
+      "chg": 0,
+      "label": "IBKR"
+    },
+    "EC    260717C00017000": {
+      "price": 0.65,
       "chg": 0,
       "label": "IBKR"
     },
     "NTR   260821P00062500": {
-      "price": 2.1251,
+      "price": 2.3,
       "chg": 0,
       "label": "IBKR"
     },
     "IDX_SPX": {
-      "price": 7530.6699,
-      "chg": -0.33,
+      "price": 7511.1802,
+      "chg": -0.02,
       "label": "Cierre"
     },
     "IDX_NDX": {
-      "price": 26540.2305,
-      "chg": -0.54,
+      "price": 26373.0547,
+      "chg": -0.01,
       "label": "Cierre"
     },
     "IDX_VIX": {
-      "price": 15.86,
-      "chg": -2.1,
+      "price": 16.86,
+      "chg": 2.74,
       "label": "Cierre"
     },
     "IDX_GLD": {
-      "price": 398.38,
-      "chg": 0.52,
+      "price": 399.735,
+      "chg": 0.59,
       "label": "Cierre"
     },
     "IDX_OIL": {
-      "price": 43.41,
-      "chg": -6.24,
+      "price": 43.86,
+      "chg": 0.37,
       "label": "Cierre"
     },
     "IDX_DXY": {
-      "price": 99.532,
-      "chg": -0.17,
+      "price": 99.707,
+      "chg": 0.18,
       "label": "Cierre"
     },
     "IDX_COP": {
-      "price": 3277.12,
-      "chg": -2.17,
+      "price": 3310.31,
+      "chg": 0.72,
       "label": "Cierre"
     },
     "NFLX": {
-      "price": 77.9,
-      "chg": -4.6,
+      "price": 77.73,
+      "chg": -1.19,
       "label": "Cierre"
     },
     "BTC": {
-      "price": 66010,
-      "chg": -1.1670712634935267,
+      "price": 65908,
+      "chg": 0.3256165280396189,
       "label": ""
     },
     "GBTC": {
-      "price": 50.83,
-      "chg": -1.1670712634935267,
+      "price": 50.75,
+      "chg": 0.3256165280396189,
       "label": "BTC-ratio"
     },
     "ETH": {
-      "price": 1800.16,
-      "chg": -1.562070297591553,
+      "price": 1773.67,
+      "chg": -0.13027193145797608,
       "label": ""
     },
     "ETHE": {
-      "price": 15.3,
-      "chg": -1.562070297591553,
+      "price": 15.08,
+      "chg": -0.13027193145797608,
       "label": "ETH-ratio"
     }
   },
@@ -116,57 +131,83 @@
       "t": "AFYA",
       "qty": 100.0,
       "avg": 14.16,
-      "mkt": 13.95
+      "mkt": 14.02
     },
     {
       "t": "EC",
       "qty": 110.0,
       "avg": 15.1948,
-      "mkt": 15.69
+      "mkt": 15.79
     },
     {
       "t": "EIMI",
       "qty": 25.0,
       "avg": 50.948,
-      "mkt": 56.99
+      "mkt": 56.4
     },
     {
       "t": "JEPQ",
       "qty": 23.0,
       "avg": 61.1635,
-      "mkt": 61.18
+      "mkt": 60.78
     },
     {
       "t": "KRMN",
       "qty": 2.0,
       "avg": 48.3689,
-      "mkt": 48.27
+      "mkt": 51.7
     },
     {
       "t": "NTR",
       "qty": 10.0,
       "avg": 74.6088,
-      "mkt": 66.13
+      "mkt": 65.48
+    },
+    {
+      "t": "NU",
+      "qty": 50.0,
+      "avg": 12.43,
+      "mkt": 12.72
     },
     {
       "t": "NVO",
-      "qty": 10.0,
-      "avg": 44.04,
-      "mkt": 43.92
+      "qty": 20.0,
+      "avg": 43.809,
+      "mkt": 43.55
     },
     {
       "t": "VEEV",
-      "qty": 2.0,
-      "avg": 162.75,
-      "mkt": 162.17
+      "qty": 4.0,
+      "avg": 161.765,
+      "mkt": 163.38
     }
   ],
   "options": [
     {
+      "desc": "EC    260717C00016000 2026-07-17 $16 CALL",
+      "pos": 3,
+      "avg": 0.8825,
+      "mkt": 1.0,
+      "exp": "2026-07-17",
+      "strike": 16.0,
+      "und": "EC    260717C00016000",
+      "side": "long"
+    },
+    {
+      "desc": "EC    260717C00017000 2026-07-17 $17 CALL",
+      "pos": -3,
+      "avg": 0.5041,
+      "mkt": 0.65,
+      "exp": "2026-07-17",
+      "strike": 17.0,
+      "und": "EC    260717C00017000",
+      "side": "short"
+    },
+    {
       "desc": "NTR   260821P00062500 2026-08-21 $62.5 PUT",
       "pos": -1,
       "avg": 2.5309,
-      "mkt": 2.1251,
+      "mkt": 2.3,
       "exp": "2026-08-21",
       "strike": 62.5,
       "und": "NTR   260821P00062500",

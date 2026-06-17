@@ -2,213 +2,212 @@
   "recs": [
     {
       "type": "action",
-      "icon": "🗳️",
-      "title": "EC: Esperar 2a vuelta (21-jun) antes de covered call",
-      "badge": "br",
-      "badgeText": "CATALÍTICO",
-      "body": "EC cotiza +9.1% sobre tu base. La 2a vuelta presidencial colombiana el 21-jun puede generar gap alcista o bajista significativo. Mantén las 110 acciones sin cubrir hasta que pase el evento; post-resultado, vende call Aug $18 (~$0.35-0.45 prima estimada) si el mercado local no colapsa. Si el resultado es adverso al mercado, evalúa reducir 50% de la posición antes que vender calls a precios deprimidos.",
-      "tags": [
-        "EC",
-        "LATAM",
-        "EVENTO-POLÍTICO",
-        "COVERED-CALL"
-      ]
-    },
-    {
-      "type": "action",
-      "icon": "📉",
-      "title": "NFLX: Definir tesis o cerrar posición en pérdida",
-      "badge": "br",
-      "badgeText": "REVISIÓN URGENTE",
-      "body": "NFLX representa -36.4% de pérdida y el precio ($80.34) está muy lejos de tu base ($126.27). Con solo 3 acciones el impacto nominal es manejable ($138 pérdida), pero consume capital emocional y de margen. Decisión binaria: (1) Cierra las 3 acciones, toma la pérdida fiscal y recicla los ~$241 hacia JEPQ para ingreso mensual, alineado con tu objetivo de estructura. (2) Si crees en recuperación, vende covered call Jul $85 (~$2-3 prima) para reducir base y obliga a la posición a trabajar. La inacción no es estrategia.",
-      "tags": [
-        "NFLX",
-        "PÉRDIDA",
-        "REVISIÓN",
-        "COVERED-CALL"
-      ]
-    },
-    {
-      "type": "action",
-      "icon": "🌾",
-      "title": "NTR: Put $62.5 activo — monitorear con FOMC y ciclo agrícola",
-      "badge": "br",
-      "badgeText": "GESTIÓN RIESGO",
-      "body": "Tienes NTR put $62.5 exp 21-ago vendido (corto). NTR cotiza en $67.62 con -2.1% hoy, con 66 días a expiración. El spread entre precio y strike es $5.12 (~7.6% de colchón). Si FOMC esta semana sube tasas o tono hawkish, commodities agrícolas pueden presionarse. Monitorea soporte de NTR en $65. Si cotiza por debajo de $65, considera recomprar el put y rolarlo a strike $60 o fecha más lejana para no acumular 10 acciones adicionales de NTR involuntariamente.",
+      "icon": "🛡️",
+      "title": "NTR: Evalúa rollar la put protectora",
+      "badge": "OPCIONES",
+      "badgeText": "Gestión activa",
+      "body": "La put NTR Aug-21 $62.5 tiene 64 días y NTR cotiza $65.48, un 12.2% bajo tu costo. La put está OTM pero cercana al dinero. Con la decisión FOMC esta semana y presión sobre commodities agrícolas, considera rollar a Sep/Oct con strike $65 para ampliar cobertura y capturar más valor temporal antes de que la posición se deteriore más. No cierres la acción: NTR tiene catalizador de ciclo potásico H2 2026.",
       "tags": [
         "NTR",
-        "PUT-CORTO",
-        "FOMC",
-        "COMMODITIES"
+        "COBERTURA",
+        "ROLL"
       ]
     },
     {
       "type": "action",
-      "icon": "💰",
-      "title": "JEPQ: Iniciar posición para ingreso mensual estructural",
-      "badge": "br",
-      "badgeText": "NUEVA POSICIÓN",
-      "body": "Tu objetivo explícito incluye ingreso mensual vía JEPQ. Actualmente tienes 0 acciones. Con ~$600-700 disponibles (reciclando NFLX + parte de cash), compra 10-12 acciones de JEPQ (~$55-58 rango actual). JEPQ distribuye ~$0.50-0.55/mes por acción (~11% yield anualizado). Esto genera ~$5-6/mes de ingreso recurrente, construye el sleeve de ingresos, y el subyacente es Nasdaq cubierto con calls (riesgo definido). Entry limit: no pagar más de $58. No perseguir si sube antes de ejecutar.",
+      "icon": "📞",
+      "title": "EC: Prepara covered call post 21-jun",
+      "badge": "INCOME",
+      "badgeText": "En 4 días",
+      "body": "La segunda vuelta electoral en Colombia es el 21-jun. Tienes 110 acciones y ya dos calls abiertas (16C y 17C Jul-17). Una vez confirmado el resultado electoral y reducida la incertidumbre política, evalúa añadir una tercera call sobre el remanente no cubierto del lote, strike $17-$18 exp Aug para capitalizar la prima con EC a +3.9% de ganancia latente. No actuar antes del domingo.",
+      "tags": [
+        "EC",
+        "COLOMBIA",
+        "COVERED CALL"
+      ]
+    },
+    {
+      "type": "action",
+      "icon": "⚖️",
+      "title": "Rebalancea: EIMI acerca tope emergentes",
+      "badge": "RIESGO",
+      "badgeText": "Revisar límite",
+      "body": "EIMI (+10.7%), AFYA, NU, NVO y EC son todos emergentes o expuestos a EM. Con EIMI apreciado y el portafolio en ~$8.9k, el sleeve EM puede estar rondando el 50-55% del capital. Considera NO agregar más exposición emergente nueva hasta que NTR o VEEV ocupen más peso relativo, o hasta recibir liquidez nueva. Monitorea el tope del 55% activamente.",
+      "tags": [
+        "EIMI",
+        "EM",
+        "RIESGO"
+      ]
+    },
+    {
+      "type": "action",
+      "icon": "💵",
+      "title": "JEPQ: Reinvierte el próximo dividendo en cash buffer",
+      "badge": "INCOME",
+      "badgeText": "Liquidez",
+      "body": "JEPQ genera distribución mensual y actualmente está -0.6% vs costo. Con solo $138 en cash (1.6% del portafolio vs objetivo 15%), el próximo pago de JEPQ debería dirigirse a reforzar el colchón de caja en lugar de reinvertirse automáticamente en acciones. Esto también te da flexibilidad para el sleeve de opciones (actualmente en negativo -$125 mkt).",
       "tags": [
         "JEPQ",
-        "INGRESO",
-        "NUEVA-POSICIÓN",
-        "DIVERSIFICACIÓN"
+        "CASH",
+        "INCOME"
       ]
     }
   ],
   "hyps": [
     {
-      "id": "hyp-ec-cc",
+      "id": "hyp-ntr-recovery",
       "cls": "semi",
-      "icon": "🛢️",
-      "name": "EC Covered Call Post-Elecciones",
-      "riskLbl": "Moderado",
-      "risk": 40,
-      "riskColor": "#e3b341",
-      "horizon": "2 meses",
-      "tickers": [
-        "EC"
-      ],
-      "thesis": "Ecopetrol mantiene dividendo robusto y valuación atractiva en múltiplos de pares latinoamericanos de energía. Post-resultado electoral del 21-jun, la incertidumbre de prima política se reduce. Si el resultado es market-friendly, EC puede rebotar hacia $17-18 en el corto plazo, momento ideal para iniciar covered calls sistemáticos que generen ingreso sobre una posición ya en ganancia.",
-      "directo": "Mantener 110 acc actuales. Post 21-jun si EC ≥$16.50: vender call EC Aug15 $18 strike. Stop conceptual: si EC rompe $14.00 (soporte técnico clave), reducir posición un 50%.",
-      "opciones": "Vender 1x EC Aug15 2026 Call $18 strike. Prima estimada $0.35-0.45. Ingreso ~$35-45 por contrato (cubre 100 acc). Break-even sube a $15.54 ya incluyendo prima recibida. La posición está cubierta (tienes 110 acc), riesgo definido al alza.",
-      "sizing": "Sin capital adicional requerido. La posición de 110 acc ya está abierta ($1,673 valor mercado). La call genera ingreso sobre capital ya comprometido. Mantener dentro del tope <=15% portafolio.",
-      "catalizadores": "21-jun: 2a vuelta presidencial Colombia. Jul: reporte de resultados EC Q2. Precio del Brent (correlación alta con EC). Decisión FOMC esta semana sobre USD/EM."
-    },
-    {
-      "id": "hyp-ntr-roll",
-      "cls": "semi",
-      "icon": "🌱",
-      "name": "NTR Put Roll Defensivo",
-      "riskLbl": "Moderado",
-      "risk": 45,
-      "riskColor": "#e3b341",
-      "horizon": "3 meses",
+      "icon": "🌾",
+      "name": "NTR: Recuperación ciclo potásico H2 2026",
+      "riskLbl": "Alto",
+      "risk": 72,
+      "riskColor": "#f85149",
+      "horizon": "4-6 meses",
       "tickers": [
         "NTR"
       ],
-      "thesis": "Nutrien es el mayor productor de potasa del mundo con balance sólido y dividendo consistente. El put $62.5 vendido implica disposición a comprar NTR a ese precio. Si el ciclo de fertilizantes se normaliza en H2 2026 con recuperación de precios de potasa (China/India contratos anuales), NTR debería recuperar $72-75. El riesgo es que FOMC hawkish o cosecha récord presione más el precio.",
-      "directo": "Posición actual: short put $62.5 Aug21. Si NTR cae a $64-65: preparar orden de recompra del put a ~$3.50-4.00 (vs prima recibida ~$2-2.50 estimada). Rol a Oct $60 put para ganar tiempo y bajar strike. Si NTR se mantiene >$65 hasta agosto, dejar expirar sin valor.",
-      "opciones": "Si es necesario rolear: Comprar NTR Aug21 2026 Put $62.5 (cerrar). Vender NTR Oct16 2026 Put $60 strike (~$2.50-3.00 prima estimada). Netear el costo del roll. Baja el riesgo de asignación y da 2 meses adicionales.",
-      "sizing": "El put $62.5 implica obligación de comprar 100 acc NTR a $62.5 = $6,250 de exposición potencial. Verificar que tienes cash/margen suficiente. No abrir posiciones adicionales en NTR hasta resolver el put activo.",
-      "catalizadores": "FOMC esta semana (impacto en USD y commodities). Reporte NTR Q2 (típicamente julio-agosto). Precios de gas natural (costo de producción urea). Negociaciones de contratos de potasa India/China Q3."
+      "thesis": "Nutrien cotiza con descuento significativo al NAV de sus activos de potasa y nitrógeno. Los precios spot de potasio han tocado mínimos y el mercado anticipa recuperación de demanda agrícola en Brasil y Asia para la temporada de siembra H2 2026. El balance es sólido y el dividendo sostenible a estos niveles de precios.",
+      "directo": "Ya posicionado. Promedio costo $74.61, precio actual $65.48. No promediar hacia abajo aún. Stop mental en $60 (coincide con put $62.5). Vigilar cierre semanal bajo $63 como señal de salida.",
+      "opciones": "Put protectora activa: NTR Aug-21 $62.5P. Considerar roll a Oct-16 $65P si NTR no recupera $68 antes del 15-jul. Prima estimada roll: pagar ~$1.50 neto para subir strike.",
+      "sizing": "Posición actual: $655 (~7.4% del portafolio). No incrementar hasta recuperar $68. Si recupera $70, vender covered call $75 Oct para financiar cobertura.",
+      "catalizadores": "Reporte trimestral NTR (ago 2026), datos USDA de siembras julio, precio spot potasa Bielorrusia/Canadá, decisión aranceles fertilizantes en Brasil."
     },
     {
-      "id": "hyp-jepq-ingreso",
+      "id": "hyp-ec-colombia",
       "cls": "semi",
-      "icon": "💵",
-      "name": "JEPQ Sleeve de Ingreso Mensual",
-      "riskLbl": "Bajo-Moderado",
-      "risk": 30,
-      "riskColor": "#3fb950",
-      "horizon": "6 meses",
+      "icon": "🛢️",
+      "name": "EC: Normalización prima de riesgo político Colombia",
+      "riskLbl": "Medio",
+      "risk": 52,
+      "riskColor": "#d29922",
+      "horizon": "2-3 meses",
       "tickers": [
-        "JEPQ"
+        "EC"
       ],
-      "thesis": "JEPQ (JPMorgan Nasdaq Equity Premium Income ETF) ofrece exposición a Nasdaq con overlay de opciones cubiertas que genera distribuciones mensuales elevadas. En un entorno donde el S&P ya lleva +8.2% YTD y valuaciones están estiradas, JEPQ permite participar en Nasdaq con downside protection parcial vía las primas de calls vendidas. Alineado perfectamente con el objetivo de ingreso mensual del inversor.",
-      "directo": "Comprar 12 acciones JEPQ con orden limit ≤$58.00. Precio actual estimado en rango $55-58. No perseguir si está por encima de $59. Acumular hasta 20 acciones en 2-3 meses si el tesis se confirma.",
-      "opciones": "No se requieren opciones en JEPQ dado que el ETF ya implementa covered calls internamente. El producto es el sleeve de opciones en sí mismo. Enfocarse en recibir distribuciones mensuales y reinvertir parcialmente.",
-      "sizing": "Inversión inicial: $660-696 (12 acc x $55-58). Representa ~16% del portafolio neto, ligeramente alto; ajustar a 10 acciones ($550-580) para mantenerse dentro de topes. Ingreso mensual esperado: ~$5.50-6.60/mes con 10-12 acciones.",
-      "catalizadores": "Distribución mensual JEPQ (generalmente primer viernes del mes). Volatilidad de Nasdaq: más volatilidad = más prima de calls = mayor distribución. Resultado FOMC: tasas altas benefician el yield relativo de JEPQ."
+      "thesis": "Ecopetrol descuenta exceso de riesgo político colombiano post-elecciones 2026. Si el resultado electoral de segunda vuelta (21-jun) apunta a un gobierno más moderado con respecto a la política energética, EC podría comprimir su spread de riesgo y recuperar niveles de $17-$19. Dividendo en USD atractivo para el tamaño de la posición.",
+      "directo": "Posición de 110 acciones @ $15.19, precio actual $15.79. Mantener. Resistencia inmediata en $16 (strike de la call vendida). Si supera $16.50 post-elección, el spread de calls limita upside pero protege.",
+      "opciones": "Calls abiertas: Jul-17 $16C y Jul-17 $17C. Post 21-jun, si EC sube a $16.20+, evaluar añadir $17C o $18C Aug sobre acciones descubiertas. Prima estimada $17C Aug ~$0.35-0.50.",
+      "sizing": "Posición actual: $1,737 (~19.6% del portafolio). Ya en límite de nombre individual (15% tope). No agregar acciones. Solo gestión vía opciones.",
+      "catalizadores": "Segunda vuelta Colombia 21-jun, precio WTI, reporte Q2 EC (julio-ago), decisión OPEC+ reunión julio, resolución deuda Cenit/Ocensa."
     },
     {
-      "id": "hyp-nu-valor",
+      "id": "hyp-nu-fintech",
       "cls": "semi",
-      "icon": "🏦",
-      "name": "NU Holdings: Fintech LatAm de Alta Convicción",
-      "riskLbl": "Alto",
-      "risk": 65,
-      "riskColor": "#f85149",
-      "horizon": "6 meses",
+      "icon": "💳",
+      "name": "NU: Expansión margen y nueva geografía",
+      "riskLbl": "Medio",
+      "risk": 48,
+      "riskColor": "#d29922",
+      "horizon": "3-4 meses",
       "tickers": [
         "NU"
       ],
-      "thesis": "Nu Holdings es el banco digital más grande de América Latina con crecimiento orgánico comprobado en Brasil, México y Colombia. Valuación en múltiplos PEG razonables para la tasa de crecimiento. La tesis cruza con análisis de consenso independiente positivo: penetración de crédito en LatAm sigue siendo estructuralmente baja, Nu tiene ventaja de costo de adquisición de clientes muy inferior a bancos tradicionales. Riesgo: exposición Brasil/FX y regulatorio.",
-      "directo": "Entry: comprar 20-25 acciones NU con limit order en $13.50-14.50 (buscar pullback desde niveles actuales). Stop loss: $11.80 (soporte técnico fuerte). Objetivo 12 meses: $18-20 basado en múltiplos forward. Tope: máx 8% del portafolio dado riesgo emergente ya existente.",
-      "opciones": "Alternativa de riesgo definido: Comprar NU Jan 2027 Call $15 strike + Vender NU Jan 2027 Call $20 strike (bull call spread). Costo estimado: $0.80-1.20 de débito. Exposición máxima = prima pagada. Upside máx: $5 - prima = ~$3.80-4.20 por spread.",
-      "sizing": "Capital directo: $280-360 (20-25 acc). O spread de opciones: $80-120 por spread (1-2 spreads = $80-240 total). Mantener dentro del tope de emergentes: actualmente EIMI + EC ya representan ~42% del portafolio, cuidar no superar 55%.",
-      "catalizadores": "Reporte Q2 NU (agosto 2026). Tipo de cambio BRL/USD. Decisiones Banco Central de Brasil sobre tasas (SELIC). Expansión de productos en México. Cualquier anuncio de dividendo o recompra."
+      "thesis": "Nubank mantiene crecimiento de clientes en Brasil, México y Colombia con mejora progresiva de NIM. La valoración actual implica crecimiento moderado ya descontado. Catalizador: aceleración en México donde la penetración bancaria sigue baja y NU tiene ventaja de marca digital frente a bancos tradicionales.",
+      "directo": "50 acciones @ $12.43, precio $12.72. Stop en $11.20 (soporte técnico clave). Target en $15.00 en 3-4 meses si reportes confirman expansión de márgenes.",
+      "opciones": "Cuando NU alcance $13.50, vender covered call $15C Sep para generar prima ~$0.30-0.40 por acción ($15-20 total sobre 50 acc). Riesgo/beneficio favorable dado el tamaño pequeño de la posición.",
+      "sizing": "Posición actual: $636 (~7.2% portafolio). Posición pequeña, puede escalar a $900 (~10%) si confirma soporte en $12 y macro EM mejora post-FOMC.",
+      "catalizadores": "Reporte Q2 NU (agosto 2026), datos de inflación Brasil, tasas SELIC, expansión de producto de inversión NU en México, regulación Open Finance Brasil."
     },
     {
-      "id": "hyp-googl-valor",
+      "id": "hyp-veev-healthcare-saas",
       "cls": "semi",
-      "icon": "🔍",
-      "name": "GOOGL: Valor con Catalizador IA en Valuación Razonable",
-      "riskLbl": "Moderado",
-      "risk": 40,
-      "riskColor": "#e3b341",
-      "horizon": "4 meses",
+      "icon": "🏥",
+      "name": "VEEV: Renovación ciclo CRM healthcare post-recorte de tasas",
+      "riskLbl": "Bajo-Medio",
+      "risk": 38,
+      "riskColor": "#3fb950",
+      "horizon": "3-5 meses",
+      "tickers": [
+        "VEEV"
+      ],
+      "thesis": "Veeva Systems opera en un nicho defensivo de SaaS regulatorio para pharma/biotech con altísimas tasas de retención de clientes. La normalización de tasas favorece múltiplos de SaaS de calidad. Vault CRM reemplazando Salesforce en pharma es un ciclo multianual de conversión que apenas inicia.",
+      "directo": "4 acciones @ $161.77, precio $163.38. Posición pequeña. Stop en $150. Target $185 en 5 meses. Agregar si cae a $155 en una corrección del mercado (aumenta sizing a 6-7 acciones).",
+      "opciones": "Con solo 4 acciones, covered calls no son eficientes (lote mínimo 100). Alternativa: comprar 1x VEEV $170C Sep @ ~$4-5 como posición especulativa de bajo costo para capturar upside sin incrementar acción. Costo máximo ~$400-500.",
+      "sizing": "Posición actual: $654 (~7.4% portafolio). Target 10% del portafolio (~$887). Apropiado para el perfil: alta calidad, bajo riesgo relativo, candidato vetado confirmado.",
+      "catalizadores": "Reporte fiscal Q2 VEEV (agosto 2026), conferencia JPM Healthcare, datos de conversión Vault CRM en grandes pharmas, decisión FOMC y su efecto en múltiplos growth."
+    },
+    {
+      "id": "hyp-afya-brasil-med",
+      "cls": "semi",
+      "icon": "🎓",
+      "name": "AFYA: Re-rating por expansión de vagas médicas en Brasil",
+      "riskLbl": "Alto",
+      "risk": 65,
+      "riskColor": "#f85149",
+      "horizon": "3-4 meses",
+      "tickers": [
+        "AFYA"
+      ],
+      "thesis": "Afya es el mayor operador de educación médica en Brasil. El gobierno sigue ampliando autorizaciones de nuevas vagas médicas federales (MAIS MÉDICOS). La tesis es que AFYA absorbe parte de esa demanda adicional vía adquisiciones y crecimiento orgánico, con re-rating por mejora de ROE y menor costo de capital en reales. Actualmente cotiza con descuento frente a pares edtech.",
+      "directo": "100 acciones @ $14.16, precio $14.02. Stop en $12.50. Target $16.50 en 3-4 meses. La posición está prácticamente en breakeven; no cortar sin catalizador negativo claro.",
+      "opciones": "Con 100 acciones, elegible para covered call. Vender AFYA $15C Aug @ ~$0.40-0.60 por acción. Ingreso estimado: $40-60 sobre la posición. Si AFYA no llega a $15 en agosto, cobras prima y repites en septiembre.",
+      "sizing": "Posición actual: $1,402 (~15.8% portafolio, ligeramente sobre tope). Vigilar: si sube a $15.50, reducir a 80 acciones para quedar en tope 15%. No agregar.",
+      "catalizadores": "Reporte Q2 AFYA (agosto 2026), nuevas autorizaciones MEC Brasil, tipo de cambio BRL/USD, datos de matrícula médica H2 2026, posible adquisición de institución regional."
+    },
+    {
+      "id": "hyp-googl-ia-advertising",
+      "cls": "semi",
+      "icon": "🤖",
+      "name": "GOOGL: IA generativa como acelerador de monetización publicitaria",
+      "riskLbl": "Medio",
+      "risk": 45,
+      "riskColor": "#d29922",
+      "horizon": "3-6 meses",
       "tickers": [
         "GOOGL"
       ],
-      "thesis": "Alphabet mantiene posición dominante en búsqueda (ahora con IA integrada), crece en Cloud (GCP ganando share vs AWS/Azure), y cotiza a múltiplos de earnings razonables para su perfil de crecimiento. La monetización de Gemini en productos empresariales y el crecimiento de YouTube Premium son catalizadores no completamente descontados. Punto de entrada por debajo de $200 ofrecería margen de seguridad aceptable.",
-      "directo": "Entry: limit order GOOGL ≤$195 (buscar corrección post-FOMC u otros eventos macro). Stop loss: $178 (soporte técnico). Objetivo: $220-230 en 4 meses. Máximo 2 acciones dado el precio por acción y el tamaño de la cuenta (~$390 total).",
-      "opciones": "Bull call spread para exposición con riesgo definido: Comprar GOOGL Sep2026 Call $200 + Vender GOOGL Sep2026 Call $215. Débito estimado: $2.50-3.50. Exposición máxima = prima. Upside máx: $15 - débito = $11.50-12.50 por spread (rendimiento 3-5x).",
-      "sizing": "Capital directo máximo: $390 (2 acc a $195). O 1 spread de opciones: $250-350 de débito. No exceder 5% del portafolio neto. GOOGL añade exposición tech US diferente a NFLX (media) y complementaria a EIMI (EM).",
-      "catalizadores": "Google I/O seguimiento de adopción IA. Reporte Q2 Alphabet (julio 2026). Resolución del caso antimonopolio DOJ. FOMC esta semana: tasas afectan múltiplos de growth. Competencia de OpenAI/ChatGPT en búsqueda."
-    },
-    {
-      "id": "hyp-eimi-add",
-      "cls": "semi",
-      "icon": "🌏",
-      "name": "EIMI: Agregar en Soporte si Corrección EM",
-      "riskLbl": "Moderado",
-      "risk": 45,
-      "riskColor": "#e3b341",
-      "horizon": "3 meses",
-      "tickers": [
-        "EIMI"
-      ],
-      "thesis": "EIMI (iShares MSCI EM IMI) está +8.8% sobre base con exposición diversificada a mercados emergentes. La posición de 25 acciones es pequeña para el objetivo de diversificación. Si el FOMC adopta tono dovish esta semana (reducción de tasas o señal de pausa prolongada), el USD se debilitaría y los mercados emergentes típicamente se aprecian. Una corrección de 5-8% en EIMI hacia $51-52 ofrecería punto de adición atractivo.",
-      "directo": "No comprar a precios actuales ($55.42). Colocar orden limit de compra de 5 acciones adicionales EIMI a $51.50-52.00. Si se activa, posición total sube a 30 acciones. Stop conceptual de la posición total: $47 (pérdida máxima aceptable). Revisar tope de emergentes (actualmente ~42% entre EIMI+EC).",
-      "opciones": "Alternativa para no invertir capital adicional: Vender EIMI cash-secured put Aug $50 strike (~$0.60-0.80 prima estimada). Si EIMI cae a $50, compras más barato. Si no cae, te quedas la prima como ingreso. Requiere $5,000 de colateral (alto para la cuenta), mejor hacerlo solo si tienes el margen disponible.",
-      "sizing": "Capital adicional: $257.50-260 (5 acc x $51.50-52). Bajo impacto en portafolio. El objetivo es llevar EIMI a posición de mayor convicción sin superar el tope de emergentes del 55%. Monitorear EC simultáneamente.",
-      "catalizadores": "FOMC esta semana: tono dovish = positivo para EM. China estímulo fiscal (componente grande de EIMI). Resultado elecciones Colombia 21-jun (relevante para EC, indirectamente para sentimiento LatAm en EIMI). USD index (DXY) como proxy inverso."
+      "thesis": "Alphabet está en inflexión: la integración de Gemini en Search y la monetización de AI Overviews cambia el funnel publicitario a favor de GOOGL frente a alternativas. Cloud GCP acelera y YouTube Shorts monetiza mejor. Valuación razonable para la calidad del negocio frente al S&P en máximos.",
+      "directo": "No en portafolio actualmente. Entry ideal: $170-$175 en cualquier corrección del mercado. Stop en $158. Target $200 en 4-5 meses. Candidato vetado aprobado.",
+      "opciones": "Si no se quiere asignar capital en acciones, buy 1x GOOGL $175C Sep @ ~$5-7 (costo ~$500-700). Riesgo definido. Alternativamente, cash-secured put $170P Aug para entrar en acciones con descuento cobrando prima ~$2-3.",
+      "sizing": "Asignación sugerida inicial: $500-700 (5-8% del portafolio). Dado el nivel de caja actual ($138), esperar ingreso de dividendo JEPQ o vencimiento de opciones EC en julio antes de abrir posición.",
+      "catalizadores": "Google I/O seguimiento de adopción Gemini, reporte Q2 GOOGL (julio 2026), decisión antimonopolio DOJ Search, gasto en capex IA de anunciantes, resultados publicidad Meta como proxy."
     }
   ],
   "events": [
     {
-      "date": "17-18 Jun",
-      "title": "Decisión FOMC — Reunión de la Fed",
-      "note": "Reunión clave de política monetaria. El tono hawkish o dovish impactará directamente USD, commodities (NTR/EC), y múltiplos de growth (NFLX). Atención especial al dot plot y declaración de Powell post-reunión.",
+      "date": "18-19 jun",
+      "title": "Decisión FOMC – Reunión de junio",
+      "note": "El mercado descuenta pausa. El tono del comunicado y las proyecciones dot-plot para H2 2026 son clave para múltiplos de growth (VEEV, GOOGL) y para el carry de emergentes (EC, NU, AFYA).",
       "tickers": [
-        "NTR",
+        "VEEV",
+        "NU",
         "EC",
-        "NFLX",
-        "EIMI"
+        "AFYA",
+        "EIMI",
+        "NVO"
       ]
     },
     {
-      "date": "21 Jun",
-      "title": "2da Vuelta Presidencial — Colombia",
-      "note": "Evento electoral de alto impacto para Ecopetrol. El resultado puede generar gap significativo en EC al día siguiente. Mantener posición sin covered calls hasta conocer resultado. Preparar órdenes contingentes según escenario ganador.",
+      "date": "21 jun",
+      "title": "Segunda vuelta electoral Colombia",
+      "note": "Resultado clave para EC. Una victoria de candidato moderado podría comprimir la prima de riesgo político y permitir apertura de covered calls adicionales sobre el remanente de acciones no cubiertas.",
       "tickers": [
         "EC"
       ]
     },
     {
-      "date": "26 Jun",
-      "title": "Vencimiento mensual opciones — Serie Jun",
-      "note": "Expiración de opciones de junio. Revisar posiciones de opciones activas (NTR put es de agosto, no se ve afectado). Buen momento para evaluar nuevas ventas de calls en EC post-elecciones si la posición lo permite.",
+      "date": "17 jul",
+      "title": "Vencimiento opciones EC Jul-17 ($16C y $17C)",
+      "note": "Ambas calls vencen. Evaluar si EC superó $16 para gestionar posible asignación parcial o roll. Si EC está bajo $16, las primas cobradas son ganancia neta y se puede reabrir para agosto.",
+      "tickers": [
+        "EC"
+      ]
+    },
+    {
+      "date": "Ago 2026",
+      "title": "Reportes Q2: NTR, AFYA, NU, VEEV",
+      "note": "Temporada de resultados concentra los catalizadores principales del portafolio. NTR y AFYA son las posiciones con mayor presión; VEEV y NU son las de mayor expectativa de sorpresa positiva.",
       "tickers": [
         "NTR",
-        "EC"
+        "AFYA",
+        "NU",
+        "VEEV"
       ]
     },
     {
-      "date": "Jul (sem 3-4)",
-      "title": "Earnings Q2 — NFLX y temporada reportes",
-      "note": "Netflix reporta Q2 en julio (fecha exacta por confirmar). Con la posición actual en -36%, el reporte es un catalizador binario crítico. Subscribes, revenue y guidance de publicidad serán los factores determinantes para decidir si cerrar o mantener.",
-      "tickers": [
-        "NFLX",
-        "GOOGL"
-      ]
-    },
-    {
-      "date": "21 Ago",
-      "title": "Expiración Put NTR $62.5",
-      "note": "El put vendido NTR $62.5 expira en esta fecha. Con 66 días restantes, es el deadline para decidir si dejar expirar (NTR > $62.5), rolear a fecha posterior, o gestionar asignación de 100 acciones adicionales de NTR. Marcar como fecha de revisión obligatoria en semana del 3-ago.",
+      "date": "21 ago",
+      "title": "Vencimiento put NTR Aug-21 ($62.5P)",
+      "note": "La put protectora vence. Si NTR no ha recuperado $68-70 para entonces, decidir entre roll a oct o asumir exposición abierta. No dejar la posición sin cobertura si NTR sigue bajo $67.",
       "tickers": [
         "NTR"
       ]
@@ -217,35 +216,35 @@
   "news": [
     {
       "t": "EC",
-      "h": "Ecopetrol mantiene atractivo de dividendo en contexto de incertidumbre política colombiana previo a segunda vuelta. El mercado descuenta prima de riesgo electoral que podría revertirse rápidamente post-resultado favorable.",
-      "time": "15 Jun 2026"
-    },
-    {
-      "t": "EIMI",
-      "h": "Los mercados emergentes muestran resiliencia relativa frente a episodios de volatilidad en desarrollados. La diversificación geográfica de EIMI (Asia, LatAm, EMEA) amortigua shocks específicos por país. Flujos hacia EM mejoran si la Fed da señales dovish.",
-      "time": "15 Jun 2026"
-    },
-    {
-      "t": "NFLX",
-      "h": "La narrativa del segmento de publicidad de Netflix sigue siendo la variable más discutida entre analistas. La monetización del tier ad-supported es clave para justificar recuperación de múltiplos desde los niveles actuales deprimidos.",
-      "time": "15 Jun 2026"
+      "h": "El entorno político colombiano sigue siendo el principal driver de volatilidad en EC. La prima de riesgo geopolítico está elevada y cualquier señal de moderación en política energética post-electoral podría actuar como detonador alcista. El dividendo en USD sigue siendo un ancla de valor.",
+      "time": "17 jun 2026"
     },
     {
       "t": "NTR",
-      "h": "Nutrien enfrenta presión de precios de potasa en mercado spot mientras los contratos anuales con India y China están en renegociación. El ciclo agrícola en Norteamérica determina la demanda de fertilizantes para el segundo semestre.",
-      "time": "15 Jun 2026"
+      "h": "Los precios de fertilizantes nitrogenados y potásicos siguen bajo presión por exceso de oferta desde el Mar Báltico y desaceleración de demanda en India. Sin embargo, las perspectivas para la temporada agrícola sudamericana de H2 2026 apuntan a recuperación gradual de la demanda.",
+      "time": "17 jun 2026"
     },
     {
-      "t": "JEPQ",
-      "h": "Los ETFs de covered calls como JEPQ mantienen distribuciones elevadas en entorno de alta volatilidad implícita del Nasdaq. La estrategia de ingreso mensual es particularmente atractiva para cuentas pequeñas que buscan flujo de caja recurrente sin exposición neta al alza ilimitada.",
-      "time": "15 Jun 2026"
+      "t": "AFYA",
+      "h": "El sector de educación superior médica en Brasil sigue beneficiándose del déficit estructural de médicos por habitante. Las discusiones regulatorias sobre nuevas autorizaciones de vagas siguen en curso, y AFYA mantiene una posición privilegiada para absorber esa demanda en regiones de menor cobertura.",
+      "time": "17 jun 2026"
     },
     {
       "t": "NU",
-      "h": "Nu Holdings continúa expandiendo su base de clientes en México y explorando nuevos productos financieros en Colombia. La penetración bancaria estructuralmente baja en LatAm sigue siendo el argumento central de largo plazo para la tesis de crecimiento.",
-      "time": "15 Jun 2026"
+      "h": "Nubank continúa expandiendo su base de productos más allá de la tarjeta de crédito hacia seguros, inversiones y crédito personal. La competencia en neobancos en México se intensifica, aunque la marca y la base de usuarios existente dan ventaja en adquisición de costo bajo.",
+      "time": "17 jun 2026"
+    },
+    {
+      "t": "NVO",
+      "h": "Novo Nordisk enfrenta un entorno mixto: la competencia en GLP-1 se intensifica pero la demanda estructural por obesidad y diabetes sigue siendo multianual. El pipeline de formulaciones orales es el catalizador de largo plazo más relevante para justificar la valoración actual.",
+      "time": "17 jun 2026"
+    },
+    {
+      "t": "JEPQ",
+      "h": "El ETF de income sobre Nasdaq-100 con covered calls sigue generando distribuciones mensuales relevantes para el perfil de la cuenta. En entornos de baja volatilidad implícita las primas bajan, lo que podría comprimir levemente la tasa de distribución futura respecto a meses anteriores.",
+      "time": "17 jun 2026"
     }
   ],
-  "generated": "2026-06-15T18:09:47.808928",
-  "week": "2026-06-15"
+  "generated": "2026-06-17T16:46:53.522557",
+  "week": "2026-06-17"
 }
